@@ -9,9 +9,9 @@ CREATE TABLE users (
 	full_name TEXT NOT NULL,
 	password_hash TEXT NOT NULL,
 
-	blocked_at TIMESTAMP,
-	deleted_at TIMESTAMP,
-	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	blocked_at TIMESTAMPTZ,
+	deleted_at TIMESTAMPTZ,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ==========================
@@ -23,9 +23,10 @@ CREATE TABLE employees (
 	user_id BIGINT UNIQUE NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
 
 	hired_at DATE NOT NULL,
+	fired_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
 	fired_at DATE,
 	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,				-- может быть NULL (если создано при инициализации БД/системой)
-	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 /*
@@ -60,9 +61,13 @@ CREATE TABLE employees (
 CREATE TABLE roles (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	code TEXT UNIQUE NOT NULL,							-- 'super_admin', 'admin', 'order_manager', ...
+	
+	is_system BOOLEAN NOT NULL,
+	deactivated_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	deactivated_at TIMESTAMPTZ DEFAULT NULL,
 
 	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE permissions (
@@ -70,15 +75,20 @@ CREATE TABLE permissions (
 	code TEXT UNIQUE NOT NULL,							-- 'create_product', 'delete_order', 'delete_review', ...
 	description TEXT,
 
-	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	is_system BOOLEAN NOT NULL,
+	deactivated_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	deactivated_at TIMESTAMPTZ DEFAULT NULL,
+
+	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE role_permissions (
 	role_id BIGINT NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
 	permission_id BIGINT NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
 
-	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	assigned_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (role_id, permission_id)
 );
 
@@ -86,8 +96,8 @@ CREATE TABLE employee_roles (
 	employee_id BIGINT NOT NULL REFERENCES employees(id) ON DELETE RESTRICT,
 	role_id BIGINT NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
 
-	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	assigned_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (employee_id, role_id)
 );
 
@@ -97,11 +107,15 @@ CREATE TABLE employee_roles (
 
 CREATE TABLE warehouses (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	address TEXT NOT NULL,
+	address TEXT UNIQUE NOT NULL,
 	description TEXT,
 
+	deleted_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	deleted_at TIMESTAMPTZ DEFAULT NULL,
+	
 	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+	UNIQUE (id, address)
 );
 
 CREATE TABLE product_categories (
@@ -111,7 +125,7 @@ CREATE TABLE product_categories (
 	-- description TEXT,
 
 	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Товары
@@ -124,7 +138,7 @@ CREATE TABLE products (
 	
 	is_active BOOLEAN NOT NULL DEFAULT TRUE,
 	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	UNIQUE (name, product_category_id)
 );
 
@@ -134,7 +148,7 @@ CREATE TABLE product_images (
 	url TEXT NOT NULL,
 
 	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Остатки на складе
@@ -145,7 +159,7 @@ CREATE TABLE warehouse_inventory (
 	reserved_quantity INT NOT NULL CHECK (reserved_quantity >= 0) DEFAULT 0,
 	
 	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (product_id, warehouse_id),
 	CHECK (quantity >= reserved_quantity)
 );
@@ -163,7 +177,7 @@ CREATE TABLE suppliers (
 	address TEXT,
 
 	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TYPE supply_status AS ENUM(
@@ -183,7 +197,7 @@ CREATE TABLE supplies (
 	planned_delivery_date DATE NOT NULL,
 
 	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Состав поставок
@@ -202,7 +216,7 @@ CREATE TABLE supply_status_history (
 	status supply_status NOT NULL,
 
 	changed_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	changed_at TIMESTAMP NOT NULL DEFAULT NOW()
+	changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ==========================
@@ -224,7 +238,7 @@ CREATE TABLE orders (
 	track_number TEXT UNIQUE,
 	delivery_address TEXT NOT NULL,
 
-	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE order_items (
@@ -242,7 +256,7 @@ CREATE TABLE order_status_history (
 	status order_status NOT NULL,
 
 	changed_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	changed_at TIMESTAMP NOT NULL DEFAULT NOW()
+	changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ==========================
@@ -262,7 +276,7 @@ CREATE TABLE returns (
 	reason TEXT NOT NULL,
 	current_status return_status NOT NULL DEFAULT 'created',
 
-	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE return_items (
@@ -279,7 +293,7 @@ CREATE TABLE return_status_history (
 	status return_status NOT NULL,
 	
 	changed_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	changed_at TIMESTAMP NOT NULL DEFAULT NOW()
+	changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ==========================
@@ -299,7 +313,7 @@ CREATE TABLE write_offs (
 	current_status write_off_status NOT NULL DEFAULT 'created',
 
 	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE write_off_items (
@@ -315,7 +329,7 @@ CREATE TABLE write_off_status_history (
 	status write_off_status NOT NULL,
 	
 	changed_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	changed_at TIMESTAMP NOT NULL DEFAULT NOW()
+	changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ==========================
@@ -333,7 +347,7 @@ CREATE TABLE order_deliveries (
 	order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
 	total_price NUMERIC(10, 2) NOT NULL CHECK (total_price > 0),
 
-	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE order_delivery_segments (
@@ -363,7 +377,7 @@ CREATE TABLE order_payments (
 	amount NUMERIC(10, 2) NOT NULL CHECK (amount > 0),
 	payment_method payment_method NOT NULL,
 
-	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ==========================
@@ -374,8 +388,8 @@ CREATE TABLE carts (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	user_id BIGINT UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 	
-	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-	updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE cart_items (
@@ -383,7 +397,7 @@ CREATE TABLE cart_items (
 	product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
 	quantity INT NOT NULL CHECK (quantity > 0),
 	
-	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (cart_id, product_id)
 );
 
@@ -398,7 +412,7 @@ CREATE TABLE product_reviews (
 	rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
 	comment TEXT,
 
-	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	UNIQUE (product_id, user_id)
 );
 
@@ -410,7 +424,7 @@ CREATE TABLE user_favorite_products (
 	user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 	product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
 
-	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (user_id, product_id)
 );
 

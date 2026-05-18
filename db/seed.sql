@@ -27,8 +27,8 @@ SELECT id, CURRENT_DATE - INTERVAL '365 days'
 FROM users
 WHERE email = 'admin@example.com'
 AND NOT EXISTS (
-    SELECT 1 FROM employees e
-    WHERE e.user_id = users.id
+	SELECT 1 FROM employees e
+	WHERE e.user_id = users.id
 );
 
 INSERT INTO employees (user_id, hired_at)
@@ -36,8 +36,8 @@ SELECT id, CURRENT_DATE - INTERVAL '180 days'
 FROM users
 WHERE email = 'manager@example.com'
 AND NOT EXISTS (
-    SELECT 1 FROM employees e
-    WHERE e.user_id = users.id
+	SELECT 1 FROM employees e
+	WHERE e.user_id = users.id
 );
 
 
@@ -51,7 +51,7 @@ FROM employees e
 JOIN users u ON u.id = e.user_id
 WHERE u.email = 'admin@example.com'
 AND NOT EXISTS (
-    SELECT 1 FROM roles WHERE code = 'super_admin'
+	SELECT 1 FROM roles WHERE code = 'super_admin'
 );
 
 INSERT INTO roles (code, created_by)
@@ -60,7 +60,7 @@ FROM employees e
 JOIN users u ON u.id = e.user_id
 WHERE u.email = 'admin@example.com'
 AND NOT EXISTS (
-    SELECT 1 FROM roles WHERE code = 'order_manager'
+	SELECT 1 FROM roles WHERE code = 'order_manager'
 );
 
 INSERT INTO roles (code, created_by)
@@ -69,7 +69,7 @@ FROM employees e
 JOIN users u ON u.id = e.user_id
 WHERE u.email = 'admin@example.com'
 AND NOT EXISTS (
-    SELECT 1 FROM roles WHERE code = 'warehouse'
+	SELECT 1 FROM roles WHERE code = 'warehouse'
 );
 
 
@@ -92,19 +92,19 @@ ON CONFLICT (code) DO NOTHING;
 
 INSERT INTO employee_roles (employee_id, role_id, created_by)
 SELECT
-    e.id,
-    r.id,
-    admin_emp.id
+	e.id,
+	r.id,
+	admin_emp.id
 FROM employees e
 JOIN users u ON u.id = e.user_id
 JOIN roles r ON r.code = 'super_admin'
 JOIN employees admin_emp ON admin_emp.id = r.created_by
 WHERE u.email = 'admin@example.com'
 AND NOT EXISTS (
-    SELECT 1
-    FROM employee_roles er
-    WHERE er.employee_id = e.id
-    AND er.role_id = r.id
+	SELECT 1
+	FROM employee_roles er
+	WHERE er.employee_id = e.id
+	AND er.role_id = r.id
 );
 
 
@@ -114,15 +114,15 @@ AND NOT EXISTS (
 
 INSERT INTO warehouses (address, description, created_by)
 SELECT
-    'Москва, ул. Логистическая, 10',
-    'Основной склад',
-    e.id
+	'Москва, ул. Логистическая, 10',
+	'Основной склад',
+	e.id
 FROM employees e
 JOIN users u ON u.id = e.user_id
 WHERE u.email = 'admin@example.com'
 AND NOT EXISTS (
-    SELECT 1 FROM warehouses
-    WHERE address = 'Москва, ул. Логистическая, 10'
+	SELECT 1 FROM warehouses
+	WHERE address = 'Москва, ул. Логистическая, 10'
 );
 
 
@@ -132,26 +132,26 @@ AND NOT EXISTS (
 
 INSERT INTO product_categories (name, created_by)
 SELECT
-    'Смартфоны',
-    e.id
+	'Смартфоны',
+	e.id
 FROM employees e
 JOIN users u ON u.id = e.user_id
 WHERE u.email = 'admin@example.com'
 AND NOT EXISTS (
-    SELECT 1 FROM product_categories
-    WHERE name = 'Смартфоны'
+	SELECT 1 FROM product_categories
+	WHERE name = 'Смартфоны'
 );
 
 INSERT INTO product_categories (name, created_by)
 SELECT
-    'Ноутбуки',
-    e.id
+	'Ноутбуки',
+	e.id
 FROM employees e
 JOIN users u ON u.id = e.user_id
 WHERE u.email = 'admin@example.com'
 AND NOT EXISTS (
-    SELECT 1 FROM product_categories
-    WHERE name = 'Ноутбуки'
+	SELECT 1 FROM product_categories
+	WHERE name = 'Ноутбуки'
 );
 
 
@@ -160,49 +160,49 @@ AND NOT EXISTS (
 -- ==========================
 
 INSERT INTO products (
-    product_category_id,
-    name,
-    description,
-    price,
-    created_by
+	product_category_id,
+	name,
+	description,
+	price,
+	created_by
 )
 SELECT
-    pc.id,
-    'iPhone 15',
-    'Apple smartphone',
-    89990.00,
-    e.id
+	pc.id,
+	'iPhone 15',
+	'Apple smartphone',
+	89990.00,
+	e.id
 FROM product_categories pc
 JOIN employees e ON TRUE
 JOIN users u ON u.id = e.user_id
 WHERE pc.name = 'Смартфоны'
 AND u.email = 'admin@example.com'
 AND NOT EXISTS (
-    SELECT 1 FROM products
-    WHERE name = 'iPhone 15'
+	SELECT 1 FROM products
+	WHERE name = 'iPhone 15'
 );
 
 INSERT INTO products (
-    product_category_id,
-    name,
-    description,
-    price,
-    created_by
+	product_category_id,
+	name,
+	description,
+	price,
+	created_by
 )
 SELECT
-    pc.id,
-    'MacBook Air M3',
-    'Apple laptop',
-    129990.00,
-    e.id
+	pc.id,
+	'MacBook Air M3',
+	'Apple laptop',
+	129990.00,
+	e.id
 FROM product_categories pc
 JOIN employees e ON TRUE
 JOIN users u ON u.id = e.user_id
 WHERE pc.name = 'Ноутбуки'
 AND u.email = 'admin@example.com'
 AND NOT EXISTS (
-    SELECT 1 FROM products
-    WHERE name = 'MacBook Air M3'
+	SELECT 1 FROM products
+	WHERE name = 'MacBook Air M3'
 );
 
 
@@ -211,21 +211,21 @@ AND NOT EXISTS (
 -- ==========================
 
 INSERT INTO orders (
-    user_id,
-    current_status,
-    track_number,
-    delivery_address
+	user_id,
+	current_status,
+	track_number,
+	delivery_address
 )
 SELECT
-    u.id,
-    'confirmed',
-    'TRACK123456',
-    'Москва, ул. Пушкина, д. 1'
+	u.id,
+	'confirmed',
+	'TRACK123456',
+	'Москва, ул. Пушкина, д. 1'
 FROM users u
 WHERE u.email = 'ivan@example.com'
 AND NOT EXISTS (
-    SELECT 1 FROM orders
-    WHERE track_number = 'TRACK123456'
+	SELECT 1 FROM orders
+	WHERE track_number = 'TRACK123456'
 );
 
 
@@ -234,23 +234,23 @@ AND NOT EXISTS (
 -- ==========================
 
 INSERT INTO order_items (
-    order_id,
-    product_id,
-    quantity,
-    price
+	order_id,
+	product_id,
+	quantity,
+	price
 )
 SELECT
-    o.id,
-    p.id,
-    1,
-    89990.00
+	o.id,
+	p.id,
+	1,
+	89990.00
 FROM orders o
 JOIN products p ON p.name = 'iPhone 15'
 WHERE o.track_number = 'TRACK123456'
 AND NOT EXISTS (
-    SELECT 1 FROM order_items oi
-    WHERE oi.order_id = o.id
-    AND oi.product_id = p.id
+	SELECT 1 FROM order_items oi
+	WHERE oi.order_id = o.id
+	AND oi.product_id = p.id
 );
 
 
@@ -259,24 +259,24 @@ AND NOT EXISTS (
 -- ==========================
 
 INSERT INTO product_reviews (
-    product_id,
-    user_id,
-    rating,
-    comment
+	product_id,
+	user_id,
+	rating,
+	comment
 )
 SELECT
-    p.id,
-    u.id,
-    5,
-    'Отличный товар, рекомендую'
+	p.id,
+	u.id,
+	5,
+	'Отличный товар, рекомендую'
 FROM products p
 JOIN users u ON u.email = 'ivan@example.com'
 WHERE p.name = 'iPhone 15'
 AND NOT EXISTS (
-    SELECT 1
-    FROM product_reviews pr
-    WHERE pr.product_id = p.id
-    AND pr.user_id = u.id
+	SELECT 1
+	FROM product_reviews pr
+	WHERE pr.product_id = p.id
+	AND pr.user_id = u.id
 );
 
 
@@ -285,18 +285,18 @@ AND NOT EXISTS (
 -- ==========================
 
 INSERT INTO user_favorite_products (
-    user_id,
-    product_id
+	user_id,
+	product_id
 )
 SELECT
-    u.id,
-    p.id
+	u.id,
+	p.id
 FROM users u
 JOIN products p ON p.name = 'MacBook Air M3'
 WHERE u.email = 'ivan@example.com'
 AND NOT EXISTS (
-    SELECT 1
-    FROM user_favorite_products f
-    WHERE f.user_id = u.id
-    AND f.product_id = p.id
+	SELECT 1
+	FROM user_favorite_products f
+	WHERE f.user_id = u.id
+	AND f.product_id = p.id
 );
