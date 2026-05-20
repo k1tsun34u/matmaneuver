@@ -6,6 +6,8 @@ import psycopg.types.enum as psycopg_enum
 from app.types.order_status import OrderStatus
 from app.types.return_status import ReturnStatus
 from app.types.supply_status import SupplyStatus
+from app.types.payment_method import PaymentMethod
+from app.types.write_off_reason import WriteOffReason
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +37,8 @@ class Db:
 		Db.register_enum("supply_status", SupplyStatus)
 		Db.register_enum("order_status", OrderStatus)
 		Db.register_enum("return_status", ReturnStatus)
+		Db.register_enum("write_off_reason", WriteOffReason)
+		Db.register_enum("payment_method", PaymentMethod)
 
 	@classmethod
 	def close(cls):
