@@ -198,6 +198,9 @@ CREATE TABLE suppliers (
 	email VARCHAR(256) UNIQUE,
 	address TEXT,
 
+	deactivated_by BIGINT REFERENCES employees(id),
+	deactivated_at TIMESTAMPTZ DEFAULT NULL,
+
 	created_by BIGINT REFERENCES employees(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
