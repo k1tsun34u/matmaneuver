@@ -3,6 +3,7 @@ from typing import Any
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 import psycopg.types.enum as psycopg_enum
+from app.types.order_status import OrderStatus
 from app.types.supply_status import SupplyStatus
 
 logger = logging.getLogger(__name__)
@@ -31,6 +32,7 @@ class Db:
 	@staticmethod
 	def _on_connect(_):
 		Db.register_enum("supply_status", SupplyStatus)
+		Db.register_enum("order_status", OrderStatus)
 
 	@classmethod
 	def close(cls):
