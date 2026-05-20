@@ -356,32 +356,23 @@ CREATE TABLE write_off_items (
 );
 
 -- ==========================
--- Доставка заказов
+-- Доставка заказов (с разных складов)
 -- ==========================
 
-CREATE TYPE transport_type AS ENUM (
-	'land',
-	'air',
-	'sea'
-);
-
-CREATE TABLE order_deliveries (
+CREATE TABLE order_fulfillments (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	order_id BIGINT NOT NULL REFERENCES orders(id),
-	total_price NUMERIC(10, 2) NOT NULL CHECK (total_price > 0),
-
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),
+	created_at DATETIME NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE order_delivery_segments (
+CREATE TABLE order_fulfillment_items(
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	order_delivery_id BIGINT NOT NULL REFERENCES order_deliveries(id),
-	sequence_number INT NOT NULL CHECK (sequence_number > 0),
-	transport_type transport_type NOT NULL,
-	address_from TEXT NOT NULL,
-	address_to TEXT NOT NULL,
-	price NUMERIC(10, 2) NOT NULL CHECK (price > 0),
-	UNIQUE (order_delivery_id, sequence_number)
+	order_fulfillment_id BIGINT NOT NULL REFERENCES order_fulfillments(id),
+	product_id BIGINT NOT NULL REFERENCES products(id),
+	quantity INT NOT NULL CHECK (quantity > 0),
+	price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
+	UNIQUE (order_fulfillment_id, product_id)
 );
 
 -- ==========================
