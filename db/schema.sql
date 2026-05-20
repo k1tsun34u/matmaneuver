@@ -295,26 +295,28 @@ CREATE TYPE return_status AS ENUM (
 	'finished'
 );
 
-CREATE TABLE returns (
+CREATE TABLE order_returns (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	order_id BIGINT NOT NULL REFERENCES orders(id),
 	reason TEXT NOT NULL,
 	current_status return_status NOT NULL DEFAULT 'created',
 
+	created_by BIGINT NOT NULL REFERENCES users(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE return_items (
-	return_id BIGINT NOT NULL REFERENCES returns(id),
+CREATE TABLE order_return_items (
+	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	order_return_id BIGINT NOT NULL REFERENCES order_returns(id),
 	order_item_id BIGINT NOT NULL REFERENCES order_items(id),
 	quantity INT NOT NULL CHECK (quantity > 0),
-	price_at_return NUMERIC(10, 2) NOT NULL CHECK (price_at_return >= 0),
-	PRIMARY KEY (return_id, order_item_id)
+	price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
+	UNIQUE (return_id, order_item_id)
 );
 
-CREATE TABLE return_status_history (
+CREATE TABLE order_return_status_history (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	return_id BIGINT NOT NULL REFERENCES returns(id),
+	order_return_id BIGINT NOT NULL REFERENCES order_returns(id),
 	status return_status NOT NULL,
 	
 	changed_by BIGINT REFERENCES employees(id),
@@ -489,8 +491,8 @@ CREATE INDEX idx_orders_created_at ON orders(created_at);
 CREATE INDEX idx_order_items_order_id ON order_items(order_id);
 CREATE INDEX idx_order_items_product_id ON order_items(product_id);
 
-CREATE INDEX idx_returns_order_id ON returns(order_id);
-CREATE INDEX idx_returns_status ON returns(current_status);
+CREATE INDEX idx_order_returns_order_id ON order_returns(order_id);
+CREATE INDEX idx_order_returns_status ON order_returns(current_status);
 
 CREATE INDEX idx_order_payments_order_id ON order_payments(order_id);
 
@@ -503,6 +505,6 @@ CREATE INDEX idx_favorites_product_id ON user_favorite_products(product_id);
 
 CREATE INDEX idx_order_status_history_order_id ON order_status_history(order_id);
 CREATE INDEX idx_supply_status_history_supply_id ON supply_status_history(supply_id);
-CREATE INDEX idx_return_status_history_return_id ON return_status_history(return_id);
+CREATE INDEX idx_order_return_status_history_return_id ON order_return_status_history(return_id);
 CREATE INDEX idx_write_off_status_history_write_off_id ON write_off_status_history(write_off_id);
 

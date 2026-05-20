@@ -1,5 +1,4 @@
 import psycopg
-from datetime import date
 from app.models.public.order import Order
 from app.types.order_status import OrderStatus
 from app.repositories.base.base_repository import BaseRepository

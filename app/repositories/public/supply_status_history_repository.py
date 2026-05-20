@@ -20,7 +20,7 @@ class SupplyStatusHistoryRepository(
 	)
 
 	# warning: get_latest_by_supply_id uses this class var!
-	ORDER_BY = (("changed_at", "DESC"),)
+	ORDER_BY = (("changed_at", "DESC"), ("id", "DESC"),)
 
 	@classmethod
 	def create(
