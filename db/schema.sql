@@ -311,7 +311,7 @@ CREATE TABLE order_return_items (
 	order_item_id BIGINT NOT NULL REFERENCES order_items(id),
 	quantity INT NOT NULL CHECK (quantity > 0),
 	price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
-	UNIQUE (return_id, order_item_id)
+	UNIQUE (order_return_id, order_item_id)
 );
 
 CREATE TABLE order_return_status_history (
@@ -328,12 +328,12 @@ CREATE TABLE order_return_status_history (
 -- ==========================
 
 CREATE TYPE write_off_reason AS ENUM(
-	"expired",
-	"damaged",
-	"lost",
-	"stolen",
-	"inventory_mismatch",
-	"other"
+	'expired',
+	'damaged',
+	'lost',
+	'stolen',
+	'inventory_mismatch',
+	'other'
 );
 
 CREATE TABLE write_offs (
@@ -363,7 +363,7 @@ CREATE TABLE order_fulfillments (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	order_id BIGINT NOT NULL REFERENCES orders(id),
 	warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),
-	created_at DATETIME NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE order_fulfillment_items(
@@ -405,7 +405,7 @@ CREATE TYPE cart_type AS ENUM (
 
 CREATE TABLE carts (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	user_id BIGINT UNIQUE NOT NULL REFERENCES users(id),
+	user_id BIGINT NOT NULL REFERENCES users(id),
 	type cart_type NOT NULL,
 
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -430,7 +430,8 @@ CREATE TABLE product_reviews (
 	rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
 	comment TEXT,
 
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+	PRIMARY KEY (product_id, user_id)
 );
 
 -- //////////////////////////
@@ -447,8 +448,6 @@ CREATE TABLE product_reviews (
 CREATE INDEX idx_users_deleted_at ON users(deleted_at);
 
 CREATE INDEX idx_employees_created_by ON employees(created_by);
-
-CREATE INDEX idx_products_is_active ON products(is_active);
 
 CREATE INDEX idx_product_images_product_id ON product_images(product_id);
 
