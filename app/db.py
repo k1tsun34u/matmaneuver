@@ -1,8 +1,9 @@
 import logging
 from typing import Any
-
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
+import psycopg.types.enum as psycopg_enum
+from app.types.supply_status import SupplyStatus
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +23,14 @@ class Db:
 			min_size=1,
 			max_size=10,
 			open=True,
+			configure=Db._on_connect,
 			kwargs={"row_factory": dict_row},
 		)
+	
+	
+	@staticmethod
+	def _on_connect(_):
+		Db.register_enum("supply_status", SupplyStatus)
 
 	@classmethod
 	def close(cls):
@@ -77,3 +84,13 @@ class Db:
 		except Exception:
 			logger.exception("Database error")
 			raise
+	
+	@classmethod
+	def register_enum(
+		cls,
+		name: str,
+		enum: Any
+	):
+		with cls.connection() as conn:
+			info = psycopg_enum.EnumInfo.fetch(conn, name)
+			psycopg_enum.register_enum(info, conn, enum)
