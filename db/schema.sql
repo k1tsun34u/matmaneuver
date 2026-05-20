@@ -9,13 +9,13 @@ CREATE TABLE users (
 	full_name TEXT NOT NULL,
 	password_hash TEXT NOT NULL,
 
-	blocked_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	blocked_by BIGINT REFERENCES employees(id),
 	blocked_at TIMESTAMPTZ,
 
-	deleted_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	deleted_by BIGINT REFERENCES employees(id),
 	deleted_at TIMESTAMPTZ,
 	
-	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	created_by BIGINT REFERENCES employees(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -25,15 +25,15 @@ CREATE TABLE users (
 
 CREATE TABLE employees (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	user_id BIGINT UNIQUE NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+	user_id BIGINT UNIQUE NOT NULL REFERENCES users(id),
 
-	hired_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	hired_by BIGINT REFERENCES employees(id),
 	hired_at DATE NOT NULL,
 
-	fired_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	fired_by BIGINT REFERENCES employees(id),
 	fired_at TIMESTAMPTZ,
 	
-	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	created_by BIGINT REFERENCES employees(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -72,10 +72,10 @@ CREATE TABLE roles (
 	
 	is_system BOOLEAN NOT NULL,
 
-	deactivated_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	deactivated_by BIGINT REFERENCES employees(id),
 	deactivated_at TIMESTAMPTZ DEFAULT NULL,
 
-	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	created_by BIGINT REFERENCES employees(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -86,27 +86,27 @@ CREATE TABLE permissions (
 
 	is_system BOOLEAN NOT NULL,
 
-	deactivated_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	deactivated_by BIGINT REFERENCES employees(id),
 	deactivated_at TIMESTAMPTZ DEFAULT NULL,
 
-	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	created_by BIGINT REFERENCES employees(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE role_permissions (
-	role_id BIGINT NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-	permission_id BIGINT NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
+	role_id BIGINT NOT NULL REFERENCES roles(id),
+	permission_id BIGINT NOT NULL REFERENCES permissions(id),
 
-	assigned_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	assigned_by BIGINT REFERENCES employees(id),
 	assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (role_id, permission_id)
 );
 
 CREATE TABLE employee_roles (
-	employee_id BIGINT NOT NULL REFERENCES employees(id) ON DELETE RESTRICT,
-	role_id BIGINT NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+	employee_id BIGINT NOT NULL REFERENCES employees(id),
+	role_id BIGINT NOT NULL REFERENCES roles(id),
 
-	assigned_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	assigned_by BIGINT REFERENCES employees(id),
 	assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (employee_id, role_id)
 );
@@ -120,22 +120,22 @@ CREATE TABLE warehouses (
 	address TEXT UNIQUE NOT NULL,
 	description TEXT,
 
-	deleted_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	deleted_by BIGINT REFERENCES employees(id),
 	deleted_at TIMESTAMPTZ DEFAULT NULL,
 	
-	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	created_by BIGINT REFERENCES employees(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE categories (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	parent_category_id BIGINT REFERENCES categories(id) ON DELETE SET NULL,
+	parent_category_id BIGINT REFERENCES categories(id),
 	name TEXT UNIQUE NOT NULL,
 	
-	deactivated_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	deactivated_by BIGINT REFERENCES employees(id),
 	deactivated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	
-	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	created_by BIGINT REFERENCES employees(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -146,39 +146,39 @@ CREATE TABLE products (
 	description TEXT,
 	price NUMERIC(10, 2) NOT NULL CHECK (price > 0),
 	
-	deleted_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
+	deleted_by BIGINT REFERENCES users(id),
 	deleted_at TIMESTAMPTZ DEFAULT NULL,
 
-	created_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
+	created_by BIGINT REFERENCES users(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE product_categories (
-	product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
-	category_id BIGINT NOT NULL REFERENCES categories(id) ON DELETE RESTRICT,
+	product_id BIGINT NOT NULL REFERENCES products(id),
+	category_id BIGINT NOT NULL REFERENCES categories(id),
 
-	assigned_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
+	assigned_by BIGINT REFERENCES users(id),
 	assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (product_id, category_id)
 );
 
 CREATE TABLE product_images (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+	product_id BIGINT NOT NULL REFERENCES products(id),
 	storage_key TEXT NOT NULL,
 
-	created_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
+	created_by BIGINT REFERENCES users(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Остатки на складе
 CREATE TABLE warehouse_inventory (
-	product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
-	warehouse_id BIGINT NOT NULL REFERENCES warehouses(id) ON DELETE RESTRICT,
+	product_id BIGINT NOT NULL REFERENCES products(id),
+	warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),
 	quantity INT NOT NULL CHECK (quantity >= 0) DEFAULT 0,
 	reserved_quantity INT NOT NULL CHECK (reserved_quantity >= 0) DEFAULT 0,
 	
-	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	created_by BIGINT REFERENCES employees(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (product_id, warehouse_id),
 	CHECK (quantity >= reserved_quantity)
@@ -196,7 +196,7 @@ CREATE TABLE suppliers (
 	email VARCHAR(256) UNIQUE,
 	address TEXT,
 
-	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	created_by BIGINT REFERENCES employees(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -211,20 +211,20 @@ CREATE TYPE supply_status AS ENUM(
 -- Поставки
 CREATE TABLE supplies (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	supplier_id BIGINT NOT NULL REFERENCES suppliers(id) ON DELETE RESTRICT,
-	warehouse_id BIGINT NOT NULL REFERENCES warehouses(id) ON DELETE RESTRICT,
+	supplier_id BIGINT NOT NULL REFERENCES suppliers(id),
+	warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),
 	current_status supply_status NOT NULL DEFAULT 'created',
 	planned_delivery_date DATE NOT NULL,
 
-	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	created_by BIGINT REFERENCES employees(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Состав поставок
 CREATE TABLE supply_items (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	supply_id BIGINT NOT NULL REFERENCES supplies(id) ON DELETE CASCADE,
-	product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+	supply_id BIGINT NOT NULL REFERENCES supplies(id),
+	product_id BIGINT NOT NULL REFERENCES products(id),
 	quantity INT NOT NULL CHECK (quantity > 0),
 	price NUMERIC(10, 2) NOT NULL CHECK (price > 0),
 	UNIQUE (supply_id, product_id)
@@ -232,10 +232,10 @@ CREATE TABLE supply_items (
 
 CREATE TABLE supply_status_history (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	supply_id BIGINT NOT NULL REFERENCES supplies(id) ON DELETE CASCADE,
+	supply_id BIGINT NOT NULL REFERENCES supplies(id),
 	status supply_status NOT NULL,
 
-	changed_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	changed_by BIGINT REFERENCES employees(id),
 	changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -253,7 +253,7 @@ CREATE TYPE order_status AS ENUM(
 
 CREATE TABLE orders (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+	user_id BIGINT NOT NULL REFERENCES users(id),
 	current_status order_status NOT NULL DEFAULT 'created',
 	track_number TEXT UNIQUE,
 	delivery_address TEXT NOT NULL,
@@ -263,8 +263,8 @@ CREATE TABLE orders (
 
 CREATE TABLE order_items (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-	product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+	order_id BIGINT NOT NULL REFERENCES orders(id),
+	product_id BIGINT NOT NULL REFERENCES products(id),
 	quantity INT NOT NULL CHECK (quantity > 0),
 	price NUMERIC(10, 2) NOT NULL CHECK (price > 0),
 	UNIQUE (order_id, product_id)
@@ -272,10 +272,10 @@ CREATE TABLE order_items (
 
 CREATE TABLE order_status_history (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+	order_id BIGINT NOT NULL REFERENCES orders(id),
 	status order_status NOT NULL,
 
-	changed_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	changed_by BIGINT REFERENCES employees(id),
 	changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -292,7 +292,7 @@ CREATE TYPE return_status AS ENUM (
 
 CREATE TABLE returns (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE RESTRICT,
+	order_id BIGINT NOT NULL REFERENCES orders(id),
 	reason TEXT NOT NULL,
 	current_status return_status NOT NULL DEFAULT 'created',
 
@@ -300,8 +300,8 @@ CREATE TABLE returns (
 );
 
 CREATE TABLE return_items (
-	return_id BIGINT NOT NULL REFERENCES returns(id) ON DELETE CASCADE,
-	order_item_id BIGINT NOT NULL REFERENCES order_items(id) ON DELETE RESTRICT,
+	return_id BIGINT NOT NULL REFERENCES returns(id),
+	order_item_id BIGINT NOT NULL REFERENCES order_items(id),
 	quantity INT NOT NULL CHECK (quantity > 0),
 	price_at_return NUMERIC(10, 2) NOT NULL CHECK (price_at_return >= 0),
 	PRIMARY KEY (return_id, order_item_id)
@@ -309,10 +309,10 @@ CREATE TABLE return_items (
 
 CREATE TABLE return_status_history (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	return_id BIGINT NOT NULL REFERENCES returns(id) ON DELETE CASCADE,
+	return_id BIGINT NOT NULL REFERENCES returns(id),
 	status return_status NOT NULL,
 	
-	changed_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	changed_by BIGINT REFERENCES employees(id),
 	changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -328,27 +328,27 @@ CREATE TYPE write_off_status AS ENUM (
 
 CREATE TABLE write_offs (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	employee_id BIGINT NOT NULL REFERENCES employees(id) ON DELETE RESTRICT,
+	employee_id BIGINT NOT NULL REFERENCES employees(id),
 	reason TEXT NOT NULL,
 	current_status write_off_status NOT NULL DEFAULT 'created',
 
-	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	created_by BIGINT REFERENCES employees(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE write_off_items (
-	write_off_id BIGINT NOT NULL REFERENCES write_offs(id) ON DELETE CASCADE,
-	product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+	write_off_id BIGINT NOT NULL REFERENCES write_offs(id),
+	product_id BIGINT NOT NULL REFERENCES products(id),
 	quantity INT NOT NULL CHECK (quantity > 0),
 	PRIMARY KEY (write_off_id, product_id)
 );
 
 CREATE TABLE write_off_status_history (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	write_off_id BIGINT NOT NULL REFERENCES write_offs(id) ON DELETE CASCADE,
+	write_off_id BIGINT NOT NULL REFERENCES write_offs(id),
 	status write_off_status NOT NULL,
 	
-	changed_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	changed_by BIGINT REFERENCES employees(id),
 	changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -364,7 +364,7 @@ CREATE TYPE transport_type AS ENUM (
 
 CREATE TABLE order_deliveries (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+	order_id BIGINT NOT NULL REFERENCES orders(id),
 	total_price NUMERIC(10, 2) NOT NULL CHECK (total_price > 0),
 
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -372,7 +372,7 @@ CREATE TABLE order_deliveries (
 
 CREATE TABLE order_delivery_segments (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	order_delivery_id BIGINT NOT NULL REFERENCES order_deliveries(id) ON DELETE CASCADE,
+	order_delivery_id BIGINT NOT NULL REFERENCES order_deliveries(id),
 	sequence_number INT NOT NULL CHECK (sequence_number > 0),
 	transport_type transport_type NOT NULL,
 	address_from TEXT NOT NULL,
@@ -393,7 +393,7 @@ CREATE TYPE payment_method AS ENUM (
 
 CREATE TABLE order_payments (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE RESTRICT,
+	order_id BIGINT NOT NULL REFERENCES orders(id),
 	amount NUMERIC(10, 2) NOT NULL CHECK (amount > 0),
 	payment_method payment_method NOT NULL,
 
@@ -406,15 +406,15 @@ CREATE TABLE order_payments (
 
 CREATE TABLE carts (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	user_id BIGINT UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	user_id BIGINT UNIQUE NOT NULL REFERENCES users(id),
 	
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE cart_items (
-	cart_id BIGINT NOT NULL REFERENCES carts(id) ON DELETE CASCADE,
-	product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+	cart_id BIGINT NOT NULL REFERENCES carts(id),
+	product_id BIGINT NOT NULL REFERENCES products(id),
 	quantity INT NOT NULL CHECK (quantity > 0),
 	
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -427,8 +427,8 @@ CREATE TABLE cart_items (
 
 CREATE TABLE product_reviews (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
-	user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	product_id BIGINT NOT NULL REFERENCES products(id),
+	user_id BIGINT NOT NULL REFERENCES users(id),
 	rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
 	comment TEXT,
 
@@ -441,8 +441,8 @@ CREATE TABLE product_reviews (
 -- ==========================
 
 CREATE TABLE user_favorite_products (
-	user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-	product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+	user_id BIGINT NOT NULL REFERENCES users(id),
+	product_id BIGINT NOT NULL REFERENCES products(id),
 
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (user_id, product_id)
