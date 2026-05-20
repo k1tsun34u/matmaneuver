@@ -327,36 +327,32 @@ CREATE TABLE order_return_status_history (
 -- Списания
 -- ==========================
 
-CREATE TYPE write_off_status AS ENUM (
-	'created',
-	'in_progress',
-	'finished'
+CREATE TYPE write_off_reason AS ENUM(
+	"expired",
+	"damaged",
+	"lost",
+	"stolen",
+	"inventory_mismatch",
+	"other"
 );
 
 CREATE TABLE write_offs (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	employee_id BIGINT NOT NULL REFERENCES employees(id),
-	reason TEXT NOT NULL,
-	current_status write_off_status NOT NULL DEFAULT 'created',
+	warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),
+	reason write_off_reason NOT NULL DEFAULT 'other',
+	comment TEXT,
 
 	created_by BIGINT REFERENCES employees(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE write_off_items (
+	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	write_off_id BIGINT NOT NULL REFERENCES write_offs(id),
 	product_id BIGINT NOT NULL REFERENCES products(id),
 	quantity INT NOT NULL CHECK (quantity > 0),
-	PRIMARY KEY (write_off_id, product_id)
-);
-
-CREATE TABLE write_off_status_history (
-	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	write_off_id BIGINT NOT NULL REFERENCES write_offs(id),
-	status write_off_status NOT NULL,
-	
-	changed_by BIGINT REFERENCES employees(id),
-	changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
+	UNIQUE (write_off_id, product_id)
 );
 
 -- ==========================
@@ -494,6 +490,10 @@ CREATE INDEX idx_order_items_product_id ON order_items(product_id);
 CREATE INDEX idx_order_returns_order_id ON order_returns(order_id);
 CREATE INDEX idx_order_returns_status ON order_returns(current_status);
 
+CREATE INDEX idx_write_offs_created_at ON write_offs(created_at DESC);
+CREATE INDEX idx_write_offs_warehouse_id ON write_offs(warehouse_id);
+CREATE INDEX idx_write_offs_reason ON write_offs(reason);
+
 CREATE INDEX idx_order_payments_order_id ON order_payments(order_id);
 
 CREATE INDEX idx_reviews_product_id ON product_reviews(product_id);
@@ -506,5 +506,4 @@ CREATE INDEX idx_favorites_product_id ON user_favorite_products(product_id);
 CREATE INDEX idx_order_status_history_order_id ON order_status_history(order_id);
 CREATE INDEX idx_supply_status_history_supply_id ON supply_status_history(supply_id);
 CREATE INDEX idx_order_return_status_history_return_id ON order_return_status_history(return_id);
-CREATE INDEX idx_write_off_status_history_write_off_id ON write_off_status_history(write_off_id);
 
