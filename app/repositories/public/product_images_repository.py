@@ -45,12 +45,11 @@ class ProductImagesRepository(
 	
 	@classmethod
 	def delete_many_by_product_id(cls, cur: psycopg.Cursor, product_id: int) -> int:
-		query = f"""
-			DELETE FROM {cls.TABLE}
-			WHERE product_id = %s
-		"""
-		cur.execute(query, (product_id,))
-		return cur.rowcount
+		return cls.execute_delete(
+			cur=cur,
+			table=cls.TABLE,
+			where={"product_id": product_id}
+		)
 
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, product_image_id: int) -> ProductImage | None:

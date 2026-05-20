@@ -398,12 +398,17 @@ CREATE TABLE order_payments (
 -- Корзина
 -- ==========================
 
+CREATE TYPE cart_type AS ENUM (
+	'active',
+	'wishlist'
+)
+
 CREATE TABLE carts (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	user_id BIGINT UNIQUE NOT NULL REFERENCES users(id),
-	
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	type cart_type NOT NULL,
+
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE cart_items (
@@ -420,26 +425,12 @@ CREATE TABLE cart_items (
 -- ==========================
 
 CREATE TABLE product_reviews (
-	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	product_id BIGINT NOT NULL REFERENCES products(id),
 	user_id BIGINT NOT NULL REFERENCES users(id),
 	rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
 	comment TEXT,
 
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	UNIQUE (product_id, user_id)
-);
-
--- ==========================
--- Любимые товары пользователя
--- ==========================
-
-CREATE TABLE user_favorite_products (
-	user_id BIGINT NOT NULL REFERENCES users(id),
-	product_id BIGINT NOT NULL REFERENCES products(id),
-
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	PRIMARY KEY (user_id, product_id)
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- //////////////////////////
@@ -492,9 +483,6 @@ CREATE INDEX idx_reviews_user_id ON product_reviews(user_id);
 
 CREATE INDEX idx_cart_items_product_id ON cart_items(product_id);
 
-CREATE INDEX idx_favorites_product_id ON user_favorite_products(product_id);
-
 CREATE INDEX idx_order_status_history_order_id ON order_status_history(order_id);
 CREATE INDEX idx_supply_status_history_supply_id ON supply_status_history(supply_id);
 CREATE INDEX idx_order_return_status_history_return_id ON order_return_status_history(return_id);
-

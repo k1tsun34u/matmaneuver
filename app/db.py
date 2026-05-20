@@ -2,6 +2,7 @@ import logging
 from typing import Any
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
+from app.types.cart_type import CartType
 import psycopg.types.enum as psycopg_enum
 from app.types.order_status import OrderStatus
 from app.types.return_status import ReturnStatus
@@ -39,6 +40,7 @@ class Db:
 		Db.register_enum("return_status", ReturnStatus)
 		Db.register_enum("write_off_reason", WriteOffReason)
 		Db.register_enum("payment_method", PaymentMethod)
+		Db.register_enum("cart_type", CartType)
 
 	@classmethod
 	def close(cls):
