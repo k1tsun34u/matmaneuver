@@ -172,7 +172,7 @@ CREATE TABLE product_images (
 );
 
 -- Остатки на складе
-CREATE TABLE warehouse_inventory (
+CREATE TABLE warehouse_products (
 	product_id BIGINT NOT NULL REFERENCES products(id),
 	warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),
 	quantity INT NOT NULL CHECK (quantity >= 0) DEFAULT 0,
@@ -181,7 +181,9 @@ CREATE TABLE warehouse_inventory (
 	created_by BIGINT REFERENCES employees(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (product_id, warehouse_id),
-	CHECK (quantity >= reserved_quantity)
+	CHECK (quantity >= 0),
+	CHECK (reserved_quantity >= 0),
+	CHECK (reserved_quantity <= quantity)
 );
 
 -- ==========================
@@ -467,7 +469,7 @@ CREATE INDEX idx_products_is_active ON products(is_active);
 
 CREATE INDEX idx_product_images_product_id ON product_images(product_id);
 
-CREATE INDEX idx_inventory_warehouse_id ON warehouse_inventory(warehouse_id);
+CREATE INDEX idx_warehouse_products_warehouse_id ON warehouse_products(warehouse_id);
 
 CREATE INDEX idx_supplies_supplier_id ON supplies(supplier_id);
 CREATE INDEX idx_supplies_warehouse_id ON supplies(warehouse_id);

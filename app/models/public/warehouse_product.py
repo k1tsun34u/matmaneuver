@@ -3,12 +3,11 @@ from dataclasses import dataclass
 from app.models.public.base_model import BaseModel
 
 @dataclass
-class Permission(BaseModel):
-	id: int
-	code: str
-	description: str | None
-	is_system: bool
-	deactivated_by: int | None
-	deactivated_at: datetime | None
+class WarehouseProduct(BaseModel):
+	product_id: int
+	warehouse_id: int
+	quantity: int
+	reserved_quantity: int
+
 	created_by: int | None
 	created_at: datetime
