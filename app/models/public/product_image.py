@@ -3,12 +3,12 @@ from datetime import datetime
 from app.models.public.base_model import BaseModel
 
 @dataclass
-class Permission(BaseModel):
+class ProductImage(BaseModel):
 	id: int
-	code: str
-	description: str | None
-	is_system: bool
-	deactivated_by: int | None
-	deactivated_at: datetime | None
+	product_id: int
+	storage_key: str
+
 	created_by: int | None
+	"""users(id)"""
+
 	created_at: datetime

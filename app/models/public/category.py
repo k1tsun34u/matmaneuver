@@ -3,11 +3,10 @@ from datetime import datetime
 from app.models.public.base_model import BaseModel
 
 @dataclass
-class Permission(BaseModel):
+class Category(BaseModel):
 	id: int
-	code: str
-	description: str | None
-	is_system: bool
+	parent_category_id: int | None
+	name: str
 	deactivated_by: int | None
 	deactivated_at: datetime | None
 	created_by: int | None

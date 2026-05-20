@@ -6,6 +6,7 @@ from app.models.public.base_model import BaseModel
 class Employee(BaseModel):
 	id: int
 	user_id: int
+	hired_by: int | None
 	hired_at: date
 	fired_by: int | None
 	fired_at: date | None

@@ -1,17 +1,23 @@
 import psycopg
-from typing import Any, Literal
 from app.models.public.employee_role import EmployeeRole
-from app.repositories.base_repository import BaseRepository
+from app.repositories.base.base_repository import BaseRepository
+from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 
 
-class EmployeeRolesRepository(BaseRepository):
+class EmployeeRolesRepository(
+	BaseRepository,
+	SelectableMixin[EmployeeRole]
+):
 	TABLE = "employee_roles"
-	SELECT_FIELDS = [
+	MODEL = EmployeeRole
+	SELECT_FIELDS = (
 		"employee_id",
 		"role_id",
 		"assigned_by",
-		"assigned_at"
-	]
+		"assigned_at",
+	)
+
+	ORDER_BY = (("assigned_at", "DESC"),)
 
 	@classmethod
 	def assign(
@@ -78,7 +84,7 @@ class EmployeeRolesRepository(BaseRepository):
 			) r
 			WHERE er.employee_id = %s AND er.role_id = r.role_id
 		"""
-		cur.execute(query, (employee_id, role_ids,))
+		cur.execute(query, (role_ids, employee_id,))
 		return cur.rowcount
 	
 	@classmethod
@@ -88,41 +94,12 @@ class EmployeeRolesRepository(BaseRepository):
 		employee_id: int,
 		role_id: int
 	) -> EmployeeRole | None:
-		row = cls.execute_select_one(
-			cur=cur,
-			table=cls.TABLE,
-			where={"employee_id": employee_id, "role_id": role_id}
-		)
-
-		return EmployeeRole(**row) if row else None
+		return cls.select(cur, {"employee_id": employee_id, "role_id": role_id})
 	
 	@classmethod
-	def _get_many_by_property(
-		cls,
-		cur: psycopg.Cursor,
-		field: Literal["employee_id", "role_id"],
-		value: Any
-	) -> list[EmployeeRole]:
-		rows = cls.execute_select(
-			cur=cur,
-			table=cls.TABLE,
-			where={field: value}
-		)
-
-		return [EmployeeRole(**row) for row in rows]
+	def get_many_by_employee_id(cls, cur: psycopg.Cursor, employee_id: int) -> list[EmployeeRole]:
+		return cls.select_many(cur, {"employee_id": employee_id})
 	
 	@classmethod
-	def get_many_by_employee_id(
-		cls,
-		cur: psycopg.Cursor,
-		employee_id: int
-	) -> list[EmployeeRole]:
-		return cls._get_many_by_property(cur, "employee_id", employee_id)
-	
-	@classmethod
-	def get_many_by_role_id(
-		cls,
-		cur: psycopg.Cursor,
-		role_id: int
-	) -> list[EmployeeRole]:
-		return cls._get_many_by_property(cur, "role_id", role_id)
+	def get_many_by_role_id(cls, cur: psycopg.Cursor, role_id: int) -> list[EmployeeRole]:
+		return cls.select_many(cur, {"role_id": role_id})

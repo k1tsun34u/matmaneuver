@@ -1,61 +1,19 @@
-from typing import Any
-
 import psycopg
-
-from app.unset import Unset
+from typing import Any, ClassVar
 
 
 class BaseRepository:
-	@staticmethod
-	def fetchone(cur: psycopg.Cursor, query: str, params: tuple = ()) -> dict | None:
-		cur.execute(query, params)
-		return cur.fetchone()
+	TABLE: ClassVar[str]
 
-	@staticmethod
-	def fetchall(cur: psycopg.Cursor, query: str, params: tuple = ()) -> list[dict]:
-		cur.execute(query, params)
-		return cur.fetchall()
-
-	@staticmethod
-	def execute(cur: psycopg.Cursor, query: str, params: tuple = ()) -> int:
-		cur.execute(query, params)
-		return cur.rowcount
-
-	@staticmethod
-	def normalize_pagination(limit: int, offset: int) -> tuple[int, int]:
-		limit = max(1, min(limit, 100))
-		offset = max(0, offset)
-		return limit, offset
-
-	@staticmethod
-	def build_where(conditions: list[str]) -> str:
-		return "WHERE " + " AND ".join(conditions) if conditions else ""
-
-	@staticmethod
-	def filter_unset(fields: dict[str, object]) -> dict[str, object]:
-		return {k: v for k, v in fields.items() if not isinstance(v, Unset)}
-
-	@staticmethod
-	def ilike_any(fields: list[str], value: str) -> tuple[str, list]:
-		condition = "(" + " OR ".join([f"{f} ILIKE %s" for f in fields]) + ")"
-		params = [value] * len(fields)
-		return condition, params
-
-	# table must NEVER come from user input
 	@staticmethod
 	def execute_create(
 		cur: psycopg.Cursor,
 		table: str,
-		fields: dict[str, object],
-		# field_whitelist: set[str],
-		returning: str | list[str] | None = "id",
-	) -> dict[str, object]:
+		fields: dict[str, Any],
+		returning: str | list[str] | None = "id"
+	) -> dict[str, Any]:
 		if not fields:
 			raise ValueError("`fields` is empty")
-
-		# invalid_fields = set(fields) - field_whitelist
-		# if invalid_fields:
-		# 	raise ValueError(f"Invalid fields: {invalid_fields}")
 
 		keys = list(fields.keys())
 		values = list(fields.values())
@@ -78,28 +36,17 @@ class BaseRepository:
 			return row
 		return None
 
-	# table must NEVER come from user input
 	@staticmethod
 	def execute_update(
 		cur: psycopg.Cursor,
 		table: str,
-		where: dict[str, object],
-		# where_whitelist: set[str],
-		fields: dict[str, object],
-		# field_whitelist: set[str],
+		where: dict[str, Any],
+		fields: dict[str, Any]
 	) -> int:
 		if not where:
 			raise ValueError("`where` is empty")
 		if not fields:
 			return 0
-
-		# invalid_where = set(where) - where_whitelist
-		# if invalid_where:
-		# 	raise ValueError(f"Invalid where fields: {invalid_where}")
-
-		# invalid_fields = set(fields) - field_whitelist
-		# if invalid_fields:
-		# 	raise ValueError(f"Invalid update fields: {invalid_fields}")
 
 		set_parts = []
 		params = []
@@ -125,15 +72,10 @@ class BaseRepository:
 	def execute_delete(
 		cur: psycopg.Cursor,
 		table: str,
-		where: dict[str, object],
-		# where_whitelist: set[str],
+		where: dict[str, Any]
 	) -> int:
 		if not where:
 			raise ValueError("`where` is empty")
-
-		# invalid_where = set(where) - where_whitelist
-		# if invalid_where:
-		# 	raise ValueError(f"Invalid where fields: {invalid_where}")
 		
 		where_parts = []
 		params = []
@@ -152,18 +94,13 @@ class BaseRepository:
 	def execute_select(
 		cur: psycopg.Cursor,
 		table: str,
-		where: dict[str, object] | None = None,
-		# where_whitelist: set[str] | None = None,
+		where: dict[str, Any] | None = None,
 		select_fields: list[str] | None = None,
 		order_by: str | None = None,
 		limit: int | None = None,
-		offset: int | None = None,
+		offset: int | None = None
 	) -> list[dict]:
 		where = where or {}
-		# if where_whitelist is not None:
-		# 	invalid_where = set(where) - where_whitelist
-		# 	if invalid_where:
-		# 		raise ValueError(f"Invalid where fields: {invalid_where}")
 
 		select_sql = ", ".join(select_fields) if select_fields else "*"
 		where_parts = []
@@ -191,8 +128,7 @@ class BaseRepository:
 		cls,
 		cur: psycopg.Cursor,
 		table: str,
-		where: dict[str, object] | None = None,
-		# where_whitelist: set[str] | None = None,
+		where: dict[str, Any] | None = None,
 		select_fields: list[str] | None = None,
 		order_by: str | None = None
 	) -> dict | None:

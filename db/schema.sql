@@ -9,8 +9,13 @@ CREATE TABLE users (
 	full_name TEXT NOT NULL,
 	password_hash TEXT NOT NULL,
 
+	blocked_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
 	blocked_at TIMESTAMPTZ,
+
+	deleted_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
 	deleted_at TIMESTAMPTZ,
+	
+	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -22,10 +27,13 @@ CREATE TABLE employees (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	user_id BIGINT UNIQUE NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
 
+	hired_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
 	hired_at DATE NOT NULL,
+
 	fired_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	fired_at DATE,
-	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,				-- может быть NULL (если создано при инициализации БД/системой)
+	fired_at TIMESTAMPTZ,
+	
+	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -60,9 +68,10 @@ CREATE TABLE employees (
 */
 CREATE TABLE roles (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	code TEXT UNIQUE NOT NULL,							-- 'super_admin', 'admin', 'order_manager', ...
+	code TEXT UNIQUE NOT NULL,
 	
 	is_system BOOLEAN NOT NULL,
+
 	deactivated_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
 	deactivated_at TIMESTAMPTZ DEFAULT NULL,
 
@@ -72,10 +81,11 @@ CREATE TABLE roles (
 
 CREATE TABLE permissions (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	code TEXT UNIQUE NOT NULL,							-- 'create_product', 'delete_order', 'delete_review', ...
+	code TEXT UNIQUE NOT NULL,
 	description TEXT,
 
 	is_system BOOLEAN NOT NULL,
+
 	deactivated_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
 	deactivated_at TIMESTAMPTZ DEFAULT NULL,
 
@@ -114,16 +124,17 @@ CREATE TABLE warehouses (
 	deleted_at TIMESTAMPTZ DEFAULT NULL,
 	
 	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	UNIQUE (id, address)
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE product_categories (
+CREATE TABLE categories (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	parent_category_id BIGINT REFERENCES product_categories(id) ON DELETE SET NULL,
+	parent_category_id BIGINT REFERENCES categories(id) ON DELETE SET NULL,
 	name TEXT UNIQUE NOT NULL,
-	-- description TEXT,
-
+	
+	deactivated_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	deactivated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+	
 	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -131,23 +142,32 @@ CREATE TABLE product_categories (
 -- Товары
 CREATE TABLE products (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	product_category_id BIGINT NOT NULL REFERENCES product_categories(id) ON DELETE RESTRICT,
 	name TEXT NOT NULL,
 	description TEXT,
 	price NUMERIC(10, 2) NOT NULL CHECK (price > 0),
 	
-	is_active BOOLEAN NOT NULL DEFAULT TRUE,
-	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	UNIQUE (name, product_category_id)
+	deleted_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
+	deleted_at TIMESTAMPTZ DEFAULT NULL,
+
+	created_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE product_categories (
+	product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+	category_id BIGINT NOT NULL REFERENCES categories(id) ON DELETE RESTRICT,
+
+	assigned_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
+	assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+	PRIMARY KEY (product_id, category_id)
 );
 
 CREATE TABLE product_images (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-	url TEXT NOT NULL,
+	storage_key TEXT NOT NULL,
 
-	created_by BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+	created_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -443,7 +463,6 @@ CREATE INDEX idx_users_deleted_at ON users(deleted_at);
 
 CREATE INDEX idx_employees_created_by ON employees(created_by);
 
-CREATE INDEX idx_products_category_id ON products(product_category_id);
 CREATE INDEX idx_products_is_active ON products(is_active);
 
 CREATE INDEX idx_product_images_product_id ON product_images(product_id);
