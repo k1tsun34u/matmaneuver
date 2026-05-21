@@ -48,13 +48,16 @@ class OrdersRepository(
 		cur: psycopg.Cursor,
 		order_id: int,
 		status: OrderStatus
-	) -> int:
-		return cls.execute_update(
+	) -> bool:
+		cls.execute_update(
 			cur=cur,
 			table=cls.TABLE,
 			where={"id": order_id},
 			fields={"current_status": status}
 		)
+
+		cur.execute(f"SELECT 1 FROM {cls.TABLE} WHERE id = %s", (order_id,))
+		return bool(cur.fetchone())
 	
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, order_id: int) -> Order | None:

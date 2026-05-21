@@ -60,8 +60,8 @@ class SuppliersRepository(
 		phone: str | Unset = UNSET,
 		email: str | None | Unset = UNSET,
 		address: str | None | Unset = UNSET
-	) -> int:
-		return cls.execute_update(
+	) -> bool:
+		cls.execute_update(
 			cur=cur,
 			table=cls.TABLE,
 			where={"id": supplier_id},
@@ -72,6 +72,9 @@ class SuppliersRepository(
 				"address": address
 			})
 		)
+
+		cur.execute(f"SELECT 1 FROM {cls.TABLE} WHERE id = %s", (supplier_id,))
+		return bool(cur.fetchone())
 	
 	@classmethod
 	def deactivate(cls, cur: psycopg.Cursor, supplier_id: int, deactivated_by: int) -> int:

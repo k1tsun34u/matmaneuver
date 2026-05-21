@@ -21,6 +21,7 @@ class UsersRepository(
 		"email",
 		"full_name",
 		"password_hash",
+		"token_ver",
 
 		"blocked_by",
 		"blocked_at",
@@ -64,20 +65,36 @@ class UsersRepository(
 		user_id: int,
 		phone: str | Unset = UNSET,
 		email: str | Unset = UNSET,
-		full_name: str | Unset = UNSET,
-		password_hash: str | Unset = UNSET
+		full_name: str | Unset = UNSET
 	) -> bool:
-		return cls.execute_update(
+		cls.execute_update(
 			cur=cur,
 			table=cls.TABLE,
 			where={"id": user_id},
 			fields=Utils.filter_unset({
 				"phone": phone,
 				"email": email,
-				"full_name": full_name,
-				"password_hash": password_hash
+				"full_name": full_name
 			})
-		) != 0
+		)
+
+		cur.execute(f"SELECT 1 FROM {cls.TABLE} WHERE id = %s", (user_id,))
+		return bool(cur.fetchone())
+	
+	@classmethod
+	def set_password(
+		cls,
+		cur: psycopg.Cursor,
+		user_id: int,
+		password_hash: str
+	) -> bool:
+		query = f"""
+			UPDATE {cls.TABLE}
+			SET password_hash = %s, token_ver = token_ver + 1
+			WHERE id = %s
+		"""
+		cur.execute(query, (password_hash, user_id,))
+		return cur.rowcount
 	
 	@classmethod
 	def soft_delete(cls, cur: psycopg.Cursor, user_id: int, deleted_by: int) -> bool:

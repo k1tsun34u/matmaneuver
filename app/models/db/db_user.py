@@ -9,6 +9,7 @@ class DbUser(BaseModel):
 	email: str | None
 	full_name: str
 	password_hash: str
+	token_ver: int
 
 	blocked_by: int | None
 	blocked_at: datetime | None

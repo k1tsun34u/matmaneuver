@@ -49,13 +49,16 @@ class CategoriesRepository(
 		cur: psycopg.Cursor,
 		category_id: int,
 		parent_category_id: int | None
-	) -> int:
-		return cls.execute_update(
+	) -> bool:
+		cls.execute_update(
 			cur=cur,
 			table=cls.TABLE,
 			where={"id": category_id},
 			fields={"parent_category_id": parent_category_id}
 		)
+
+		cur.execute(f"SELECT 1 FROM {cls.TABLE} WHERE id = %s", (category_id,))
+		return bool(cur.fetchone())
 	
 	@classmethod
 	def deactivate(cls, cur: psycopg.Cursor, category_id: int, deactivated_by: int) -> int:

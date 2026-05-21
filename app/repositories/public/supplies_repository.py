@@ -52,13 +52,16 @@ class SuppliesRepository(
 		cur: psycopg.Cursor,
 		supply_id: int,
 		status: SupplyStatus
-	) -> int:
-		return cls.execute_update(
+	) -> bool:
+		cls.execute_update(
 			cur=cur,
 			table=cls.TABLE,
 			where={"id": supply_id},
 			fields={"current_status": status}
 		)
+
+		cur.execute(f"SELECT 1 FROM {cls.TABLE} WHERE id = %s", (supply_id,))
+		return bool(cur.fetchone())
 	
 	@classmethod
 	def get_by_id(

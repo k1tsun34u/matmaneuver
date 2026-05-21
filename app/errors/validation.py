@@ -1,5 +1,16 @@
 
 
+class InvalidTokenError(Exception):
+	def __init__(self):
+		super().__init__("Invalid token")
+
+
+class ExpiredTokenError(Exception):
+	def __init__(self, token: str):
+		self.token = token
+		super().__init__(f"Expired token: {token}")
+
+
 class InvalidPhoneError(Exception):
 	def __init__(self, phone: str):
 		self.phone = phone

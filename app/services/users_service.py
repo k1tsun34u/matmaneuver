@@ -5,8 +5,10 @@ import psycopg.errors as errors
 from app.unset import Unset, UNSET
 from app.models.db.db_user import DbUser
 from app.errors.other import InternalError
+from app.types.token_payload import TokenPayload
 from app.repositories.public.users_repository import UsersRepository
 from app.errors.validation import (
+	InvalidTokenError,
 	InvalidPhoneError,
 	InvalidEmailError,
 	InvalidFullNameError,
@@ -75,22 +77,29 @@ class UsersService:
 		if user is None:
 			raise UserNotFoundError(user_id)
 		return user
+	
+	@classmethod
+	def _require_valid_token_user(cls, cur, token: TokenPayload) -> DbUser:
+		user = cls._require_user(cur, token.user_id)
+		if user.token_ver != token.token_ver:
+			raise InvalidTokenError()
+		return user
 
 	@classmethod
-	def register_user(
+	def register(
 		cls,
 		phone: str,
 		email: str | None,
 		full_name: str,
 		password_hash: str,
 		created_by: int | None
-	) -> int:
+	) -> TokenPayload:
 		"""
-			Returns user id or raises:
-			- InvalidPhoneError
-			- InvalidEmailError
+			Errors:
+			- InvalidPasswordHashError
 			- UserPhoneAlreadyExistsError
 			- UserEmailAlreadyExistsError
+			- EmployeeNotFoundError
 			- InternalError
 		"""
 
@@ -106,7 +115,7 @@ class UsersService:
 		try:
 			with Db.connection() as conn:
 				with conn.cursor() as cur:
-					return UsersRepository.create(
+					user_id = UsersRepository.create(
 						cur=cur,
 						phone=norm_phone,
 						email=norm_email,
@@ -114,6 +123,8 @@ class UsersService:
 						password_hash=password_hash,
 						created_by=created_by
 					)
+
+					return TokenPayload(user_id=user_id, token_ver=1)
 		except errors.UniqueViolation as e:
 			constraint = e.diag.constraint_name
 			if constraint == "users_phone_key":
@@ -130,42 +141,43 @@ class UsersService:
 			raise InternalError() from e
 	
 	@classmethod
-	def update_user(
+	def update(
 		cls,
-		user_id: int,
+		token: TokenPayload,
 		phone: str | Unset = UNSET,
 		email: str | None | Unset = UNSET,
-		full_name: str | Unset = UNSET,
-		password_hash: str | Unset = UNSET
+		full_name: str | Unset = UNSET
 	) -> None:
 		"""
-			Updates `phone`/`email`/`full_name`/`password_hash` or raises:
+			Errors:
+			- InvalidTokenError
 			- UserNotFoundError
 			- UserPhoneAlreadyExistsError
 			- UserEmailAlreadyExistsError
 			- InternalError
 		"""
 
+		user_id = token.user_id
 		norm_phone, norm_email, norm_full_name = cls._normalize_fields_or_raise(
 			phone,
 			email,
 			full_name
 		)
 
-		if not isinstance(password_hash, Unset) and not password_hash:
-			raise InvalidPasswordHashError(password_hash)
-
 		try:
 			with Db.connection() as conn:
 				with conn.cursor() as cur:
-					UsersRepository.update(
+					cls._require_valid_token_user(cur, token)
+					updated = UsersRepository.update(
 						cur=cur,
 						user_id=user_id,
 						phone=norm_phone,
 						email=norm_email,
-						full_name=norm_full_name,
-						password_hash=password_hash
+						full_name=norm_full_name
 					)
+
+					if not updated:
+						raise UserNotFoundError(user_id)
 		except errors.UniqueViolation as e:
 			constraint = e.diag.constraint_name
 			if constraint == "users_phone_key":
@@ -175,11 +187,49 @@ class UsersService:
 			raise
 		except errors.Error as e:
 			raise InternalError() from e
+		
+	@classmethod
+	def set_password(
+		cls,
+		token: TokenPayload,
+		password_hash: str
+	) -> TokenPayload:
+		"""
+			Errors:
+			- InvalidPasswordHashError
+			- InvalidTokenError
+			- UserNotFoundError
+			- InternalError
+		"""
+
+		if not password_hash:
+			raise InvalidPasswordHashError(password_hash)
+
+		user_id = token.user_id
+		try:
+			with Db.connection() as conn:
+				with conn.cursor() as cur:
+					token_ver = token.token_ver
+					cls._require_valid_token_user(cur, token)
+
+					token_ver += 1
+					updated = UsersRepository.set_password(
+						cur=cur,
+						user_id=user_id,
+						password_hash=password_hash
+					)
+
+					if not updated:
+						raise UserNotFoundError(user_id)
+					
+					return TokenPayload(user_id=user_id, token_ver=token_ver)
+		except errors.Error as e:
+			raise InternalError() from e
 				
 	@classmethod
-	def block_user(cls, user_id: int, blocked_by: int) -> None:
+	def block(cls, user_id: int, blocked_by: int) -> None:
 		"""
-			Blocks user or raises:
+			Errors:
 			- UserNotFoundError
 			- EmployeeNotFoundError
 			- InternalError
@@ -199,9 +249,9 @@ class UsersService:
 			raise InternalError() from e
 	
 	@classmethod
-	def unblock_user(cls, user_id: int) -> None:
+	def unblock(cls, user_id: int) -> None:
 		"""
-			Unblocks user or raises:
+			Errors:
 			- UserNotFoundError
 			- InternalError
 		"""
@@ -215,9 +265,9 @@ class UsersService:
 			raise InternalError() from e
 		
 	@classmethod
-	def delete_user(cls, user_id: int, deleted_by: int) -> None:
+	def delete(cls, user_id: int, deleted_by: int) -> None:
 		"""
-			Deletes(soft delete) user or raises:
+			Errors:
 			- UserNotFoundError
 			- EmployeeNotFoundError
 			- InternalError
@@ -237,9 +287,9 @@ class UsersService:
 			raise InternalError() from e
 	
 	@classmethod
-	def restore_user(cls, user_id: int) -> None:
+	def restore(cls, user_id: int) -> None:
 		"""
-			Restores user or raises:
+			Errors:
 			- UserNotFoundError
 			- InternalError
 		"""
@@ -253,11 +303,9 @@ class UsersService:
 			raise InternalError() from e
 	
 	@classmethod
-	def is_user_blocked(cls, user_id: int) -> bool:
+	def is_blocked(cls, user_id: int) -> bool:
 		"""
-			Returns True or False
-			depending on whether the user is blocked
-			or raises:
+			Errors:
 			- UserNotFoundError
 			- InternalError
 		"""
@@ -271,11 +319,9 @@ class UsersService:
 			raise InternalError() from e
 	
 	@classmethod
-	def is_user_deleted(cls, user_id: int) -> bool:
+	def is_deleted(cls, user_id: int) -> bool:
 		"""
-			Returns True or False
-			depending on whether the user is deleted
-			or raises:
+			Errors:
 			- UserNotFoundError
 			- InternalError
 		"""
@@ -289,9 +335,9 @@ class UsersService:
 			raise InternalError() from e
 	
 	@classmethod
-	def get_user_by_id(cls, user_id: int) -> DbUser:
+	def get_by_id(cls, user_id: int) -> DbUser:
 		"""
-			Returns user or raises:
+			Errors:
 			- UserNotFoundError
 			- InternalError
 		"""

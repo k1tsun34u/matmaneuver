@@ -54,13 +54,16 @@ class ProductsRepository(
 		cur: psycopg.Cursor,
 		product_id: int,
 		description: str | None
-	) -> int:
-		return cls.execute_update(
+	) -> bool:
+		cls.execute_update(
 			cur=cur,
 			table=cls.TABLE,
 			where={"id": product_id},
 			fields={"description": description}
 		)
+
+		cur.execute(f"SELECT 1 FROM {cls.TABLE} WHERE id = %s", (product_id,))
+		return bool(cur.fetchone())
 	
 	@classmethod
 	def set_price(
@@ -68,13 +71,16 @@ class ProductsRepository(
 		cur: psycopg.Cursor,
 		product_id: int,
 		price: Decimal
-	) -> int:
-		return cls.execute_update(
+	) -> bool:
+		cls.execute_update(
 			cur=cur,
 			table=cls.TABLE,
 			where={"id": product_id},
 			fields={"price": price}
 		)
+
+		cur.execute(f"SELECT 1 FROM {cls.TABLE} WHERE id = %s", (product_id,))
+		return bool(cur.fetchone())
 	
 	@classmethod
 	def soft_delete(cls, cur: psycopg.Cursor, product_id: int, deleted_by: int) -> int:

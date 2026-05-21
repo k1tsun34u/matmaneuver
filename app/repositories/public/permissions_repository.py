@@ -52,13 +52,16 @@ class PermissionsRepository(
 		cur: psycopg.Cursor,
 		permission_id: int,
 		description: str
-	) -> int:
-		return cls.execute_update(
+	) -> bool:
+		cls.execute_update(
 			cur=cur,
 			table=cls.TABLE,
 			where={"id": permission_id},
 			fields={"description": description}
 		)
+
+		cur.execute(f"SELECT 1 FROM {cls.TABLE} WHERE id = %s", (permission_id,))
+		return bool(cur.fetchone())
 	
 	@classmethod
 	def deactivate(cls, cur: psycopg.Cursor, permission_id: int, deactivated_by: int) -> int:

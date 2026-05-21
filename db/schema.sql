@@ -8,6 +8,7 @@ CREATE TABLE users (
 	email VARCHAR(256) UNIQUE,
 	full_name TEXT NOT NULL,
 	password_hash TEXT NOT NULL,
+	token_ver INT NOT NULL DEFAULT 1,
 
 	blocked_by BIGINT,
 	blocked_at TIMESTAMPTZ,
