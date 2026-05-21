@@ -1,5 +1,7 @@
-from typing import Any, Literal
+import re
 from app.unset import Unset
+from typing import Any, Literal
+
 
 class Utils:
 	@staticmethod
@@ -73,3 +75,56 @@ class Utils:
 			"""
 		
 		return query
+	
+	@staticmethod
+	def normalize_phone(phone: str) -> str:
+		phone = re.sub(r'\D', '', phone)
+		if len(phone) == 11 and phone.startswith('8'):
+			phone = "7" + phone[1:]
+		return phone
+
+	@staticmethod
+	def normalize_email(email: str) -> str:
+		return email.lower()
+	
+	@staticmethod
+	def normalize_full_name(full_name: str) -> str:
+		return ' '.join(full_name.strip().split())
+	
+	@staticmethod
+	def normalize_code(code: str) -> str:
+		return code.lower()
+
+	@staticmethod
+	def is_valid_phone(normalized_phone: str) -> bool:
+		return (
+			normalized_phone
+			and len(normalized_phone) == 11
+			and normalized_phone.startswith('7')
+			and normalized_phone.isdigit()
+		)
+	
+	@staticmethod
+	def is_valid_email(normalized_email: str) -> bool:
+		pattern = r'^[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,}$'
+		return (
+			normalized_email
+			and bool(re.fullmatch(pattern, normalized_email))
+		)
+
+	@staticmethod
+	def is_valid_full_name(normalized_full_name: str) -> bool:
+		pattern = r"^[A-Za-zА-Яа-яЁё' -]+$"
+		return (
+			normalized_full_name
+			and len(normalized_full_name) < 128
+			and bool(re.fullmatch(pattern, normalized_full_name))
+		)
+	
+	@staticmethod
+	def is_valid_code(normalized_code: str) -> bool:
+		pattern = r"^[a-z]+(?:_[a-z]+)*$"
+		return (
+			normalized_code
+			and bool(re.fullmatch(pattern, normalized_code))
+		)

@@ -9,33 +9,49 @@ CREATE TABLE users (
 	full_name TEXT NOT NULL,
 	password_hash TEXT NOT NULL,
 
-	blocked_by BIGINT REFERENCES employees(id),
+	blocked_by BIGINT,
 	blocked_at TIMESTAMPTZ,
 
-	deleted_by BIGINT REFERENCES employees(id),
+	deleted_by BIGINT,
 	deleted_at TIMESTAMPTZ,
 	
-	created_by BIGINT REFERENCES employees(id),
+	created_by BIGINT,
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE employees (
+	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	user_id BIGINT UNIQUE NOT NULL,
+
+	hired_by BIGINT,
+	hired_at DATE NOT NULL,
+
+	fired_by BIGINT,
+	fired_at TIMESTAMPTZ,
+	
+	created_by BIGINT,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE users ADD CONSTRAINT users_blocked_by_fkey
+FOREIGN KEY (blocked_by) REFERENCES employees(id);
+ALTER TABLE users ADD CONSTRAINT users_deleted_by_fkey
+FOREIGN KEY (deleted_by) REFERENCES employees(id);
+ALTER TABLE users ADD CONSTRAINT users_created_by_fkey
+FOREIGN KEY (created_by) REFERENCES employees(id);
+
+ALTER TABLE employees ADD CONSTRAINT employees_user_id_fkey
+FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE employees ADD CONSTRAINT employees_hired_by_fkey
+FOREIGN KEY (hired_by) REFERENCES employees(id);
+ALTER TABLE employees ADD CONSTRAINT employees_fired_by_fkey
+FOREIGN KEY (fired_by) REFERENCES employees(id);
+ALTER TABLE employees ADD CONSTRAINT employees_created_by_fkey
+FOREIGN KEY (created_by) REFERENCES employees(id);
+
 
 -- ==========================
 -- Сотрудники, их роли (НЕ ДОЛЖНОСТИ!) и возможности
 -- ==========================
-
-CREATE TABLE employees (
-	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	user_id BIGINT UNIQUE NOT NULL REFERENCES users(id),
-
-	hired_by BIGINT REFERENCES employees(id),
-	hired_at DATE NOT NULL,
-
-	fired_by BIGINT REFERENCES employees(id),
-	fired_at TIMESTAMPTZ,
-	
-	created_by BIGINT REFERENCES employees(id),
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
 
 /*
 'super_admin' - главный админ: всё
@@ -401,7 +417,7 @@ CREATE TABLE order_payments (
 CREATE TYPE cart_type AS ENUM (
 	'active',
 	'wishlist'
-)
+);
 
 CREATE TABLE carts (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -461,9 +477,9 @@ CREATE INDEX idx_supplies_created_at ON supplies(created_at);
 CREATE INDEX idx_supply_items_supply_id ON supply_items(supply_id);
 CREATE INDEX idx_supply_items_product_id ON supply_items(product_id);
 
-CREATE INDEX idx_orders_user_id ON orders(user_id);
 CREATE INDEX idx_orders_status ON orders(current_status);
 CREATE INDEX idx_orders_created_at ON orders(created_at);
+CREATE INDEX idx_orders_created_by ON orders(created_by);
 
 CREATE INDEX idx_order_items_order_id ON order_items(order_id);
 CREATE INDEX idx_order_items_product_id ON order_items(product_id);
@@ -484,4 +500,4 @@ CREATE INDEX idx_cart_items_product_id ON cart_items(product_id);
 
 CREATE INDEX idx_order_status_history_order_id ON order_status_history(order_id);
 CREATE INDEX idx_supply_status_history_supply_id ON supply_status_history(supply_id);
-CREATE INDEX idx_order_return_status_history_return_id ON order_return_status_history(return_id);
+CREATE INDEX idx_order_return_status_history_order_return_id ON order_return_status_history(order_return_id);

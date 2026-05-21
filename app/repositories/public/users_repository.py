@@ -66,7 +66,7 @@ class UsersRepository(
 		email: str | Unset = UNSET,
 		full_name: str | Unset = UNSET,
 		password_hash: str | Unset = UNSET
-	) -> int:
+	) -> bool:
 		return cls.execute_update(
 			cur=cur,
 			table=cls.TABLE,
@@ -77,22 +77,22 @@ class UsersRepository(
 				"full_name": full_name,
 				"password_hash": password_hash
 			})
-		)
+		) != 0
 	
 	@classmethod
-	def soft_delete(cls, cur: psycopg.Cursor, user_id: int, deleted_by: int) -> int:
+	def soft_delete(cls, cur: psycopg.Cursor, user_id: int, deleted_by: int) -> bool:
 		return cls.set_state(cur, "deleted", {"id": user_id}, deleted_by)
 	
 	@classmethod
-	def restore(cls, cur: psycopg.Cursor, user_id: int) -> int:
+	def restore(cls, cur: psycopg.Cursor, user_id: int) -> bool:
 		return cls.clear_state(cur, "deleted", {"id": user_id})
 	
 	@classmethod
-	def block(cls, cur: psycopg.Cursor, user_id: int, blocked_by: int) -> int:
+	def block(cls, cur: psycopg.Cursor, user_id: int, blocked_by: int) -> bool:
 		return cls.set_state(cur, "blocked", {"id": user_id}, blocked_by)
 	
 	@classmethod
-	def unblock(cls, cur: psycopg.Cursor, user_id: int) -> int:
+	def unblock(cls, cur: psycopg.Cursor, user_id: int) -> bool:
 		return cls.clear_state(cur, "blocked", {"id": user_id})
 	
 	@classmethod

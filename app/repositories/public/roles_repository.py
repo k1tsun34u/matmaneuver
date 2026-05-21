@@ -45,11 +45,11 @@ class RolesRepository(
 		)["id"]
 	
 	@classmethod
-	def deactivate(cls, cur: psycopg.Cursor, role_id: int, deactivated_by: int) -> int:
+	def deactivate(cls, cur: psycopg.Cursor, role_id: int, deactivated_by: int) -> bool:
 		return cls.set_state(cur, "deactivated", {"id": role_id}, deactivated_by)
 	
 	@classmethod
-	def restore(cls, cur: psycopg.Cursor, role_id: int) -> int:
+	def restore(cls, cur: psycopg.Cursor, role_id: int) -> bool:
 		return cls.clear_state(cur, "deactivated", {"id": role_id})
 	
 	@classmethod

@@ -48,11 +48,11 @@ class EmployeesRepository(
 		)["id"]
 	
 	@classmethod
-	def fire(cls, cur: psycopg.Cursor, employee_id: int, fired_by: int) -> int:
+	def fire(cls, cur: psycopg.Cursor, employee_id: int, fired_by: int) -> bool:
 		return cls.set_state(cur, "fired", {"id": employee_id}, fired_by)
 	
 	@classmethod
-	def rehire(cls, cur: psycopg.Cursor, employee_id: int) -> int:
+	def rehire(cls, cur: psycopg.Cursor, employee_id: int) -> bool:
 		return cls.clear_state(cur, "fired", {"id": employee_id})
 	
 	@classmethod

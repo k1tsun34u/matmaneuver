@@ -53,7 +53,6 @@ class Db:
 	@classmethod
 	def connection(cls):
 		cls._ensure_pool()
-		
 		return cls.pool.connection()
 
 	@classmethod
