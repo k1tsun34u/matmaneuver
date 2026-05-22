@@ -1,4 +1,5 @@
 import psycopg
+from app.models.public.role import Role
 from app.models.public.employee_role import EmployeeRole
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin

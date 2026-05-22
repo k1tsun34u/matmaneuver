@@ -4,7 +4,10 @@ from dataclasses import dataclass
 
 @dataclass
 class BaseModel:
-	pass
-	# @classmethod
-	# def from_row(cls, row):
-	# 	return cls(**row)
+	@staticmethod
+	def get_key(table: str, column: str) -> str:
+		return f"{table}_{column}_key"
+	
+	@staticmethod
+	def get_fkey(table: str, column: str) -> str:
+		return f"{table}_{column}_fkey"

@@ -19,3 +19,13 @@ class DbUser(BaseModel):
 
 	created_by: int | None
 	created_at: datetime
+	
+	COLUMN_ID = "id"
+	COLUMN_PHONE = "phone"
+	COLUMN_EMAIL = "email"
+	COLUMN_FULL_NAME = "full_name"
+	COLUMN_TOKEN_VER = "token_ver"
+	COLUMN_PASSWORD_HASH = "password_hash"
+	COLUMN_BLOCKED_BY = "blocked_by"
+	COLUMN_DELETED_BY = "deleted_by"
+	COLUMN_CREATED_BY = "created_by"

@@ -3,6 +3,7 @@ import psycopg
 from app.utils import Utils
 from app.unset import Unset, UNSET
 from app.models.db.db_user import DbUser
+from app.types.token_payload import TokenPayload
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
@@ -63,6 +64,7 @@ class UsersRepository(
 		cls,
 		cur: psycopg.Cursor,
 		user_id: int,
+		token_ver: int,
 		phone: str | Unset = UNSET,
 		email: str | Unset = UNSET,
 		full_name: str | Unset = UNSET
@@ -70,7 +72,7 @@ class UsersRepository(
 		cls.execute_update(
 			cur=cur,
 			table=cls.TABLE,
-			where={"id": user_id},
+			where={"id": user_id, "token_ver": token_ver},
 			fields=Utils.filter_unset({
 				"phone": phone,
 				"email": email,
@@ -86,15 +88,18 @@ class UsersRepository(
 		cls,
 		cur: psycopg.Cursor,
 		user_id: int,
+		token_ver: int,
 		password_hash: str
-	) -> bool:
+	) -> TokenPayload | None:
 		query = f"""
 			UPDATE {cls.TABLE}
 			SET password_hash = %s, token_ver = token_ver + 1
-			WHERE id = %s
+			WHERE id = %s AND token_ver = %s
 		"""
-		cur.execute(query, (password_hash, user_id,))
-		return cur.rowcount
+		cur.execute(query, (password_hash, user_id, token_ver,))
+		if cur.rowcount == 0:
+			return None
+		return TokenPayload(user_id, token_ver + 1)
 	
 	@classmethod
 	def soft_delete(cls, cur: psycopg.Cursor, user_id: int, deleted_by: int) -> bool:

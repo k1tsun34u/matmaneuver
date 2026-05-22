@@ -128,3 +128,10 @@ class Utils:
 			normalized_code
 			and bool(re.fullmatch(pattern, normalized_code))
 		)
+	
+	@staticmethod
+	def is_valid_password_hash(password_hash: str) -> bool:
+		return (
+			password_hash
+			and len(password_hash) > 0
+		)
