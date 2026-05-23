@@ -20,8 +20,13 @@
 			| UpdatableMixin    | +        |
 			| SelectableMixin   | +        |
 	-	###	Public
-
+		|              Repository             | Complete |
+		| :---------------------------------- | :------: |
+		| EmployeePermissionsRepository       | +        |
+		| EmployeeRolesRepository             | +        |
+		| EmployeesRepository                 | +        |
 +	##	Services
 	|          Service          | Complete |
 	| :------------------------ | :------: |
 	| BaseService               | +        |
+	| EmployeesService          | +        |
