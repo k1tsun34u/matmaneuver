@@ -53,6 +53,10 @@ class ProductCategoriesRepository(
 		category_ids: tuple[int, ...],
 		assigned_by: int | None
 	) -> int:
+		if not category_ids:
+			return 0
+		
+		category_ids = list(dict.fromkeys(category_ids))
 		query = f"""
 			INSERT INTO {cls.TABLE} ({", ".join(cls.SELECT_FIELDS)})
 			SELECT
@@ -72,6 +76,10 @@ class ProductCategoriesRepository(
 		product_id: int,
 		category_ids: tuple[int, ...]
 	) -> int:
+		if not category_ids:
+			return 0
+		
+		category_ids = list(dict.fromkeys(category_ids))
 		query = f"""
 			DELETE FROM {cls.TABLE} pc
 			USING (

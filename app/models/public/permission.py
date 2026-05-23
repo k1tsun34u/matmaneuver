@@ -1,9 +1,19 @@
+from typing import ClassVar
 from datetime import datetime
 from dataclasses import dataclass
 from app.models.public.base_model import BaseModel
 
 @dataclass
 class Permission(BaseModel):
+	COLUMN_ID: ClassVar[str] = "id"
+	COLUMN_CODE: ClassVar[str] = "code"
+	COLUMN_DESCRIPTION: ClassVar[str] = "description"
+	COLUMN_IS_SYSTEM: ClassVar[str] = "is_system"
+	COLUMN_DEACTIVATED_BY: ClassVar[str] = "deactivated_by"
+	COLUMN_DEACTIVATED_AT: ClassVar[str] = "deactivated_at"
+	COLUMN_CREATED_BY: ClassVar[str] = "created_by"
+	COLUMN_CREATED_AT: ClassVar[str] = "created_at"
+
 	id: int
 	code: str
 	description: str | None
@@ -13,13 +23,10 @@ class Permission(BaseModel):
 	created_by: int | None
 	created_at: datetime
 
-	COLUMN_ID = "id"
-	COLUMN_CODE = "code"
-	COLUMN_DESCRIPTION = "description"
-	COLUMN_IS_SYSTEM = "is_system"
-	COLUMN_DEACTIVATED_BY = "deactivated_by"
-	COLUMN_CREATED_BY = "created_by"
-
 	HIRE_EMPLOYEE = "hire"
 	FIRE_EMPLOYEE = "fire"
 	CREATE_EMPLOYEE = "create_employee"
+
+	CREATE_USER = "create_user"
+	BLOCK_USER = "block_user"
+	DELETE_USER = "delete_user"

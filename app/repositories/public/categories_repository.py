@@ -1,5 +1,6 @@
 import psycopg
 from app.models.public.category import Category
+from app.types.update_result import UpdateResult
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
@@ -61,11 +62,11 @@ class CategoriesRepository(
 		return bool(cur.fetchone())
 	
 	@classmethod
-	def deactivate(cls, cur: psycopg.Cursor, category_id: int, deactivated_by: int) -> int:
+	def deactivate(cls, cur: psycopg.Cursor, category_id: int, deactivated_by: int) -> UpdateResult:
 		return cls.set_state(cur, "deactivated", {"id": category_id}, deactivated_by)
 	
 	@classmethod
-	def restore(cls, cur: psycopg.Cursor, category_id: int) -> int:
+	def restore(cls, cur: psycopg.Cursor, category_id: int) -> UpdateResult:
 		return cls.clear_state(cur, "deactivated", {"id": category_id})
 	
 	@classmethod

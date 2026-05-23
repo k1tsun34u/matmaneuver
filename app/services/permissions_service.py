@@ -3,12 +3,14 @@ from app.utils import Utils
 from app.services.base_service import BaseService
 from app.types.service_result import ServiceResult
 from app.models.public.permission import Permission
+from app.types.permission_code import PermissionCode
 from app.errors.not_found_error import NotFoundError
 from app.errors.not_allowed_error import NotAllowedError
 from app.types.deactivate_result import DeactivateResult
 from app.types.transaction_helper import TransactionHelper
 from app.errors.invalid_value_error import InvalidValueError
 from app.repositories.public.permissions_repository import PermissionsRepository
+from app.repositories.public.employee_permissions_repository import EmployeePermissionsRepository as EPR
 
 
 class PermissionsService(BaseService):
@@ -31,11 +33,15 @@ class PermissionsService(BaseService):
 	) -> ServiceResult:
 		"""
 			Errors:
+			- NotAllowedError
 			- InvalidValueError
 			- AlreadyExistsError
 			- NotFoundError
 			- UnhandledError
 		"""
+
+		if created_by is not None and not EPR.has_permission(cur, created_by, PermissionCode.CREATE_PERMISSION):
+			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_PERMISSION, Permission.COLUMN_CREATED_BY))
 
 		norm_code = Utils.normalize_code(code)
 		if not Utils.is_valid_code(norm_code):
@@ -85,6 +91,9 @@ class PermissionsService(BaseService):
 			- UnhandledError
 		"""
 
+		if not EPR.has_permission(cur, deactivated_by, PermissionCode.DEACTIVATE_PERMISSION):
+			return ServiceResult(error=NotAllowedError(PermissionCode.DEACTIVATE_PERMISSION, Permission.COLUMN_DEACTIVATED_BY))
+
 		tmp = PermissionsRepository.deactivate(cur, permission_id, deactivated_by)
 		if tmp == DeactivateResult.FAIL_IS_SYSTEM:
 			return ServiceResult(error=NotAllowedError(cls.ENTITY, Permission.COLUMN_IS_SYSTEM))
@@ -97,13 +106,18 @@ class PermissionsService(BaseService):
 	def restore(
 		cls,
 		cur: psycopg.Cursor,
-		permission_id: int
+		permission_id: int,
+		restored_by: int
 	) -> ServiceResult:
 		"""
 			Errors:
+			- NotAllowedError
 			- NotFoundError
 			- UnhandledError
 		"""
+
+		if not EPR.has_permission(cur, restored_by, PermissionCode.CREATE_PERMISSION):
+			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_PERMISSION))
 
 		permission = PermissionsRepository.get_by_id(cur, permission_id)
 		if not permission:

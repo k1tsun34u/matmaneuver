@@ -25,7 +25,7 @@ CREATE TABLE employees (
 	user_id BIGINT UNIQUE NOT NULL,
 
 	hired_by BIGINT,
-	hired_at DATE NOT NULL,
+	hired_at TIMESTAMPTZ,
 
 	fired_by BIGINT,
 	fired_at TIMESTAMPTZ,

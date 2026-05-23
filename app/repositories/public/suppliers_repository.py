@@ -2,6 +2,7 @@ import psycopg
 from app.utils import Utils
 from app.unset import Unset, UNSET
 from app.models.public.supplier import Supplier
+from app.types.update_result import UpdateResult
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
@@ -77,11 +78,11 @@ class SuppliersRepository(
 		return bool(cur.fetchone())
 	
 	@classmethod
-	def deactivate(cls, cur: psycopg.Cursor, supplier_id: int, deactivated_by: int) -> int:
+	def deactivate(cls, cur: psycopg.Cursor, supplier_id: int, deactivated_by: int) -> UpdateResult:
 		return cls.set_state(cur, "deactivated", {"id": supplier_id}, deactivated_by)
 	
 	@classmethod
-	def restore(cls, cur: psycopg.Cursor, supplier_id: int) -> int:
+	def restore(cls, cur: psycopg.Cursor, supplier_id: int) -> UpdateResult:
 		return cls.clear_state(cur, "deactivated", {"id": supplier_id})
 	
 	@classmethod

@@ -1,9 +1,20 @@
-from dataclasses import dataclass
+from typing import ClassVar
 from datetime import datetime
+from dataclasses import dataclass
 from app.models.public.base_model import BaseModel
 
 @dataclass
 class DbUser(BaseModel):
+	COLUMN_ID: ClassVar[str] = "id"
+	COLUMN_PHONE: ClassVar[str] = "phone"
+	COLUMN_EMAIL: ClassVar[str] = "email"
+	COLUMN_FULL_NAME: ClassVar[str] = "full_name"
+	COLUMN_TOKEN_VER: ClassVar[str] = "token_ver"
+	COLUMN_PASSWORD_HASH: ClassVar[str] = "password_hash"
+	COLUMN_BLOCKED_BY: ClassVar[str] = "blocked_by"
+	COLUMN_DELETED_BY: ClassVar[str] = "deleted_by"
+	COLUMN_CREATED_BY: ClassVar[str] = "created_by"
+
 	id: int
 	phone: str
 	email: str | None
@@ -19,13 +30,3 @@ class DbUser(BaseModel):
 
 	created_by: int | None
 	created_at: datetime
-	
-	COLUMN_ID = "id"
-	COLUMN_PHONE = "phone"
-	COLUMN_EMAIL = "email"
-	COLUMN_FULL_NAME = "full_name"
-	COLUMN_TOKEN_VER = "token_ver"
-	COLUMN_PASSWORD_HASH = "password_hash"
-	COLUMN_BLOCKED_BY = "blocked_by"
-	COLUMN_DELETED_BY = "deleted_by"
-	COLUMN_CREATED_BY = "created_by"

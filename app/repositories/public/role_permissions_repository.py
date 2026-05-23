@@ -57,6 +57,10 @@ class RolePermissionsRepository(
 		permission_ids: list[int],
 		assigned_by: int | None
 	) -> int:
+		if not permission_ids:
+			return 0
+		
+		permission_ids = list(dict.fromkeys(permission_ids))
 		query = f"""
 			INSERT INTO {cls.TABLE} ({", ".join(cls.SELECT_FIELDS)})
 			SELECT
@@ -76,6 +80,10 @@ class RolePermissionsRepository(
 		role_id: int,
 		permission_ids: list[int]
 	) -> int:
+		if not permission_ids:
+			return 0
+		
+		permission_ids = list(dict.fromkeys(permission_ids))
 		query = f"""
 			DELETE FROM {cls.TABLE} rp
 			USING (

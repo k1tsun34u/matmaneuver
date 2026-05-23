@@ -3,8 +3,10 @@ import psycopg
 from app.utils import Utils
 from app.unset import Unset, UNSET
 from app.models.db.db_user import DbUser
+from app.types.update_result import UpdateResult
 from app.types.token_payload import TokenPayload
 from app.repositories.base.base_repository import BaseRepository
+from app.repositories.base.mixins.updatable_mixin import UpdatableMixin
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
 
@@ -12,6 +14,7 @@ from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
 class UsersRepository(
 	BaseRepository,
 	AuditStateMixin,
+	UpdatableMixin,
 	SelectableMixin[DbUser]
 ):
 	TABLE = "users"
@@ -68,20 +71,17 @@ class UsersRepository(
 		phone: str | Unset = UNSET,
 		email: str | Unset = UNSET,
 		full_name: str | Unset = UNSET
-	) -> bool:
-		cls.execute_update(
+	) -> UpdateResult:
+		return cls.update_by_conditions(
 			cur=cur,
-			table=cls.TABLE,
-			where={"id": user_id, "token_ver": token_ver},
+			identity_where={"id": user_id},
+			condition_where={"token_ver": token_ver},
 			fields=Utils.filter_unset({
 				"phone": phone,
 				"email": email,
 				"full_name": full_name
 			})
 		)
-
-		cur.execute(f"SELECT 1 FROM {cls.TABLE} WHERE id = %s", (user_id,))
-		return bool(cur.fetchone())
 	
 	@classmethod
 	def set_password(
@@ -102,19 +102,19 @@ class UsersRepository(
 		return TokenPayload(user_id, token_ver + 1)
 	
 	@classmethod
-	def soft_delete(cls, cur: psycopg.Cursor, user_id: int, deleted_by: int) -> bool:
+	def soft_delete(cls, cur: psycopg.Cursor, user_id: int, deleted_by: int | None) -> UpdateResult:
 		return cls.set_state(cur, "deleted", {"id": user_id}, deleted_by)
 	
 	@classmethod
-	def restore(cls, cur: psycopg.Cursor, user_id: int) -> bool:
+	def restore(cls, cur: psycopg.Cursor, user_id: int) -> UpdateResult:
 		return cls.clear_state(cur, "deleted", {"id": user_id})
 	
 	@classmethod
-	def block(cls, cur: psycopg.Cursor, user_id: int, blocked_by: int) -> bool:
+	def block(cls, cur: psycopg.Cursor, user_id: int, blocked_by: int) -> UpdateResult:
 		return cls.set_state(cur, "blocked", {"id": user_id}, blocked_by)
 	
 	@classmethod
-	def unblock(cls, cur: psycopg.Cursor, user_id: int) -> bool:
+	def unblock(cls, cur: psycopg.Cursor, user_id: int) -> UpdateResult:
 		return cls.clear_state(cur, "blocked", {"id": user_id})
 	
 	@classmethod

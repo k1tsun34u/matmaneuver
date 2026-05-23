@@ -1,9 +1,18 @@
-from dataclasses import dataclass
+from typing import ClassVar
 from datetime import datetime
+from dataclasses import dataclass
 from app.models.public.base_model import BaseModel
 
 @dataclass
 class Role(BaseModel):
+	COLUMN_ID: ClassVar[str] = "id"
+	COLUMN_CODE: ClassVar[str] = "code"
+	COLUMN_IS_SYSTEM: ClassVar[str] = "is_system"
+	COLUMN_DEACTIVATED_BY: ClassVar[str] = "deactivated_by"
+	COLUMN_DEACTIVATED_AT: ClassVar[str] = "deactivated_at"
+	COLUMN_CREATED_BY: ClassVar[str] = "created_by"
+	COLUMN_CREATED_AT: ClassVar[str] = "created_at"
+	
 	id: int
 	code: str
 	is_system: bool
@@ -11,9 +20,3 @@ class Role(BaseModel):
 	deactivated_at: datetime | None
 	created_by: int | None
 	created_at: datetime
-
-	COLUMN_ID = "id"
-	COLUMN_CODE = "code"
-	COLUMN_IS_SYSTEM = "is_system"
-	COLUMN_DEACTIVATED_BY = "deactivated_by"
-	COLUMN_CREATED_BY = "created_by"

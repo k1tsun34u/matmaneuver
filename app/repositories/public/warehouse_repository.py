@@ -1,5 +1,6 @@
 
 import psycopg
+from app.types.update_result import UpdateResult
 from app.models.public.warehouse import Warehouse
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
@@ -45,11 +46,11 @@ class WarehousesRepository(
 		)["id"]
 	
 	@classmethod
-	def soft_delete(cls, cur: psycopg.Cursor, warehouse_id: int, deleted_by: int) -> int:
+	def soft_delete(cls, cur: psycopg.Cursor, warehouse_id: int, deleted_by: int) -> UpdateResult:
 		return cls.set_state(cur, "deleted", {"id": warehouse_id}, deleted_by)
 	
 	@classmethod
-	def restore(cls, cur: psycopg.Cursor, warehouse_id: int) -> int:
+	def restore(cls, cur: psycopg.Cursor, warehouse_id: int) -> UpdateResult:
 		return cls.clear_state(cur, "deleted", {"id": warehouse_id})
 	
 	@classmethod

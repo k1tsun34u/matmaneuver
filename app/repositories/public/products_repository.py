@@ -2,6 +2,7 @@ import psycopg
 from decimal import Decimal
 from app.utils import Utils
 from app.models.public.product import Product
+from app.types.update_result import UpdateResult
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
@@ -83,11 +84,11 @@ class ProductsRepository(
 		return bool(cur.fetchone())
 	
 	@classmethod
-	def soft_delete(cls, cur: psycopg.Cursor, product_id: int, deleted_by: int) -> int:
+	def soft_delete(cls, cur: psycopg.Cursor, product_id: int, deleted_by: int) -> UpdateResult:
 		return cls.set_state(cur, "deleted", {"id": product_id}, deleted_by)
 	
 	@classmethod
-	def restore(cls, cur: psycopg.Cursor, product_id: int) -> int:
+	def restore(cls, cur: psycopg.Cursor, product_id: int) -> UpdateResult:
 		return cls.clear_state(cur, "deleted", {"id": product_id})
 	
 	@classmethod

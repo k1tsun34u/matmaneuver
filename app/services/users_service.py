@@ -5,10 +5,13 @@ from app.models.db.db_user import DbUser
 from app.types.token_payload import TokenPayload
 from app.services.base_service import BaseService
 from app.types.service_result import ServiceResult
+from app.types.permission_code import PermissionCode
 from app.errors.not_found_error import NotFoundError
+from app.errors.not_allowed_error import NotAllowedError
 from app.types.transaction_helper import TransactionHelper
 from app.errors.invalid_value_error import InvalidValueError
 from app.repositories.public.users_repository import UsersRepository
+from app.repositories.public.employee_permissions_repository import EmployeePermissionsRepository as EPR
 
 
 class UsersService(BaseService):
@@ -24,9 +27,6 @@ class UsersService(BaseService):
 		DbUser.COLUMN_CREATED_BY,
 	)),)
 
-	MAX_PHONE_LENGTH = 32
-	MAX_EMAIL_LENGTH = 256
-
 	@classmethod
 	def _normalize_fields_or_catch(
 		cls,
@@ -36,24 +36,14 @@ class UsersService(BaseService):
 	) -> tuple[str | Unset, str | None | Unset, str | Unset] | InvalidValueError:
 		if not isinstance(phone, Unset):
 			normalized_phone = Utils.normalize_phone(phone)
-			is_valid_phone = (
-				len(normalized_phone) <= cls.MAX_PHONE_LENGTH
-				and Utils.is_valid_phone(normalized_phone)
-			)
-
-			if not is_valid_phone:
+			if not Utils.is_valid_phone(normalized_phone):
 				return InvalidValueError(cls.ENTITY, DbUser.COLUMN_PHONE)
 			
 			phone = normalized_phone
 		
 		if not (isinstance(email, Unset) or email is None):
 			normalized_email = Utils.normalize_email(email)
-			is_valid_email = (
-				len(normalized_email) <= cls.MAX_EMAIL_LENGTH
-				and Utils.is_valid_email(normalized_email)
-			)
-
-			if not is_valid_email:
+			if not Utils.is_valid_email(normalized_email):
 				return InvalidValueError(cls.ENTITY, DbUser.COLUMN_EMAIL)
 			
 			email = normalized_email
@@ -84,11 +74,15 @@ class UsersService(BaseService):
 	) -> ServiceResult:
 		"""
 			Errors:
+			- NotAllowedError
 			- InvalidValueError
 			- AlreadyExistsError
 			- NotFoundError
 			- UnhandledError
 		"""
+
+		if created_by is not None and not EPR.has_permission(cur, created_by, PermissionCode.CREATE_USER):
+			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_USER, DbUser.COLUMN_CREATED_BY))
 
 		if not Utils.is_valid_password_hash(password_hash):
 			return ServiceResult(error=InvalidValueError(cls.ENTITY, DbUser.COLUMN_PASSWORD_HASH))
@@ -194,9 +188,13 @@ class UsersService(BaseService):
 	) -> ServiceResult:
 		"""
 			Errors:
+			- NotAllowedError
 			- NotFoundError
 			- UnhandledError
 		"""
+
+		if not EPR.has_permission(cur, blocked_by, PermissionCode.BLOCK_USER):
+			return ServiceResult(error=NotAllowedError(PermissionCode.BLOCK_USER, DbUser.COLUMN_BLOCKED_BY))
 
 		user = UsersRepository.get_by_id(cur, user_id)
 		if not user:
@@ -210,13 +208,18 @@ class UsersService(BaseService):
 	def unblock(
 		cls,
 		cur: psycopg.Cursor,
-		user_id: int
+		user_id: int,
+		unblocked_by: int
 	) -> ServiceResult:
 		"""
 			Errors:
+			- NotAllowedError
 			- NotFoundError
 			- UnhandledError
 		"""
+
+		if not EPR.has_permission(cur, unblocked_by, PermissionCode.UNBLOCK_USER):
+			return ServiceResult(error=NotAllowedError(PermissionCode.UNBLOCK_USER))
 
 		user = UsersRepository.get_by_id(cur, user_id)
 		if not user:
@@ -231,13 +234,17 @@ class UsersService(BaseService):
 		cls,
 		cur: psycopg.Cursor,
 		user_id: int,
-		deleted_by: int
+		deleted_by: int | None
 	) -> ServiceResult:
 		"""
 			Errors:
+			- NotAllowedError
 			- NotFoundError
 			- UnhandledError
 		"""
+
+		if deleted_by is not None and not EPR.has_permission(cur, deleted_by, PermissionCode.DELETE_USER):
+			return ServiceResult(error=NotAllowedError(PermissionCode.DELETE_USER, DbUser.COLUMN_DELETED_BY))
 
 		user = UsersRepository.get_by_id(cur, user_id)
 		if not user:
@@ -251,13 +258,18 @@ class UsersService(BaseService):
 	def restore(
 		cls,
 		cur: psycopg.Cursor,
-		user_id: int
+		user_id: int,
+		restored_by: int
 	) -> ServiceResult:
 		"""
 			Errors:
+			- NotAllowedError
 			- NotFoundError
 			- UnhandledError
 		"""
+
+		if not EPR.has_permission(cur, restored_by, PermissionCode.CREATE_USER):
+			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_USER))
 
 		user = UsersRepository.get_by_id(cur, user_id)
 		if not user:

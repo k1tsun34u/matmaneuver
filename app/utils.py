@@ -109,6 +109,7 @@ class Utils:
 		pattern = r'^[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,}$'
 		return (
 			normalized_email
+			and len(normalized_email) <= 256
 			and bool(re.fullmatch(pattern, normalized_email))
 		)
 

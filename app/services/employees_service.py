@@ -1,40 +1,28 @@
 import psycopg
 from datetime import date
 from app.models.public.employee import Employee
+from app.types.update_result import UpdateResult
 from app.services.base_service import BaseService
 from app.types.service_result import ServiceResult
-from app.models.public.permission import Permission
+from app.types.permission_code import PermissionCode
 from app.errors.not_found_error import NotFoundError
 from app.errors.not_allowed_error import NotAllowedError
 from app.types.transaction_helper import TransactionHelper
 from app.errors.invalid_value_error import InvalidValueError
 from app.repositories.public.employees_repository import EmployeesRepository
 from app.repositories.public.employee_roles_repository import EmployeeRolesRepository
-from app.repositories.public.employee_permissions_repository import EmployeePermissionsRepository
+from app.repositories.public.employee_permissions_repository import EmployeePermissionsRepository as EPR
 
 
 class EmployeesService(BaseService):
 	ENTITY = "Employee"
-	KEY_HELPERS = (TransactionHelper(ENTITY, "employees", tuple()),)
+	KEY_HELPERS = (TransactionHelper(ENTITY, "employees", (Employee.COLUMN_USER_ID,)),)
 	FKEY_HELPERS = (TransactionHelper(ENTITY, "employees", (
 		Employee.COLUMN_USER_ID,
 		Employee.COLUMN_HIRED_BY,
 		Employee.COLUMN_FIRED_BY,
 		Employee.COLUMN_CREATED_BY,
 	)),)
-
-	@classmethod
-	def _has_permission(
-		cls,
-		cur: psycopg.Cursor,
-		employee_id: int,
-		permission_code: str
-	) -> bool:
-		return EmployeePermissionsRepository.has_permission(
-			cur,
-			employee_id,
-			permission_code
-		)
 
 	@classmethod
 	@BaseService.transaction
@@ -55,11 +43,11 @@ class EmployeesService(BaseService):
 			- UnhandledError
 		"""
 
-		if hired_by and not cls._has_permission(cur, hired_by, Permission.HIRE_EMPLOYEE):
-			return NotAllowedError(cls.ENTITY, Employee.COLUMN_HIRED_BY)
+		if hired_by is not None and not EPR.has_permission(cur, hired_by, PermissionCode.HIRE_EMPLOYEE):
+			return ServiceResult(error=NotAllowedError(PermissionCode.HIRE_EMPLOYEE, Employee.COLUMN_HIRED_BY))
 
-		if created_by and not cls._has_permission(cur, created_by, Permission.CREATE_EMPLOYEE):
-			return NotAllowedError(cls.ENTITY, Employee.COLUMN_CREATED_BY)
+		if created_by is not None and not EPR.has_permission(cur, created_by, PermissionCode.CREATE_EMPLOYEE):
+			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_EMPLOYEE, Employee.COLUMN_CREATED_BY))
 			
 		if hired_at > date.today():
 			return ServiceResult(error=InvalidValueError(cls.ENTITY, Employee.COLUMN_HIRED_AT))
@@ -89,14 +77,12 @@ class EmployeesService(BaseService):
 			- UnhandledError
 		"""
 
-		if not cls._has_permission(cur, fired_by, Permission.FIRE_EMPLOYEE):
-			return NotAllowedError(cls.ENTITY, Employee.COLUMN_FIRED_BY)
-
-		employee = EmployeesRepository.get_by_id(cur, employee_id)
-		if not employee:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Employee.COLUMN_ID))
+		if not EPR.has_permission(cur, fired_by, PermissionCode.FIRE_EMPLOYEE):
+			return ServiceResult(error=NotAllowedError(PermissionCode.FIRE_EMPLOYEE, Employee.COLUMN_FIRED_BY))
 		
-		EmployeesRepository.fire(cur, employee_id, fired_by)
+		updated = EmployeesRepository.fire(cur, employee_id, fired_by)
+		if updated == UpdateResult.FAIL_NOT_FOUND:
+			return ServiceResult(error=NotFoundError(cls.ENTITY, Employee.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -104,19 +90,22 @@ class EmployeesService(BaseService):
 	def rehire(
 		cls,
 		cur: psycopg.Cursor,
-		employee_id: int
+		employee_id: int,
+		hired_by: int
 	) -> ServiceResult:
 		"""
 			Errors:
+			- NotAllowedError
 			- NotFoundError
 			- UnhandledError
 		"""
 
-		employee = EmployeesRepository.get_by_id(cur, employee_id)
-		if not employee:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Employee.COLUMN_ID))
+		if not EPR.has_permission(cur, hired_by, PermissionCode.HIRE_EMPLOYEE):
+			return ServiceResult(error=NotAllowedError(PermissionCode.HIRE_EMPLOYEE, Employee.COLUMN_HIRED_BY))
 		
-		EmployeesRepository.rehire(cur, employee_id)
+		updated = EmployeesRepository.rehire(cur, employee_id, hired_by)
+		if updated == UpdateResult.FAIL_NOT_FOUND:
+			return ServiceResult(error=NotFoundError(cls.ENTITY, Employee.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -152,7 +141,7 @@ class EmployeesService(BaseService):
 
 		employee = EmployeesRepository.get_by_user_id(cur, user_id)
 		if not employee:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Employee.COLUMN_ID))
+			return ServiceResult(error=NotFoundError(cls.ENTITY, Employee.COLUMN_USER_ID))
 		return ServiceResult(result=employee)
 	
 	@classmethod
@@ -189,4 +178,4 @@ class EmployeesService(BaseService):
 		employee = EmployeesRepository.get_by_id(cur, employee_id)
 		if not employee:
 			return ServiceResult(error=NotFoundError(cls.ENTITY, Employee.COLUMN_ID))
-		return ServiceResult(result=EmployeePermissionsRepository.get_permissions(cur, employee_id))
+		return ServiceResult(result=EPR.get_permissions(cur, employee_id))

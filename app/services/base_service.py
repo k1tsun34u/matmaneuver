@@ -55,7 +55,7 @@ class BaseService:
 				logger.exception(f"Unhandled check violation", extra={"error": str(e)})
 				
 				# not good, but ok
-				return ServiceResult(error=InvalidValueError("Constraint violation", ""))
+				return ServiceResult(error=InvalidValueError("Constraint violation", e.diag.constraint_name))
 			except psycopg.errors.UniqueViolation as e:
 				return ServiceResult(
 					error=BaseService._map_constraint_to_error(
@@ -80,4 +80,3 @@ class BaseService:
 				logger.exception(f"Unhandled psycopg error", extra={"error": str(e)})
 				return ServiceResult(error=UnhandledError("Internal database error"))
 		return wrapper
-

@@ -1,6 +1,7 @@
 import psycopg
 from typing import Any
 from app.utils import Utils
+from app.types.update_result import UpdateResult
 
 
 class AuditStateMixin:
@@ -19,8 +20,8 @@ class AuditStateMixin:
 		cur: psycopg.Cursor,
 		state: str,
 		properties: dict[str, Any],
-		actor_id: int
-	) -> bool:
+		actor_id: int | None
+	) -> UpdateResult:
 		conditions, params = Utils.build_conditions_params(
 			equals=properties,
 			is_null=(f"{state}_at",)
@@ -33,9 +34,19 @@ class AuditStateMixin:
 				{state}_at = NOW()
 			{Utils.build_where(conditions)}
 		"""
-
 		cur.execute(query, (actor_id, *params,))
-		return cur.rowcount != 0
+		if cur.rowcount != 0:
+			return UpdateResult.SUCCESS
+		
+		conditions, params = Utils.build_conditions_params(equals=properties)
+		query = f"""
+			SELECT 1 FROM {cls.TABLE}
+			{Utils.build_where(conditions)}
+		"""
+		cur.execute(query, params)
+		if not cur.fetchone():
+			return UpdateResult.FAIL_NOT_FOUND
+		return UpdateResult.FAIL_CONDITION
 
 	@classmethod
 	def clear_state(
@@ -43,7 +54,7 @@ class AuditStateMixin:
 		cur: psycopg.Cursor,
 		state: str,
 		properties: dict[str, Any]
-	) -> bool:
+	) -> UpdateResult:
 		conditions, params = Utils.build_conditions_params(
 			equals=properties,
 			is_not_null=(f"{state}_at",)
@@ -57,4 +68,15 @@ class AuditStateMixin:
 			{Utils.build_where(conditions)}
 		"""
 		cur.execute(query, params)
-		return cur.rowcount != 0
+		if cur.rowcount != 0:
+			return UpdateResult.SUCCESS
+		
+		conditions, params = Utils.build_conditions_params(equals=properties)
+		query = f"""
+			SELECT 1 FROM {cls.TABLE}
+			{Utils.build_where(conditions)}
+		"""
+		cur.execute(query, params)
+		if not cur.fetchone():
+			return UpdateResult.FAIL_NOT_FOUND
+		return UpdateResult.FAIL_CONDITION
