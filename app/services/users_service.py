@@ -1,4 +1,3 @@
-
 import psycopg
 from app.utils import Utils
 from app.unset import Unset, UNSET
@@ -199,8 +198,11 @@ class UsersService(BaseService):
 			- UnhandledError
 		"""
 
-		if not UsersRepository.block(cur, user_id, blocked_by):
+		user = UsersRepository.get_by_id(cur, user_id)
+		if not user:
 			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
+		
+		UsersRepository.block(cur, user_id, blocked_by)
 		return ServiceResult()
 	
 	@classmethod
@@ -216,8 +218,11 @@ class UsersService(BaseService):
 			- UnhandledError
 		"""
 
-		if not UsersRepository.unblock(cur, user_id):
+		user = UsersRepository.get_by_id(cur, user_id)
+		if not user:
 			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
+		
+		UsersRepository.unblock(cur, user_id)
 		return ServiceResult()
 		
 	@classmethod
@@ -234,8 +239,11 @@ class UsersService(BaseService):
 			- UnhandledError
 		"""
 
-		if not UsersRepository.soft_delete(cur, user_id, deleted_by):
+		user = UsersRepository.get_by_id(cur, user_id)
+		if not user:
 			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
+		
+		UsersRepository.soft_delete(cur, user_id, deleted_by)
 		return ServiceResult()
 	
 	@classmethod
@@ -251,8 +259,11 @@ class UsersService(BaseService):
 			- UnhandledError
 		"""
 
-		if not UsersRepository.restore(cur, user_id):
+		user = UsersRepository.get_by_id(cur, user_id)
+		if not user:
 			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
+		
+		UsersRepository.restore(cur, user_id)
 		return ServiceResult()
 	
 	@classmethod
@@ -264,8 +275,8 @@ class UsersService(BaseService):
 	) -> ServiceResult:
 		"""
 			Errors:
-			- UserNotFoundError
-			- InternalError
+			- NotFoundError
+			- UnhandledError
 		"""
 
 		user = UsersRepository.get_by_id(cur, user_id)
@@ -283,9 +294,10 @@ class UsersService(BaseService):
 		"""
 			Errors:
 			- InvalidValueError
-			- UserNotFoundError
-			- InternalError
+			- NotFoundError
+			- UnhandledError
 		"""
+
 		norm_phone = Utils.normalize_phone(phone)
 		if not Utils.is_valid_phone(norm_phone):
 			return ServiceResult(error=InvalidValueError(cls.ENTITY, DbUser.COLUMN_PHONE))
@@ -306,9 +318,10 @@ class UsersService(BaseService):
 		"""
 			Errors:
 			- InvalidValueError
-			- UserNotFoundError
-			- InternalError
+			- NotFoundError
+			- UnhandledError
 		"""
+
 		norm_email = Utils.normalize_email(email)
 		if not Utils.is_valid_email(norm_email):
 			return ServiceResult(error=InvalidValueError(cls.ENTITY, DbUser.COLUMN_EMAIL))
@@ -329,6 +342,11 @@ class UsersService(BaseService):
 		limit: int = 50,
 		offset: int = 0
 	) -> ServiceResult:
+		"""
+			Errors:
+			- UnhandledError
+		"""
+
 		return ServiceResult(
 			result=UsersRepository.search(
 				cur=cur,

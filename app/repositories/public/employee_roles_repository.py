@@ -104,3 +104,15 @@ class EmployeeRolesRepository(
 	@classmethod
 	def get_many_by_role_id(cls, cur: psycopg.Cursor, role_id: int) -> list[EmployeeRole]:
 		return cls.select_many(cur, {"role_id": role_id})
+	
+	@classmethod
+	def get_roles(cls, cur: psycopg.Cursor, employee_id: int) -> list[Role]:
+		query = """
+			SELECT r.*
+			FROM roles r
+			JOIN employee_roles er ON er.role_id = r.id
+			WHERE er.employee_id = %s
+		"""
+
+		cur.execute(query, (employee_id,))
+		return [Role(**row) for row in cur.fetchall()]

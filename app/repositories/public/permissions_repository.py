@@ -1,5 +1,6 @@
 import psycopg
 from app.models.public.permission import Permission
+from app.types.deactivate_result import DeactivateResult
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
@@ -64,8 +65,28 @@ class PermissionsRepository(
 		return bool(cur.fetchone())
 	
 	@classmethod
-	def deactivate(cls, cur: psycopg.Cursor, permission_id: int, deactivated_by: int) -> int:
-		return cls.set_state(cur, "deactivated", {"id": permission_id}, deactivated_by)
+	def deactivate(cls, cur: psycopg.Cursor, permission_id: int, deactivated_by: int) -> DeactivateResult:
+		query = f"""
+			UPDATE {cls.TABLE}
+			SET
+				deactivated_by = %s,
+				deactivated_at = NOW()
+			WHERE
+				id = %s
+				AND is_system = FALSE
+				AND deactivated_at IS NULL
+		"""
+		cur.execute(query, (deactivated_by, permission_id,))
+		if cur.rowcount != 0:
+			return DeactivateResult.SUCCESS
+		
+		permission = cls.get_by_id(cur, permission_id)
+		if not permission:
+			return DeactivateResult.FAIL_NOT_FOUND
+		
+		if permission.is_system:
+			return DeactivateResult.FAIL_IS_SYSTEM
+		return DeactivateResult.SUCCESS
 	
 	@classmethod
 	def restore(cls, cur: psycopg.Cursor, permission_id: int) -> int:

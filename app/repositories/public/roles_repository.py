@@ -1,6 +1,7 @@
 
 import psycopg
 from app.models.public.role import Role
+from app.types.deactivate_result import DeactivateResult
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
@@ -45,8 +46,28 @@ class RolesRepository(
 		)["id"]
 	
 	@classmethod
-	def deactivate(cls, cur: psycopg.Cursor, role_id: int, deactivated_by: int) -> bool:
-		return cls.set_state(cur, "deactivated", {"id": role_id}, deactivated_by)
+	def deactivate(cls, cur: psycopg.Cursor, role_id: int, deactivated_by: int) -> DeactivateResult:
+		query = f"""
+			UPDATE {cls.TABLE}
+			SET
+				deactivated_by = %s,
+				deactivated_at = NOW()
+			WHERE
+				id = %s
+				AND is_system = FALSE
+				AND deactivated_at IS NULL
+		"""
+		cur.execute(query, (deactivated_by, role_id,))
+		if cur.rowcount != 0:
+			return DeactivateResult.SUCCESS
+		
+		role = cls.get_by_id(cur, role_id)
+		if not role:
+			return DeactivateResult.FAIL_NOT_FOUND
+		
+		if role.is_system:
+			return DeactivateResult.FAIL_IS_SYSTEM
+		return DeactivateResult.SUCCESS
 	
 	@classmethod
 	def restore(cls, cur: psycopg.Cursor, role_id: int) -> bool:

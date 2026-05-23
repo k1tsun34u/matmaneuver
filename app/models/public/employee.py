@@ -12,3 +12,10 @@ class Employee(BaseModel):
 	fired_at: date | None
 	created_by: int | None
 	created_at: datetime
+	
+	COLUMN_ID = "id"
+	COLUMN_USER_ID = "user_id"
+	COLUMN_HIRED_BY = "hired_by"
+	COLUMN_HIRED_AT = "hired_at"
+	COLUMN_FIRED_BY = "fired_by"
+	COLUMN_CREATED_BY = "created_by"

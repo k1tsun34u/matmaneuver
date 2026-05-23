@@ -93,7 +93,7 @@ class Utils:
 	
 	@staticmethod
 	def normalize_code(code: str) -> str:
-		return code.lower()
+		return code.strip().lower()
 
 	@staticmethod
 	def is_valid_phone(normalized_phone: str) -> bool:
