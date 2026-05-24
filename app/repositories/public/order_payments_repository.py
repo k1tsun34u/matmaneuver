@@ -12,7 +12,7 @@ class OrderPaymentsRepository(
 ):
 	TABLE = "order_payments"
 	MODEL = OrderPayment
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"order_id",
 		"amount",

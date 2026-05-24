@@ -14,12 +14,12 @@ class SelectableMixin(Generic[T]):
 		Requires class vars:
 		- TABLE
 		- MODEL
-		- SELECT_FIELDS
+		- TABLE_COLUMNS
 		- ORDER_BY
 	"""
 
 	MODEL: ClassVar[type[T]]
-	SELECT_FIELDS: ClassVar[tuple[str, ...]]
+	TABLE_COLUMNS: ClassVar[tuple[str, ...]]
 	ORDER_BY: ClassVar[tuple[tuple[str, Literal["ASC", "DESC"]], ...]]
 
 	@classmethod
@@ -39,7 +39,7 @@ class SelectableMixin(Generic[T]):
 		)
 
 		query = Utils.build_select_statement(
-			select_fields=cls.SELECT_FIELDS,
+			select_fields=cls.TABLE_COLUMNS,
 			table=cls.TABLE,
 			conditions=conditions,
 			order_by=cls.ORDER_BY,
@@ -70,7 +70,7 @@ class SelectableMixin(Generic[T]):
 		)
 
 		query = Utils.build_select_statement(
-			select_fields=cls.SELECT_FIELDS,
+			select_fields=cls.TABLE_COLUMNS,
 			table=cls.TABLE,
 			conditions=conditions,
 			order_by=cls.ORDER_BY,

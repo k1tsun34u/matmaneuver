@@ -10,7 +10,7 @@ class OrderFulfillmentsRepository(
 ):
 	TABLE = "order_fulfillments"
 	MODEL = OrderFulfillment
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"order_id",
 		"warehouse_id",

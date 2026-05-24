@@ -14,7 +14,7 @@ class RolesRepository(
 ):
 	TABLE = "roles"
 	MODEL = Role
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"code",
 		"is_system",

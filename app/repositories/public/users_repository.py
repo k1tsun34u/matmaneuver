@@ -19,7 +19,7 @@ class UsersRepository(
 ):
 	TABLE = "users"
 	MODEL = DbUser
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"phone",
 		"email",

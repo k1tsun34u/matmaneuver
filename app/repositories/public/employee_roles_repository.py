@@ -1,18 +1,21 @@
 import psycopg
+from collections.abc import Sequence
 from app.models.public.role import Role
 from app.models.public.employee import Employee
 from app.models.public.employee_role import EmployeeRole
 from app.repositories.base.base_repository import BaseRepository
+from app.repositories.base.mixins.assignable_mixin import AssignableMixin
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 
 
 class EmployeeRolesRepository(
 	BaseRepository,
+	AssignableMixin,
 	SelectableMixin[EmployeeRole]
 ):
 	TABLE = "employee_roles"
 	MODEL = EmployeeRole
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		EmployeeRole.COLUMN_EMPLOYEE_ID,
 		EmployeeRole.COLUMN_ROLE_ID,
 		EmployeeRole.COLUMN_ASSIGNED_BY,
@@ -29,15 +32,13 @@ class EmployeeRolesRepository(
 		role_id: int,
 		assigned_by: int | None
 	) -> None:
-		cls.execute_create(
+		cls.assign_by_fields(
 			cur=cur,
-			table=cls.TABLE,
-			fields={
-				EmployeeRole.COLUMN_EMPLOYEE_ID: employee_id,
-				EmployeeRole.COLUMN_ROLE_ID: role_id,
-				EmployeeRole.COLUMN_ASSIGNED_BY: assigned_by
-			},
-			returning=None
+			fixed_field=EmployeeRole.COLUMN_EMPLOYEE_ID,
+			fixed_value=employee_id,
+			varying_field=EmployeeRole.COLUMN_ROLE_ID,
+			varying_value=role_id,
+			actor_id=assigned_by
 		)
 	
 	@classmethod
@@ -46,56 +47,46 @@ class EmployeeRolesRepository(
 		cur: psycopg.Cursor,
 		employee_id: int,
 		role_id: int
-	) -> int:
-		return cls.execute_delete(cur, cls.TABLE, {
-			EmployeeRole.COLUMN_EMPLOYEE_ID: employee_id,
-			EmployeeRole.COLUMN_ROLE_ID: role_id
-		})
+	) -> None:
+		cls.unassign_by_fields(
+			cur=cur,
+			fixed_field=EmployeeRole.COLUMN_EMPLOYEE_ID,
+			fixed_value=employee_id,
+			varying_field=EmployeeRole.COLUMN_ROLE_ID,
+			varying_value=role_id
+		)
 	
 	@classmethod
 	def assign_many(
 		cls,
 		cur: psycopg.Cursor,
 		employee_id: int,
-		role_ids: list[int],
+		role_ids: Sequence[int],
 		assigned_by: int | None
-	) -> int:
-		if not role_ids:
-			return 0
-
-		role_ids = list(dict.fromkeys(role_ids))
-		query = f"""
-			INSERT INTO {cls.TABLE} ({", ".join(cls.SELECT_FIELDS)})
-			SELECT
-				%s,
-				unnest(%s::bigint[]),
-				%s,
-				NOW()
-			ON CONFLICT ({EmployeeRole.COLUMN_EMPLOYEE_ID}, {EmployeeRole.COLUMN_ROLE_ID}) DO NOTHING
-		"""
-		cur.execute(query, (employee_id, role_ids, assigned_by,))
-		return cur.rowcount
+	) -> None:
+		cls.assign_many_by_fields(
+			cur=cur,
+			fixed_field=EmployeeRole.COLUMN_EMPLOYEE_ID,
+			fixed_value=employee_id,
+			varying_field=EmployeeRole.COLUMN_ROLE_ID,
+			varying_values=role_ids,
+			actor_id=assigned_by
+		)
 	
 	@classmethod
 	def unassign_many(
 		cls,
 		cur: psycopg.Cursor,
 		employee_id: int,
-		role_ids: list[int]
-	) -> int:
-		if not role_ids:
-			return 0
-
-		role_ids = list(dict.fromkeys(role_ids))
-		query = f"""
-			DELETE FROM {cls.TABLE} er
-			USING (
-				SELECT unnest(%s::bigint[]) AS {EmployeeRole.COLUMN_ROLE_ID}
-			) r
-			WHERE er.{EmployeeRole.COLUMN_EMPLOYEE_ID} = %s AND er.{EmployeeRole.COLUMN_ROLE_ID} = r.{EmployeeRole.COLUMN_ROLE_ID}
-		"""
-		cur.execute(query, (role_ids, employee_id,))
-		return cur.rowcount
+		role_ids: Sequence[int]
+	) -> None:
+		cls.unassign_many_by_fields(
+			cur=cur,
+			fixed_field=EmployeeRole.COLUMN_EMPLOYEE_ID,
+			fixed_value=employee_id,
+			varying_field=EmployeeRole.COLUMN_ROLE_ID,
+			varying_values=role_ids
+		)
 	
 	@classmethod
 	def get_by_employee_id_role_id(

@@ -11,7 +11,7 @@ class SupplyStatusHistoryRepository(
 ):
 	TABLE = "supply_status_history"
 	MODEL = SupplyStatusHistory
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"supply_id",
 		"status",

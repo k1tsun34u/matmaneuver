@@ -11,7 +11,7 @@ class OrderStatusHistoryRepository(
 ):
 	TABLE = "order_status_history"
 	MODEL = OrderStatusHistory
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"order_id",
 		"status",

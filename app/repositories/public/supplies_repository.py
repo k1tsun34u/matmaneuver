@@ -12,7 +12,7 @@ class SuppliesRepository(
 ):
 	TABLE = "supplies"
 	MODEL = Supply
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"supplier_id",
 		"warehouse_id",

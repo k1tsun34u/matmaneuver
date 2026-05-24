@@ -13,7 +13,7 @@ class WriteOffsRepository(
 ):
 	TABLE = "write_offs"
 	MODEL = WriteOff
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"warehouse_id",
 		"reason",
@@ -81,7 +81,7 @@ class WriteOffsRepository(
 			params.append(created_to)
 		
 		query = Utils.build_select_statement(
-			select_fields=cls.SELECT_FIELDS,
+			select_fields=cls.TABLE_COLUMNS,
 			table=cls.TABLE,
 			conditions=tuple(conditions),
 			order_by=cls.ORDER_BY,

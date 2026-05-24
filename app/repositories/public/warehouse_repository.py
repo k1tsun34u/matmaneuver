@@ -14,7 +14,7 @@ class WarehousesRepository(
 ):
 	TABLE = "warehouses"
 	MODEL = Warehouse
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"address",
 		"description",

@@ -11,7 +11,7 @@ class SupplyItemsRepository(
 ):
 	TABLE = "supply_items"
 	MODEL = SupplyItem
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"supply_id",
 		"product_id",

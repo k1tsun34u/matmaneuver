@@ -11,7 +11,7 @@ class WriteOffItemsRepository(
 ):
 	TABLE = "write_off_items"
 	MODEL = WriteOffItem
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"write_off_id",
 		"product_id",

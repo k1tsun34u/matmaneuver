@@ -14,7 +14,7 @@ class EmployeesRepository(
 ):
 	TABLE = "employees"
 	MODEL = Employee
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		Employee.COLUMN_ID,
 		Employee.COLUMN_USER_ID,
 		Employee.COLUMN_HIRED_BY,

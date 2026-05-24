@@ -10,7 +10,7 @@ class ProductCategoriesRepository(
 ):
 	TABLE = "product_categories"
 	MODEL = ProductCategory
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"product_id",
 		"category_id",
 		"assigned_by",
@@ -58,7 +58,7 @@ class ProductCategoriesRepository(
 		
 		category_ids = list(dict.fromkeys(category_ids))
 		query = f"""
-			INSERT INTO {cls.TABLE} ({", ".join(cls.SELECT_FIELDS)})
+			INSERT INTO {cls.TABLE} ({", ".join(cls.TABLE_COLUMNS)})
 			SELECT
 				%s,
 				unnest(%s::bigint[]),

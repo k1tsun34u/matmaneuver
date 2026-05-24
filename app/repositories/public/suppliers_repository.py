@@ -15,7 +15,7 @@ class SuppliersRepository(
 ):
 	TABLE = "suppliers"
 	MODEL = Supplier
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"name",
 		"phone",

@@ -11,7 +11,7 @@ class CartsRepository(
 ):
 	TABLE = "carts"
 	MODEL = Cart
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"user_id",
 		"type",

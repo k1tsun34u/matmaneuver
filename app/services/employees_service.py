@@ -1,5 +1,6 @@
 import psycopg
 from datetime import date
+from collections.abc import Sequence
 from app.models.public.employee import Employee
 from app.types.update_result import UpdateResult
 from app.services.base_service import BaseService
@@ -7,6 +8,7 @@ from app.types.service_result import ServiceResult
 from app.types.permission_code import PermissionCode
 from app.errors.not_found_error import NotFoundError
 from app.errors.not_allowed_error import NotAllowedError
+from app.models.public.employee_role import EmployeeRole
 from app.types.transaction_helper import TransactionHelper
 from app.errors.invalid_value_error import InvalidValueError
 from app.repositories.public.employees_repository import EmployeesRepository
@@ -106,6 +108,61 @@ class EmployeesService(BaseService):
 		updated = EmployeesRepository.rehire(cur, employee_id, hired_by)
 		if updated == UpdateResult.FAIL_NOT_FOUND:
 			return ServiceResult(error=NotFoundError(cls.ENTITY, Employee.COLUMN_ID))
+		return ServiceResult()
+	
+	@classmethod
+	@BaseService.transaction
+	def assign_roles(
+		cls,
+		cur: psycopg.Cursor,
+		employee_id: int,
+		role_ids: Sequence[int],
+		assigned_by: int | None
+	) -> ServiceResult:
+		"""
+			Errors:
+			- NotAllowedError
+			- NotFoundError
+			- UnhandledError
+		"""
+		
+		if assigned_by is not None and not EPR.has_permission(cur, assigned_by, PermissionCode.ASSIGN_ROLE):
+			return ServiceResult(error=NotAllowedError(PermissionCode.ASSIGN_ROLE, EmployeeRole.COLUMN_ASSIGNED_BY))
+
+		EmployeeRolesRepository.assign_many(
+			cur=cur,
+			employee_id=employee_id,
+			role_ids=role_ids,
+			assigned_by=assigned_by
+		)
+
+		return ServiceResult()
+	
+	@classmethod
+	@BaseService.transaction
+	def unassign_roles(
+		cls,
+		cur: psycopg.Cursor,
+		employee_id: int,
+		role_ids: Sequence[int],
+		unassigned_by: int | None
+	) -> ServiceResult:
+		"""
+			Errors:
+			- NotAllowedError
+			- NotFoundError
+			- UnhandledError
+		"""
+		
+		if unassigned_by is not None and not EPR.has_permission(cur, unassigned_by, PermissionCode.UNASSIGN_ROLE):
+			return ServiceResult(error=NotAllowedError(PermissionCode.UNASSIGN_ROLE, EmployeeRole.COLUMN_ASSIGNED_BY))
+
+		EmployeeRolesRepository.unassign_many(
+			cur=cur,
+			employee_id=employee_id,
+			role_ids=role_ids
+		)
+
 		return ServiceResult()
 	
 	@classmethod

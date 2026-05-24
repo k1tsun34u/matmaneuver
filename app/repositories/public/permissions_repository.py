@@ -13,7 +13,7 @@ class PermissionsRepository(
 ):
 	TABLE = "permissions"
 	MODEL = Permission
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"code",
 		"description",

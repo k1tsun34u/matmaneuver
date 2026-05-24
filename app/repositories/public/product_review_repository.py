@@ -10,7 +10,7 @@ class ProductReviewsRepository(
 ):
 	TABLE = "product_reviews"
 	MODEL = ProductReview
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"product_id",
 		"user_id",
 		"rating",

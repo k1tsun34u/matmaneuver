@@ -11,7 +11,7 @@ class OrdersRepository(
 ):
 	TABLE = "orders"
 	MODEL = Order
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"current_status",
 		"track_number",

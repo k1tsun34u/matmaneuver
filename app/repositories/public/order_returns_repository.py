@@ -11,7 +11,7 @@ class OrderReturnsRepository(
 ):
 	TABLE = "order_returns"
 	MODEL = OrderReturn
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"order_id",
 		"reason",

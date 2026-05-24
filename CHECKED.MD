@@ -25,6 +25,7 @@
 		| EmployeePermissionsRepository       | +        |
 		| EmployeeRolesRepository             | +        |
 		| EmployeesRepository                 | +        |
+		| RolePermissionsRepository           | +        |
 +	##	Services
 	|          Service          | Complete |
 	| :------------------------ | :------: |

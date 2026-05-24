@@ -13,7 +13,7 @@ class CategoriesRepository(
 ):
 	TABLE = "categories"
 	MODEL = Category
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"parent_category_id",
 		"name",

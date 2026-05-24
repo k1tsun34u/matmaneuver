@@ -10,7 +10,7 @@ class ProductImagesRepository(
 ):
 	TABLE = "product_images"
 	MODEL = ProductImage
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"product_id",
 		"storage_key",

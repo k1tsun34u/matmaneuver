@@ -10,7 +10,7 @@ class WarehouseProductsRepository(
 ):
 	TABLE = "warehouse_products"
 	MODEL = WarehouseProduct
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"product_id",
 		"warehouse_id",
 		"quantity",

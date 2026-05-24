@@ -11,7 +11,7 @@ class OrderReturnStatusHistoryRepository(
 ):
 	TABLE = "order_return_status_history"
 	MODEL = OrderReturnStatusHistory
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"order_return_id",
 		"status",

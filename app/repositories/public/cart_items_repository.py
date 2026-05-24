@@ -10,7 +10,7 @@ class CartItemsRepository(
 ):
 	TABLE = "cart_items"
 	MODEL = CartItem
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"cart_id",
 		"product_id",
 		"quantity",

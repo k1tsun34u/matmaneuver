@@ -15,7 +15,7 @@ class ProductsRepository(
 ):
 	TABLE = "products"
 	MODEL = Product
-	SELECT_FIELDS = (
+	TABLE_COLUMNS = (
 		"id",
 		"name",
 		"description",
@@ -123,7 +123,7 @@ class ProductsRepository(
 			params.append(max_price)
 
 		query = f"""
-			SELECT {", ".join(cls.SELECT_FIELDS)}
+			SELECT {", ".join(cls.TABLE_COLUMNS)}
 			FROM {cls.TABLE}
 			{Utils.build_where(tuple(conditions))}
 			{Utils.build_order_by(cls.ORDER_BY)}
