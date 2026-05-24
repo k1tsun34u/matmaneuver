@@ -2,6 +2,8 @@ import psycopg
 from app.utils import Utils
 from app.unset import Unset, UNSET
 from app.models.db.db_user import DbUser
+from app.models.public.employee import Employee
+from app.types.update_result import UpdateResult
 from app.types.token_payload import TokenPayload
 from app.services.base_service import BaseService
 from app.types.service_result import ServiceResult
@@ -121,8 +123,8 @@ class UsersService(BaseService):
 		"""
 			Errors:
 			- InvalidValueError
-			- AlreadyExistsError
 			- NotFoundError
+			- AlreadyExistsError
 			- UnhandledError
 		"""
 
@@ -136,17 +138,20 @@ class UsersService(BaseService):
 			return ServiceResult(error=normalized)
 		
 		norm_phone, norm_email, norm_full_name = normalized
-		updated = UsersRepository.update(
+		tmp = UsersRepository.update(
 			cur=cur,
 			user_id=token.user_id,
 			token_ver=token.token_ver,
-			phone=norm_phone,
-			email=norm_email,
-			full_name=norm_full_name
+			norm_phone=norm_phone,
+			norm_email=norm_email,
+			norm_full_name=norm_full_name
 		)
 
-		if not updated:
-			return ServiceResult(error=InvalidValueError(cls.ENTITY, DbUser.COLUMN_TOKEN_VER))
+		match tmp:
+			case UpdateResult.FAIL_CONDITION:
+				return ServiceResult(error=InvalidValueError(cls.ENTITY, DbUser.COLUMN_TOKEN_VER))
+			case UpdateResult.FAIL_NOT_FOUND:
+				return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
 		return ServiceResult()
 		
 	@classmethod
@@ -167,16 +172,19 @@ class UsersService(BaseService):
 		if not Utils.is_valid_password_hash(password_hash):
 			return ServiceResult(error=InvalidValueError(cls.ENTITY, DbUser.COLUMN_PASSWORD_HASH))
 
-		updated = UsersRepository.set_password(
+		tmp = UsersRepository.set_password(
 			cur=cur,
 			user_id=token.user_id,
 			token_ver=token.token_ver,
 			password_hash=password_hash
 		)
 
-		if updated is None:
-			return ServiceResult(error=InvalidValueError(cls.ENTITY, DbUser.COLUMN_TOKEN_VER))
-		return ServiceResult(result=updated)
+		match tmp[0]:
+			case UpdateResult.FAIL_CONDITION:
+				return ServiceResult(error=InvalidValueError(cls.ENTITY, DbUser.COLUMN_TOKEN_VER))
+			case UpdateResult.FAIL_NOT_FOUND:
+				return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
+		return ServiceResult(result=tmp[1])
 			
 	@classmethod
 	@BaseService.transaction
@@ -195,12 +203,9 @@ class UsersService(BaseService):
 
 		if not EPR.has_permission(cur, blocked_by, PermissionCode.BLOCK_USER):
 			return ServiceResult(error=NotAllowedError(PermissionCode.BLOCK_USER, DbUser.COLUMN_BLOCKED_BY))
-
-		user = UsersRepository.get_by_id(cur, user_id)
-		if not user:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
 		
-		UsersRepository.block(cur, user_id, blocked_by)
+		if UsersRepository.block(cur, user_id, blocked_by) == UpdateResult.FAIL_NOT_FOUND:
+			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -220,17 +225,14 @@ class UsersService(BaseService):
 
 		if not EPR.has_permission(cur, unblocked_by, PermissionCode.UNBLOCK_USER):
 			return ServiceResult(error=NotAllowedError(PermissionCode.UNBLOCK_USER))
-
-		user = UsersRepository.get_by_id(cur, user_id)
-		if not user:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
 		
-		UsersRepository.unblock(cur, user_id)
+		if UsersRepository.unblock(cur, user_id) == UpdateResult.FAIL_NOT_FOUND:
+			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
 		return ServiceResult()
 		
 	@classmethod
 	@BaseService.transaction
-	def delete(
+	def soft_delete(
 		cls,
 		cur: psycopg.Cursor,
 		user_id: int,
@@ -245,12 +247,9 @@ class UsersService(BaseService):
 
 		if deleted_by is not None and not EPR.has_permission(cur, deleted_by, PermissionCode.DELETE_USER):
 			return ServiceResult(error=NotAllowedError(PermissionCode.DELETE_USER, DbUser.COLUMN_DELETED_BY))
-
-		user = UsersRepository.get_by_id(cur, user_id)
-		if not user:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
 		
-		UsersRepository.soft_delete(cur, user_id, deleted_by)
+		if UsersRepository.soft_delete(cur, user_id, deleted_by) == UpdateResult.FAIL_NOT_FOUND:
+			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -259,7 +258,7 @@ class UsersService(BaseService):
 		cls,
 		cur: psycopg.Cursor,
 		user_id: int,
-		restored_by: int
+		restored_by: int | None
 	) -> ServiceResult:
 		"""
 			Errors:
@@ -268,14 +267,11 @@ class UsersService(BaseService):
 			- UnhandledError
 		"""
 
-		if not EPR.has_permission(cur, restored_by, PermissionCode.CREATE_USER):
+		if restored_by is not None and not EPR.has_permission(cur, restored_by, PermissionCode.CREATE_USER):
 			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_USER))
-
-		user = UsersRepository.get_by_id(cur, user_id)
-		if not user:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
 		
-		UsersRepository.restore(cur, user_id)
+		if UsersRepository.restore(cur, user_id) == UpdateResult.FAIL_NOT_FOUND:
+			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod

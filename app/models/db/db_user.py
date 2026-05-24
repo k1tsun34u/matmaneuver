@@ -12,8 +12,11 @@ class DbUser(BaseModel):
 	COLUMN_TOKEN_VER: ClassVar[str] = "token_ver"
 	COLUMN_PASSWORD_HASH: ClassVar[str] = "password_hash"
 	COLUMN_BLOCKED_BY: ClassVar[str] = "blocked_by"
+	COLUMN_BLOCKED_AT: ClassVar[str] = "blocked_at"
 	COLUMN_DELETED_BY: ClassVar[str] = "deleted_by"
+	COLUMN_DELETED_AT: ClassVar[str] = "deleted_at"
 	COLUMN_CREATED_BY: ClassVar[str] = "created_by"
+	COLUMN_CREATED_AT: ClassVar[str] = "created_at"
 
 	id: int
 	phone: str

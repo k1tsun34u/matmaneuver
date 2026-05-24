@@ -82,8 +82,7 @@ class EmployeesService(BaseService):
 		if not EPR.has_permission(cur, fired_by, PermissionCode.FIRE_EMPLOYEE):
 			return ServiceResult(error=NotAllowedError(PermissionCode.FIRE_EMPLOYEE, Employee.COLUMN_FIRED_BY))
 		
-		updated = EmployeesRepository.fire(cur, employee_id, fired_by)
-		if updated == UpdateResult.FAIL_NOT_FOUND:
+		if EmployeesRepository.fire(cur, employee_id, fired_by) == UpdateResult.FAIL_NOT_FOUND:
 			return ServiceResult(error=NotFoundError(cls.ENTITY, Employee.COLUMN_ID))
 		return ServiceResult()
 	

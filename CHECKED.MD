@@ -12,6 +12,7 @@
 		| EmployeeRole      | +        |
 		| Employee          | +        |
 		| Permission        | +        |
+		| DbUser            | +        |
 +	##	Repositories
 	-	###	Base
 		*	####	Mixins
@@ -30,6 +31,7 @@
 		| RolePermissionsRepository           | +        |
 		| RolesRepository                     | +        |
 		| PermissionsRepository               | +        |
+		| UsersRepository                     | +        |
 +	##	Services
 	|          Service          | Complete |
 	| :------------------------ | :------: |
@@ -37,3 +39,4 @@
 	| EmployeesService          | +        |
 	| RolesService              | +        |
 	| PermissionsService        | +        |
+	| UsersService              | +        |

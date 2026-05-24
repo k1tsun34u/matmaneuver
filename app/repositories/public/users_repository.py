@@ -20,24 +20,21 @@ class UsersRepository(
 	TABLE = "users"
 	MODEL = DbUser
 	TABLE_COLUMNS = (
-		"id",
-		"phone",
-		"email",
-		"full_name",
-		"password_hash",
-		"token_ver",
-
-		"blocked_by",
-		"blocked_at",
-
-		"deleted_by",
-		"deleted_at",
-
-		"created_by",
-		"created_at",
+		DbUser.COLUMN_ID,
+		DbUser.COLUMN_PHONE,
+		DbUser.COLUMN_EMAIL,
+		DbUser.COLUMN_FULL_NAME,
+		DbUser.COLUMN_PASSWORD_HASH,
+		DbUser.COLUMN_TOKEN_VER,
+		DbUser.COLUMN_BLOCKED_BY,
+		DbUser.COLUMN_BLOCKED_AT,
+		DbUser.COLUMN_DELETED_BY,
+		DbUser.COLUMN_DELETED_AT,
+		DbUser.COLUMN_CREATED_BY,
+		DbUser.COLUMN_CREATED_AT,
 	)
 
-	ORDER_BY = (("created_at", "DESC"),)
+	ORDER_BY = ((DbUser.COLUMN_CREATED_AT, "DESC"),)
 
 	@classmethod
 	def create(
@@ -53,14 +50,14 @@ class UsersRepository(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				"phone": phone,
-				"email": email,
-				"full_name": full_name,
-				"password_hash": password_hash,
-				"created_by": created_by
+				DbUser.COLUMN_PHONE: phone,
+				DbUser.COLUMN_EMAIL: email,
+				DbUser.COLUMN_FULL_NAME: full_name,
+				DbUser.COLUMN_PASSWORD_HASH: password_hash,
+				DbUser.COLUMN_CREATED_BY: created_by
 			},
-			returning="id"
-		)["id"]
+			returning=DbUser.COLUMN_ID
+		)[DbUser.COLUMN_ID]
 	
 	@classmethod
 	def update(
@@ -68,18 +65,18 @@ class UsersRepository(
 		cur: psycopg.Cursor,
 		user_id: int,
 		token_ver: int,
-		phone: str | Unset = UNSET,
-		email: str | Unset = UNSET,
-		full_name: str | Unset = UNSET
+		norm_phone: str | Unset = UNSET,
+		norm_email: str | Unset = UNSET,
+		norm_full_name: str | Unset = UNSET
 	) -> UpdateResult:
 		return cls.update_by_conditions(
 			cur=cur,
-			identity_where={"id": user_id},
-			condition_where={"token_ver": token_ver},
+			identity_where={DbUser.COLUMN_ID: user_id},
+			condition_where={DbUser.COLUMN_TOKEN_VER: token_ver},
 			fields=Utils.filter_unset({
-				"phone": phone,
-				"email": email,
-				"full_name": full_name
+				DbUser.COLUMN_PHONE: norm_phone,
+				DbUser.COLUMN_EMAIL: norm_email,
+				DbUser.COLUMN_FULL_NAME: norm_full_name
 			})
 		)
 	
@@ -90,44 +87,49 @@ class UsersRepository(
 		user_id: int,
 		token_ver: int,
 		password_hash: str
-	) -> TokenPayload | None:
-		query = f"""
-			UPDATE {cls.TABLE}
-			SET password_hash = %s, token_ver = token_ver + 1
-			WHERE id = %s AND token_ver = %s
-		"""
-		cur.execute(query, (password_hash, user_id, token_ver,))
-		if cur.rowcount == 0:
-			return None
-		return TokenPayload(user_id, token_ver + 1)
+	) -> tuple[UpdateResult, TokenPayload | None]:
+		next_token_ver = token_ver + 1
+		tmp = cls.update_by_conditions(
+			cur=cur,
+			identity_where={DbUser.COLUMN_ID: user_id},
+			condition_where={DbUser.COLUMN_TOKEN_VER: token_ver},
+			fields={
+				DbUser.COLUMN_PASSWORD_HASH: password_hash,
+				DbUser.COLUMN_TOKEN_VER: next_token_ver
+			}
+		)
+
+		if tmp == UpdateResult.SUCCESS:
+			return (tmp, TokenPayload(user_id, next_token_ver),)
+		return (tmp, None,)
 	
 	@classmethod
 	def soft_delete(cls, cur: psycopg.Cursor, user_id: int, deleted_by: int | None) -> UpdateResult:
-		return cls.set_state(cur, "deleted", {"id": user_id}, deleted_by)
+		return cls.set_state(cur, "deleted", {DbUser.COLUMN_ID: user_id}, deleted_by)
 	
 	@classmethod
 	def restore(cls, cur: psycopg.Cursor, user_id: int) -> UpdateResult:
-		return cls.clear_state(cur, "deleted", {"id": user_id})
+		return cls.clear_state(cur, "deleted", {DbUser.COLUMN_ID: user_id})
 	
 	@classmethod
 	def block(cls, cur: psycopg.Cursor, user_id: int, blocked_by: int) -> UpdateResult:
-		return cls.set_state(cur, "blocked", {"id": user_id}, blocked_by)
+		return cls.set_state(cur, "blocked", {DbUser.COLUMN_ID: user_id}, blocked_by)
 	
 	@classmethod
 	def unblock(cls, cur: psycopg.Cursor, user_id: int) -> UpdateResult:
-		return cls.clear_state(cur, "blocked", {"id": user_id})
+		return cls.clear_state(cur, "blocked", {DbUser.COLUMN_ID: user_id})
 	
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, user_id: int) -> DbUser | None:
-		return cls.select(cur=cur, equals={"id": user_id})
+		return cls.select(cur=cur, equals={DbUser.COLUMN_ID: user_id})
 	
 	@classmethod
 	def get_by_phone(cls, cur: psycopg.Cursor, phone: str) -> DbUser | None:
-		return cls.select(cur=cur, equals={"phone": phone})
+		return cls.select(cur=cur, equals={DbUser.COLUMN_PHONE: phone})
 	
 	@classmethod
 	def get_by_email(cls, cur: psycopg.Cursor, email: str) -> DbUser | None:
-		return cls.select(cur=cur, equals={"email": email})
+		return cls.select(cur=cur, equals={DbUser.COLUMN_EMAIL: email})
 	
 	@classmethod
 	def search(
@@ -141,13 +143,13 @@ class UsersRepository(
 	) -> list[DbUser]:
 		is_null = tuple()
 		if exclude_deleted:
-			is_null = is_null + ("deleted_at",)
+			is_null = is_null + (DbUser.COLUMN_DELETED_AT,)
 		if exclude_blocked:
-			is_null = is_null + ("blocked_at",)
+			is_null = is_null + (DbUser.COLUMN_BLOCKED_AT,)
 		return cls.select_many(
 			cur=cur,
 			is_null=is_null,
-			ilike=(("phone", "email", "full_name",), f"%{search}%",) if search else None,
+			ilike=((DbUser.COLUMN_PHONE, DbUser.COLUMN_EMAIL, DbUser.COLUMN_FULL_NAME,), f"%{search}%",) if search else None,
 			limit=limit,
 			offset=offset
 		)
