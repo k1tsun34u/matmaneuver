@@ -1,25 +1,54 @@
 import psycopg
+from app.utils import Utils
+from typing import Any, TypeVar
+from app.types.delete_result import DeleteResult
+from app.types.update_result import UpdateResult
 from app.models.public.warehouse_product import WarehouseProduct
 from app.repositories.base.base_repository import BaseRepository
+from app.repositories.base.mixins.updatable_mixin import UpdatableMixin
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 
 
+T = TypeVar("T")
+
 class WarehouseProductsRepository(
 	BaseRepository,
+	UpdatableMixin,
 	SelectableMixin[WarehouseProduct]
 ):
 	TABLE = "warehouse_products"
 	MODEL = WarehouseProduct
 	TABLE_COLUMNS = (
-		"product_id",
-		"warehouse_id",
-		"quantity",
-		"reserved_quantity",
-		"created_by",
-		"created_at",
+		WarehouseProduct.COLUMN_PRODUCT_ID,
+		WarehouseProduct.COLUMN_WAREHOUSE_ID,
+		WarehouseProduct.COLUMN_QUANTITY,
+		WarehouseProduct.COLUMN_RESERVED_QUANTITY,
+		WarehouseProduct.COLUMN_CREATED_BY,
+		WarehouseProduct.COLUMN_CREATED_AT,
 	)
 
-	ORDER_BY = (("created_at", "DESC"),)
+	ORDER_BY = ((WarehouseProduct.COLUMN_CREATED_AT, "DESC"),)
+
+	@classmethod
+	def _determine_result(
+		cls,
+		cur: psycopg.Cursor,
+		where: dict[str, Any],
+		rowcount: int,
+		result_type: type[T]
+	) -> T:
+		if rowcount != 0:
+			return result_type.SUCCESS
+
+		conditions, params = Utils.build_conditions_params(equals=where)
+		query = f"""
+			SELECT 1 FROM {cls.TABLE}
+			{Utils.build_where(conditions)}
+		"""
+		cur.execute(query, params)
+		if not cur.fetchone():
+			return result_type.FAIL_NOT_FOUND
+		return result_type.FAIL_CONDITION
 
 	@classmethod
 	def create(
@@ -33,37 +62,58 @@ class WarehouseProductsRepository(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				"product_id": product_id,
-				"warehouse_id": warehouse_id,
-				"created_by": created_by
+				WarehouseProduct.COLUMN_PRODUCT_ID: product_id,
+				WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id,
+				WarehouseProduct.COLUMN_CREATED_BY: created_by
 			},
 			returning=None
 		)
 	
 	@classmethod
-	def delete(cls, cur: psycopg.Cursor, product_id: int, warehouse_id: int) -> int:
-		return cls.execute_delete(cur, cls.TABLE, {
-			"product_id": product_id,
-			"warehouse_id": warehouse_id,
-			"quantity": 0,
-			"reserved_quantity": 0
+	def delete(cls, cur: psycopg.Cursor, product_id: int, warehouse_id: int) -> DeleteResult:
+		rowcount = cls.execute_delete(cur, WarehouseProduct.TABLE, {
+			WarehouseProduct.COLUMN_PRODUCT_ID: product_id,
+			WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id,
+			WarehouseProduct.COLUMN_QUANTITY: 0,
+			WarehouseProduct.COLUMN_RESERVED_QUANTITY: 0
 		})
+		
+		return cls._determine_result(
+			cur, {
+				WarehouseProduct.COLUMN_PRODUCT_ID: product_id,
+				WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id
+			}, rowcount, DeleteResult
+		)
 	
 	@classmethod
-	def delete_many_by_product_id(cls, cur: psycopg.Cursor, product_id: int) -> int:
-		return cls.execute_delete(cur, cls.TABLE, {
-			"product_id": product_id,
-			"quantity": 0,
-			"reserved_quantity": 0
+	def delete_many_by_product_id(cls, cur: psycopg.Cursor, product_id: int) -> DeleteResult:
+		rowcount = cls.execute_delete(cur, cls.TABLE, {
+			WarehouseProduct.COLUMN_PRODUCT_ID: product_id,
+			WarehouseProduct.COLUMN_QUANTITY: 0,
+			WarehouseProduct.COLUMN_RESERVED_QUANTITY: 0
 		})
+		
+		return cls._determine_result(
+			cur,
+			{WarehouseProduct.COLUMN_PRODUCT_ID: product_id},
+			rowcount,
+			DeleteResult
+		)
 	
 	@classmethod
-	def delete_many_by_warehouse_id(cls, cur: psycopg.Cursor, warehouse_id: int) -> int:
-		return cls.execute_delete(cur, cls.TABLE, {
-			"warehouse_id": warehouse_id,
-			"quantity": 0,
-			"reserved_quantity": 0
+	def delete_many_by_warehouse_id(cls, cur: psycopg.Cursor, warehouse_id: int) -> DeleteResult:
+		rowcount = cls.execute_delete(cur, cls.TABLE, {
+			WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id,
+			WarehouseProduct.COLUMN_QUANTITY: 0,
+			WarehouseProduct.COLUMN_RESERVED_QUANTITY: 0
 		})
+		
+		return cls._determine_result(
+			cur,
+			{WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id},
+			rowcount,
+			DeleteResult
+		)
 	
 	@classmethod
 	def increase_quantity(
@@ -72,17 +122,25 @@ class WarehouseProductsRepository(
 		product_id: int,
 		warehouse_id: int,
 		quantity: int
-	) -> int:
+	) -> UpdateResult:
 		if quantity <= 0:
-			raise ValueError("`quantity` must be > 0")
+			return UpdateResult.FAIL_CONDITION
 		
 		query = f"""
 			UPDATE {cls.TABLE}
-			SET quantity = quantity + %s
-			WHERE product_id = %s AND warehouse_id = %s
+			SET {WarehouseProduct.COLUMN_QUANTITY} = {WarehouseProduct.COLUMN_QUANTITY} + %s
+			WHERE
+				{WarehouseProduct.COLUMN_PRODUCT_ID} = %s
+				AND {WarehouseProduct.COLUMN_WAREHOUSE_ID} = %s
 		"""
 		cur.execute(query, (quantity, product_id, warehouse_id,))
-		return cur.rowcount
+
+		return cls._determine_result(
+			cur, {
+				WarehouseProduct.COLUMN_PRODUCT_ID: product_id,
+				WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id
+			}, cur.rowcount, UpdateResult
+		)
 	
 	@classmethod
 	def decrease_quantity(
@@ -91,20 +149,27 @@ class WarehouseProductsRepository(
 		product_id: int,
 		warehouse_id: int,
 		quantity: int
-	) -> int:
+	) -> UpdateResult:
 		if quantity <= 0:
-			raise ValueError("`quantity` must be > 0")
+			return UpdateResult.FAIL_CONDITION
 
 		query = f"""
 			UPDATE {cls.TABLE}
-			SET quantity = quantity - %s
+			SET {WarehouseProduct.COLUMN_QUANTITY} = {WarehouseProduct.COLUMN_QUANTITY} - %s
 			WHERE
-				product_id = %s AND warehouse_id = %s
-				AND quantity >= %s
-				AND (quantity - %s) >= reserved_quantity
+				{WarehouseProduct.COLUMN_PRODUCT_ID} = %s
+				AND {WarehouseProduct.COLUMN_WAREHOUSE_ID} = %s
+				AND {WarehouseProduct.COLUMN_QUANTITY} >= %s
+				AND ({WarehouseProduct.COLUMN_QUANTITY} - %s) >= {WarehouseProduct.COLUMN_RESERVED_QUANTITY}
 		"""
 		cur.execute(query, (quantity, product_id, warehouse_id, quantity, quantity,))
-		return cur.rowcount
+
+		return cls._determine_result(
+			cur, {
+				WarehouseProduct.COLUMN_PRODUCT_ID: product_id,
+				WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id
+			}, cur.rowcount, UpdateResult
+		)
 	
 	@classmethod
 	def reserve(
@@ -113,19 +178,26 @@ class WarehouseProductsRepository(
 		product_id: int,
 		warehouse_id: int,
 		reserve_quantity: int
-	) -> int:
+	) -> UpdateResult:
 		if reserve_quantity <= 0:
-			raise ValueError("`reserve_quantity` must be > 0")
+			return UpdateResult.FAIL_CONDITION
 
 		query = f"""
 			UPDATE {cls.TABLE}
-			SET reserved_quantity = reserved_quantity + %s
+			SET {WarehouseProduct.COLUMN_RESERVED_QUANTITY} = {WarehouseProduct.COLUMN_RESERVED_QUANTITY} + %s
 			WHERE
-				product_id = %s AND warehouse_id = %s
-				AND (reserved_quantity + %s) <= quantity
+				{WarehouseProduct.COLUMN_PRODUCT_ID} = %s
+				AND {WarehouseProduct.COLUMN_WAREHOUSE_ID} = %s
+				AND ({WarehouseProduct.COLUMN_RESERVED_QUANTITY} + %s) <= {WarehouseProduct.COLUMN_QUANTITY}
 		"""
 		cur.execute(query, (reserve_quantity, product_id, warehouse_id, reserve_quantity,))
-		return cur.rowcount
+
+		return cls._determine_result(
+			cur, {
+				WarehouseProduct.COLUMN_PRODUCT_ID: product_id,
+				WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id
+			}, cur.rowcount, UpdateResult
+		)
 	
 	@classmethod
 	def unreserve(
@@ -134,19 +206,26 @@ class WarehouseProductsRepository(
 		product_id: int,
 		warehouse_id: int,
 		reserve_quantity: int
-	) -> int:
+	) -> UpdateResult:
 		if reserve_quantity <= 0:
-			raise ValueError("`reserve_quantity` must be > 0")
+			return UpdateResult.FAIL_CONDITION
 
 		query = f"""
 			UPDATE {cls.TABLE}
-			SET reserved_quantity = reserved_quantity - %s
+			SET {WarehouseProduct.COLUMN_RESERVED_QUANTITY} = {WarehouseProduct.COLUMN_RESERVED_QUANTITY} - %s
 			WHERE
-				product_id = %s AND warehouse_id = %s
-				AND reserved_quantity >= %s
+				{WarehouseProduct.COLUMN_PRODUCT_ID} = %s
+				AND {WarehouseProduct.COLUMN_WAREHOUSE_ID} = %s
+				AND {WarehouseProduct.COLUMN_RESERVED_QUANTITY} >= %s
 		"""
 		cur.execute(query, (reserve_quantity, product_id, warehouse_id, reserve_quantity,))
-		return cur.rowcount
+
+		return cls._determine_result(
+			cur, {
+				WarehouseProduct.COLUMN_PRODUCT_ID: product_id,
+				WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id
+			}, cur.rowcount, UpdateResult
+		)
 	
 	@classmethod
 	def consume(
@@ -155,26 +234,33 @@ class WarehouseProductsRepository(
 		product_id: int,
 		warehouse_id: int,
 		quantity: int
-	) -> int:
+	) -> UpdateResult:
 		if quantity <= 0:
-			raise ValueError("`quantity` must be > 0")
+			return UpdateResult.FAIL_CONDITION
 		
 		query = f"""
 			UPDATE {cls.TABLE}
 			SET
-				quantity = quantity - %s,
-				reserved_quantity = reserved_quantity - %s
+				{WarehouseProduct.COLUMN_QUANTITY} = {WarehouseProduct.COLUMN_QUANTITY} - %s,
+				{WarehouseProduct.COLUMN_RESERVED_QUANTITY} = {WarehouseProduct.COLUMN_RESERVED_QUANTITY} - %s
 			WHERE
-				product_id = %s AND warehouse_id = %s
-				AND reserved_quantity >= %s
-				AND quantity >= %s
+				{WarehouseProduct.COLUMN_PRODUCT_ID} = %s
+				AND {WarehouseProduct.COLUMN_WAREHOUSE_ID} = %s
+				AND {WarehouseProduct.COLUMN_RESERVED_QUANTITY} >= %s
+				AND {WarehouseProduct.COLUMN_QUANTITY} >= %s
 		"""
 		cur.execute(query, (
 			quantity, quantity,
 			product_id, warehouse_id,
 			quantity, quantity,
 		))
-		return cur.rowcount
+
+		return cls._determine_result(
+			cur, {
+				WarehouseProduct.COLUMN_PRODUCT_ID: product_id,
+				WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id
+			}, cur.rowcount, UpdateResult
+		)
 	
 	@classmethod
 	def get_by_product_id_warehouse_id(
@@ -183,12 +269,24 @@ class WarehouseProductsRepository(
 		product_id: int,
 		warehouse_id: int
 	) -> WarehouseProduct | None:
-		return cls.select(cur, {"product_id": product_id, "warehouse_id": warehouse_id})
+		return cls.select(
+			cur=cur,
+			equals={
+				WarehouseProduct.COLUMN_PRODUCT_ID: product_id,
+				WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id
+			}
+		)
 	
 	@classmethod
 	def get_many_by_product_id(cls, cur: psycopg.Cursor, product_id: int) -> list[WarehouseProduct]:
-		return cls.select_many(cur, {"product_id": product_id})
+		return cls.select_many(
+			cur=cur,
+			equals={WarehouseProduct.COLUMN_PRODUCT_ID: product_id}
+		)
 	
 	@classmethod
 	def get_many_by_warehouse_id(cls, cur: psycopg.Cursor, warehouse_id: int) -> list[WarehouseProduct]:
-		return cls.select_many(cur, {"warehouse_id": warehouse_id})
+		return cls.select_many(
+			cur=cur,
+			equals={WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id}
+		)

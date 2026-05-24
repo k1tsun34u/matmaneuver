@@ -14,6 +14,9 @@ class Employee(BaseModel):
 	COLUMN_CREATED_BY: ClassVar[str] = "created_by"
 	COLUMN_CREATED_AT: ClassVar[str] = "created_at"
 
+	ENTITY: ClassVar[str] = "Employee"
+	TABLE: ClassVar[str] = "employees"
+
 	id: int
 	user_id: int
 	hired_by: int | None

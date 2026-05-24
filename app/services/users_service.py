@@ -17,13 +17,12 @@ from app.repositories.public.employee_permissions_repository import EmployeePerm
 
 
 class UsersService(BaseService):
-	ENTITY = "User"
-	KEY_HELPERS = (TransactionHelper(ENTITY, "users", (
+	KEY_HELPERS = (TransactionHelper(DbUser.ENTITY, DbUser.TABLE, (
 		DbUser.COLUMN_PHONE,
 		DbUser.COLUMN_EMAIL,
 	)),)
 
-	FKEY_HELPERS = (TransactionHelper(ENTITY, "users", (
+	FKEY_HELPERS = (TransactionHelper(DbUser.ENTITY, DbUser.TABLE, (
 		DbUser.COLUMN_BLOCKED_BY,
 		DbUser.COLUMN_DELETED_BY,
 		DbUser.COLUMN_CREATED_BY,
@@ -39,21 +38,21 @@ class UsersService(BaseService):
 		if not isinstance(phone, Unset):
 			normalized_phone = Utils.normalize_phone(phone)
 			if not Utils.is_valid_phone(normalized_phone):
-				return InvalidValueError(cls.ENTITY, DbUser.COLUMN_PHONE)
+				return InvalidValueError(DbUser.ENTITY, DbUser.COLUMN_PHONE)
 			
 			phone = normalized_phone
 		
 		if not (isinstance(email, Unset) or email is None):
 			normalized_email = Utils.normalize_email(email)
 			if not Utils.is_valid_email(normalized_email):
-				return InvalidValueError(cls.ENTITY, DbUser.COLUMN_EMAIL)
+				return InvalidValueError(DbUser.ENTITY, DbUser.COLUMN_EMAIL)
 			
 			email = normalized_email
 		
 		if not isinstance(full_name, Unset):
 			normalized_full_name = Utils.normalize_full_name(full_name)
 			if not Utils.is_valid_full_name(normalized_full_name):
-				return InvalidValueError(cls.ENTITY, DbUser.COLUMN_FULL_NAME)
+				return InvalidValueError(DbUser.ENTITY, DbUser.COLUMN_FULL_NAME)
 
 			full_name = normalized_full_name
 		
@@ -87,7 +86,7 @@ class UsersService(BaseService):
 			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_USER, DbUser.COLUMN_CREATED_BY))
 
 		if not Utils.is_valid_password_hash(password_hash):
-			return ServiceResult(error=InvalidValueError(cls.ENTITY, DbUser.COLUMN_PASSWORD_HASH))
+			return ServiceResult(error=InvalidValueError(DbUser.ENTITY, DbUser.COLUMN_PASSWORD_HASH))
 		
 		normalized = cls._normalize_fields_or_catch(
 			phone,
@@ -149,9 +148,9 @@ class UsersService(BaseService):
 
 		match tmp:
 			case UpdateResult.FAIL_CONDITION:
-				return ServiceResult(error=InvalidValueError(cls.ENTITY, DbUser.COLUMN_TOKEN_VER))
+				return ServiceResult(error=InvalidValueError(DbUser.ENTITY, DbUser.COLUMN_TOKEN_VER))
 			case UpdateResult.FAIL_NOT_FOUND:
-				return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
+				return ServiceResult(error=NotFoundError(DbUser.ENTITY, DbUser.COLUMN_ID))
 		return ServiceResult()
 		
 	@classmethod
@@ -170,7 +169,7 @@ class UsersService(BaseService):
 		"""
 
 		if not Utils.is_valid_password_hash(password_hash):
-			return ServiceResult(error=InvalidValueError(cls.ENTITY, DbUser.COLUMN_PASSWORD_HASH))
+			return ServiceResult(error=InvalidValueError(DbUser.ENTITY, DbUser.COLUMN_PASSWORD_HASH))
 
 		tmp = UsersRepository.set_password(
 			cur=cur,
@@ -181,9 +180,9 @@ class UsersService(BaseService):
 
 		match tmp[0]:
 			case UpdateResult.FAIL_CONDITION:
-				return ServiceResult(error=InvalidValueError(cls.ENTITY, DbUser.COLUMN_TOKEN_VER))
+				return ServiceResult(error=InvalidValueError(DbUser.ENTITY, DbUser.COLUMN_TOKEN_VER))
 			case UpdateResult.FAIL_NOT_FOUND:
-				return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
+				return ServiceResult(error=NotFoundError(DbUser.ENTITY, DbUser.COLUMN_ID))
 		return ServiceResult(result=tmp[1])
 			
 	@classmethod
@@ -205,7 +204,7 @@ class UsersService(BaseService):
 			return ServiceResult(error=NotAllowedError(PermissionCode.BLOCK_USER, DbUser.COLUMN_BLOCKED_BY))
 		
 		if UsersRepository.block(cur, user_id, blocked_by) == UpdateResult.FAIL_NOT_FOUND:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
+			return ServiceResult(error=NotFoundError(DbUser.ENTITY, DbUser.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -227,7 +226,7 @@ class UsersService(BaseService):
 			return ServiceResult(error=NotAllowedError(PermissionCode.UNBLOCK_USER))
 		
 		if UsersRepository.unblock(cur, user_id) == UpdateResult.FAIL_NOT_FOUND:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
+			return ServiceResult(error=NotFoundError(DbUser.ENTITY, DbUser.COLUMN_ID))
 		return ServiceResult()
 		
 	@classmethod
@@ -249,7 +248,7 @@ class UsersService(BaseService):
 			return ServiceResult(error=NotAllowedError(PermissionCode.DELETE_USER, DbUser.COLUMN_DELETED_BY))
 		
 		if UsersRepository.soft_delete(cur, user_id, deleted_by) == UpdateResult.FAIL_NOT_FOUND:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
+			return ServiceResult(error=NotFoundError(DbUser.ENTITY, DbUser.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -271,7 +270,7 @@ class UsersService(BaseService):
 			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_USER))
 		
 		if UsersRepository.restore(cur, user_id) == UpdateResult.FAIL_NOT_FOUND:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
+			return ServiceResult(error=NotFoundError(DbUser.ENTITY, DbUser.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -289,7 +288,7 @@ class UsersService(BaseService):
 
 		user = UsersRepository.get_by_id(cur, user_id)
 		if not user:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_ID))
+			return ServiceResult(error=NotFoundError(DbUser.ENTITY, DbUser.COLUMN_ID))
 		return ServiceResult(result=user)
 
 	@classmethod
@@ -308,11 +307,11 @@ class UsersService(BaseService):
 
 		norm_phone = Utils.normalize_phone(phone)
 		if not Utils.is_valid_phone(norm_phone):
-			return ServiceResult(error=InvalidValueError(cls.ENTITY, DbUser.COLUMN_PHONE))
+			return ServiceResult(error=InvalidValueError(DbUser.ENTITY, DbUser.COLUMN_PHONE))
 
 		user = UsersRepository.get_by_phone(cur, norm_phone)
 		if not user:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_PHONE))
+			return ServiceResult(error=NotFoundError(DbUser.ENTITY, DbUser.COLUMN_PHONE))
 		return ServiceResult(result=user)
 
 
@@ -332,11 +331,11 @@ class UsersService(BaseService):
 
 		norm_email = Utils.normalize_email(email)
 		if not Utils.is_valid_email(norm_email):
-			return ServiceResult(error=InvalidValueError(cls.ENTITY, DbUser.COLUMN_EMAIL))
+			return ServiceResult(error=InvalidValueError(DbUser.ENTITY, DbUser.COLUMN_EMAIL))
 
 		user = UsersRepository.get_by_email(cur, norm_email)
 		if not user:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, DbUser.COLUMN_EMAIL))
+			return ServiceResult(error=NotFoundError(DbUser.ENTITY, DbUser.COLUMN_EMAIL))
 		return ServiceResult(result=user)
 	
 	@classmethod

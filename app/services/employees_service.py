@@ -17,9 +17,8 @@ from app.repositories.public.employee_permissions_repository import EmployeePerm
 
 
 class EmployeesService(BaseService):
-	ENTITY = "Employee"
-	KEY_HELPERS = (TransactionHelper(ENTITY, "employees", (Employee.COLUMN_USER_ID,)),)
-	FKEY_HELPERS = (TransactionHelper(ENTITY, "employees", (
+	KEY_HELPERS = (TransactionHelper(Employee.ENTITY, Employee.TABLE, (Employee.COLUMN_USER_ID,)),)
+	FKEY_HELPERS = (TransactionHelper(Employee.ENTITY, Employee.TABLE, (
 		Employee.COLUMN_USER_ID,
 		Employee.COLUMN_HIRED_BY,
 		Employee.COLUMN_FIRED_BY,
@@ -52,7 +51,7 @@ class EmployeesService(BaseService):
 			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_EMPLOYEE, Employee.COLUMN_CREATED_BY))
 			
 		if hired_at > date.today():
-			return ServiceResult(error=InvalidValueError(cls.ENTITY, Employee.COLUMN_HIRED_AT))
+			return ServiceResult(error=InvalidValueError(Employee.ENTITY, Employee.COLUMN_HIRED_AT))
 		
 		return ServiceResult(
 			result=EmployeesRepository.create(
@@ -83,7 +82,7 @@ class EmployeesService(BaseService):
 			return ServiceResult(error=NotAllowedError(PermissionCode.FIRE_EMPLOYEE, Employee.COLUMN_FIRED_BY))
 		
 		if EmployeesRepository.fire(cur, employee_id, fired_by) == UpdateResult.FAIL_NOT_FOUND:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Employee.COLUMN_ID))
+			return ServiceResult(error=NotFoundError(Employee.ENTITY, Employee.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -106,7 +105,7 @@ class EmployeesService(BaseService):
 		
 		updated = EmployeesRepository.rehire(cur, employee_id, hired_by)
 		if updated == UpdateResult.FAIL_NOT_FOUND:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Employee.COLUMN_ID))
+			return ServiceResult(error=NotFoundError(Employee.ENTITY, Employee.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -179,7 +178,7 @@ class EmployeesService(BaseService):
 
 		employee = EmployeesRepository.get_by_id(cur, employee_id)
 		if not employee:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Employee.COLUMN_ID))
+			return ServiceResult(error=NotFoundError(Employee.ENTITY, Employee.COLUMN_ID))
 		return ServiceResult(result=employee)
 	
 	@classmethod
@@ -197,7 +196,7 @@ class EmployeesService(BaseService):
 
 		employee = EmployeesRepository.get_by_user_id(cur, user_id)
 		if not employee:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Employee.COLUMN_USER_ID))
+			return ServiceResult(error=NotFoundError(Employee.ENTITY, Employee.COLUMN_USER_ID))
 		return ServiceResult(result=employee)
 	
 	@classmethod
@@ -215,7 +214,7 @@ class EmployeesService(BaseService):
 		
 		employee = EmployeesRepository.get_by_id(cur, employee_id)
 		if not employee:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Employee.COLUMN_ID))
+			return ServiceResult(error=NotFoundError(Employee.ENTITY, Employee.COLUMN_ID))
 		return ServiceResult(result=EmployeeRolesRepository.get_roles(cur, employee_id))
 
 	@classmethod
@@ -233,5 +232,5 @@ class EmployeesService(BaseService):
 		
 		employee = EmployeesRepository.get_by_id(cur, employee_id)
 		if not employee:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Employee.COLUMN_ID))
+			return ServiceResult(error=NotFoundError(Employee.ENTITY, Employee.COLUMN_ID))
 		return ServiceResult(result=EPR.get_permissions(cur, employee_id))

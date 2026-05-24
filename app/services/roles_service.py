@@ -18,9 +18,8 @@ from app.repositories.public.employee_permissions_repository import EmployeePerm
 
 
 class RolesService(BaseService):
-	ENTITY = "Role"
-	KEY_HELPERS = (TransactionHelper(ENTITY, "roles", (Role.COLUMN_CODE,)),)
-	FKEY_HELPERS = (TransactionHelper(ENTITY, "roles", (
+	KEY_HELPERS = (TransactionHelper(Role.ENTITY, Role.TABLE, (Role.COLUMN_CODE,)),)
+	FKEY_HELPERS = (TransactionHelper(Role.ENTITY, Role.TABLE, (
 		Role.COLUMN_DEACTIVATED_BY,
 		Role.COLUMN_CREATED_BY,
 	)),)
@@ -45,7 +44,7 @@ class RolesService(BaseService):
 
 		norm_code = Utils.normalize_code(code)
 		if not Utils.is_valid_code(norm_code):
-			return ServiceResult(error=InvalidValueError(cls.ENTITY, Role.COLUMN_CODE))
+			return ServiceResult(error=InvalidValueError(Role.ENTITY, Role.COLUMN_CODE))
 		
 		if created_by is not None and not EPR.has_permission(cur, created_by, PermissionCode.CREATE_ROLE):
 			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_ROLE, Role.COLUMN_CREATED_BY))
@@ -80,9 +79,9 @@ class RolesService(BaseService):
 
 		match RolesRepository.deactivate(cur, role_id, deactivated_by):
 			case DeactivateResult.FAIL_IS_SYSTEM:
-				return ServiceResult(error=NotAllowedError(cls.ENTITY, Role.COLUMN_IS_SYSTEM))
+				return ServiceResult(error=NotAllowedError(Role.ENTITY, Role.COLUMN_IS_SYSTEM))
 			case DeactivateResult.FAIL_NOT_FOUND:
-				return ServiceResult(error=NotFoundError(cls.ENTITY, Role.COLUMN_ID))
+				return ServiceResult(error=NotFoundError(Role.ENTITY, Role.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -104,7 +103,7 @@ class RolesService(BaseService):
 			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_ROLE))
 
 		if RolesRepository.restore(cur, role_id) == UpdateResult.FAIL_NOT_FOUND:
-				return ServiceResult(error=NotFoundError(cls.ENTITY, Role.COLUMN_ID))
+				return ServiceResult(error=NotFoundError(Role.ENTITY, Role.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -166,7 +165,7 @@ class RolesService(BaseService):
 
 		role = RolesRepository.get_by_id(cur, role_id)
 		if not role:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Role.COLUMN_ID))
+			return ServiceResult(error=NotFoundError(Role.ENTITY, Role.COLUMN_ID))
 		return ServiceResult(result=role)
 	
 	@classmethod
@@ -185,11 +184,11 @@ class RolesService(BaseService):
 
 		norm_code = Utils.normalize_code(code)
 		if not Utils.is_valid_code(norm_code):
-			return ServiceResult(error=InvalidValueError(cls.ENTITY, Role.COLUMN_CODE))
+			return ServiceResult(error=InvalidValueError(Role.ENTITY, Role.COLUMN_CODE))
 
 		role = RolesRepository.get_by_code(cur, norm_code)
 		if not role:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Role.COLUMN_CODE))
+			return ServiceResult(error=NotFoundError(Role.ENTITY, Role.COLUMN_CODE))
 		return ServiceResult(result=role)
 	
 	@classmethod

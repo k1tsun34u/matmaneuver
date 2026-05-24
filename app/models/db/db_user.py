@@ -18,6 +18,9 @@ class DbUser(BaseModel):
 	COLUMN_CREATED_BY: ClassVar[str] = "created_by"
 	COLUMN_CREATED_AT: ClassVar[str] = "created_at"
 
+	ENTITY: ClassVar[str] = "User"
+	TABLE: ClassVar[str] = "users"
+
 	id: int
 	phone: str
 	email: str | None

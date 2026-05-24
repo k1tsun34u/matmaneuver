@@ -13,6 +13,9 @@ class Permission(BaseModel):
 	COLUMN_DEACTIVATED_AT: ClassVar[str] = "deactivated_at"
 	COLUMN_CREATED_BY: ClassVar[str] = "created_by"
 	COLUMN_CREATED_AT: ClassVar[str] = "created_at"
+	
+	ENTITY: ClassVar[str] = "Permission"
+	TABLE: ClassVar[str] = "permissions"
 
 	id: int
 	code: str

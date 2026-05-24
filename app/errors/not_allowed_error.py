@@ -2,7 +2,7 @@ from app.errors.base_error import BaseError
 
 
 class NotAllowedError(BaseError):
-	def __init__(self, action: str, column: str | None):
+	def __init__(self, action: str, column: str | None = None):
 		self.action = action
 		self.column = column
 

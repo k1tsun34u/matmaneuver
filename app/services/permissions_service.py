@@ -15,9 +15,8 @@ from app.repositories.public.employee_permissions_repository import EmployeePerm
 
 
 class PermissionsService(BaseService):
-	ENTITY = "Permission"
-	KEY_HELPERS = (TransactionHelper(ENTITY, "permissions", (Permission.COLUMN_CODE,)),)
-	FKEY_HELPERS = (TransactionHelper(ENTITY, "permissions", (
+	KEY_HELPERS = (TransactionHelper(Permission.ENTITY, Permission.TABLE, (Permission.COLUMN_CODE,)),)
+	FKEY_HELPERS = (TransactionHelper(Permission.ENTITY, Permission.TABLE, (
 		Permission.COLUMN_DEACTIVATED_BY,
 		Permission.COLUMN_CREATED_BY,
 	)),)
@@ -46,7 +45,7 @@ class PermissionsService(BaseService):
 
 		norm_code = Utils.normalize_code(code)
 		if not Utils.is_valid_code(norm_code):
-			return ServiceResult(error=InvalidValueError(cls.ENTITY, Permission.COLUMN_CODE))
+			return ServiceResult(error=InvalidValueError(Permission.ENTITY, Permission.COLUMN_CODE))
 		
 		return ServiceResult(
 			result=PermissionsRepository.create(
@@ -78,7 +77,7 @@ class PermissionsService(BaseService):
 			return ServiceResult(error=NotAllowedError(PermissionCode.SET_PERMISSION_DESCRIPTION))
 
 		if PermissionsRepository.set_description(cur, permission_id, description) == UpdateResult.FAIL_NOT_FOUND:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Permission.COLUMN_ID))
+			return ServiceResult(error=NotFoundError(Permission.ENTITY, Permission.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -102,9 +101,9 @@ class PermissionsService(BaseService):
 
 		match PermissionsRepository.deactivate(cur, permission_id, deactivated_by):
 			case DeactivateResult.FAIL_IS_SYSTEM:
-				return ServiceResult(error=NotAllowedError(cls.ENTITY, Permission.COLUMN_IS_SYSTEM))
+				return ServiceResult(error=NotAllowedError(Permission.ENTITY, Permission.COLUMN_IS_SYSTEM))
 			case DeactivateResult.FAIL_NOT_FOUND:
-				return ServiceResult(error=NotFoundError(cls.ENTITY, Permission.COLUMN_ID))
+				return ServiceResult(error=NotFoundError(Permission.ENTITY, Permission.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -126,7 +125,7 @@ class PermissionsService(BaseService):
 			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_PERMISSION))
 
 		if PermissionsRepository.restore(cur, permission_id) == UpdateResult.FAIL_NOT_FOUND:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Permission.COLUMN_ID))
+			return ServiceResult(error=NotFoundError(Permission.ENTITY, Permission.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -144,7 +143,7 @@ class PermissionsService(BaseService):
 
 		permission = PermissionsRepository.get_by_id(cur, permission_id)
 		if not permission:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Permission.COLUMN_ID))
+			return ServiceResult(error=NotFoundError(Permission.ENTITY, Permission.COLUMN_ID))
 		return ServiceResult(result=permission)
 	
 	@classmethod
@@ -163,11 +162,11 @@ class PermissionsService(BaseService):
 
 		norm_code = Utils.normalize_code(code)
 		if not Utils.is_valid_code(norm_code):
-			return ServiceResult(error=InvalidValueError(cls.ENTITY, Permission.COLUMN_CODE))
+			return ServiceResult(error=InvalidValueError(Permission.ENTITY, Permission.COLUMN_CODE))
 
 		permission = PermissionsRepository.get_by_code(cur, norm_code)
 		if not permission:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Permission.COLUMN_CODE))
+			return ServiceResult(error=NotFoundError(Permission.ENTITY, Permission.COLUMN_CODE))
 		return ServiceResult(result=permission)
 	
 	@classmethod

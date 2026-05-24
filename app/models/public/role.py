@@ -12,6 +12,9 @@ class Role(BaseModel):
 	COLUMN_DEACTIVATED_AT: ClassVar[str] = "deactivated_at"
 	COLUMN_CREATED_BY: ClassVar[str] = "created_by"
 	COLUMN_CREATED_AT: ClassVar[str] = "created_at"
+
+	ENTITY: ClassVar[str] = "Role"
+	TABLE: ClassVar[str] = "roles"
 	
 	id: int
 	code: str

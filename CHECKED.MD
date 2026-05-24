@@ -3,16 +3,17 @@
 	-	### Db
 		|       Model       | Complete |
 		| :---------------- | :------: |
-		|                   |          |
+		|  DbUser           | +        |
 	-	###	Public
-		|       Model       | Complete |
-		| :---------------- | :------: |
-		| Role              | +        |
-		| RolePermission    | +        |
-		| EmployeeRole      | +        |
-		| Employee          | +        |
-		| Permission        | +        |
-		| DbUser            | +        |
+		|       Model               | Complete |
+		| :------------------------ | :------: |
+		| Role                      | +        |
+		| RolePermission            | +        |
+		| EmployeeRole              | +        |
+		| Employee                  | +        |
+		| Permission                | +        |
+		| Warehouse                 | ?        |
+		| WarehouseProduct          | ?        |
 +	##	Repositories
 	-	###	Base
 		*	####	Mixins
@@ -32,6 +33,8 @@
 		| RolesRepository                     | +        |
 		| PermissionsRepository               | +        |
 		| UsersRepository                     | +        |
+		| WarehhousesRepository               | +-       |
+		| WarehhouseProductsRepository        | +-       |
 +	##	Services
 	|          Service          | Complete |
 	| :------------------------ | :------: |
@@ -40,3 +43,4 @@
 	| RolesService              | +        |
 	| PermissionsService        | +        |
 	| UsersService              | +        |
+	| WarehousesService         | +        |
