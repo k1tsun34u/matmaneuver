@@ -33,8 +33,8 @@
 		| RolesRepository                     | +        |
 		| PermissionsRepository               | +        |
 		| UsersRepository                     | +        |
-		| WarehhousesRepository               | +-       |
-		| WarehhouseProductsRepository        | +-       |
+		| WarehousesRepository                | +-       |
+		| WarehouseProductsRepository         | +-       |
 +	##	Services
 	|          Service          | Complete |
 	| :------------------------ | :------: |
