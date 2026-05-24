@@ -11,14 +11,16 @@
 		| RolePermission    | +        |
 		| EmployeeRole      | +        |
 		| Employee          | +        |
+		| Permission        | +        |
 +	##	Repositories
 	-	###	Base
 		*	####	Mixins
 			|       Mixin       | Complete |
 			| :---------------- | :------: |
 			| AuditStateMixin   | +        |
-			| UpdatableMixin    | +        |
+			| AssignableMixin   | +        |
 			| SelectableMixin   | +        |
+			| UpdatableMixin    | +        |
 	-	###	Public
 		|              Repository             | Complete |
 		| :---------------------------------- | :------: |
@@ -26,8 +28,10 @@
 		| EmployeeRolesRepository             | +        |
 		| EmployeesRepository                 | +        |
 		| RolePermissionsRepository           | +        |
+		| RolesRepository                     | +        |
 +	##	Services
 	|          Service          | Complete |
 	| :------------------------ | :------: |
 	| BaseService               | +        |
 	| EmployeesService          | +        |
+	| RolesService              | +        |

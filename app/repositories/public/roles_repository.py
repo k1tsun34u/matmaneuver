@@ -1,6 +1,8 @@
 
 import psycopg
+from app.utils import Utils
 from app.models.public.role import Role
+from app.types.update_result import UpdateResult
 from app.types.deactivate_result import DeactivateResult
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
@@ -15,16 +17,16 @@ class RolesRepository(
 	TABLE = "roles"
 	MODEL = Role
 	TABLE_COLUMNS = (
-		"id",
-		"code",
-		"is_system",
-		"deactivated_by",
-		"deactivated_at",
-		"created_by",
-		"created_at",
+		Role.COLUMN_ID,
+		Role.COLUMN_CODE,
+		Role.COLUMN_IS_SYSTEM,
+		Role.COLUMN_DEACTIVATED_BY,
+		Role.COLUMN_DEACTIVATED_AT,
+		Role.COLUMN_CREATED_BY,
+		Role.COLUMN_CREATED_AT,
 	)
 
-	ORDER_BY = (("created_at", "DESC"),)
+	ORDER_BY = ((Role.COLUMN_CREATED_AT, "DESC"),)
 
 	@classmethod
 	def create(
@@ -38,24 +40,24 @@ class RolesRepository(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				"code": code,
-				"is_system": is_system,
-				"created_by": created_by
+				Role.COLUMN_CODE: code,
+				Role.COLUMN_IS_SYSTEM: is_system,
+				Role.COLUMN_CREATED_BY: created_by
 			},
-			returning="id"
-		)["id"]
+			returning=Role.COLUMN_ID
+		)[Role.COLUMN_ID]
 	
 	@classmethod
 	def deactivate(cls, cur: psycopg.Cursor, role_id: int, deactivated_by: int) -> DeactivateResult:
 		query = f"""
 			UPDATE {cls.TABLE}
 			SET
-				deactivated_by = %s,
-				deactivated_at = NOW()
+				{Role.COLUMN_DEACTIVATED_BY} = %s,
+				{Role.COLUMN_DEACTIVATED_AT} = NOW()
 			WHERE
-				id = %s
-				AND is_system = FALSE
-				AND deactivated_at IS NULL
+				{Role.COLUMN_ID} = %s
+				AND {Role.COLUMN_IS_SYSTEM} = FALSE
+				AND {Role.COLUMN_DEACTIVATED_AT} IS NULL
 		"""
 		cur.execute(query, (deactivated_by, role_id,))
 		if cur.rowcount != 0:
@@ -70,16 +72,16 @@ class RolesRepository(
 		return DeactivateResult.SUCCESS
 	
 	@classmethod
-	def restore(cls, cur: psycopg.Cursor, role_id: int) -> bool:
-		return cls.clear_state(cur, "deactivated", {"id": role_id})
+	def restore(cls, cur: psycopg.Cursor, role_id: int) -> UpdateResult:
+		return cls.clear_state(cur, "deactivated", {Role.COLUMN_ID: role_id})
 	
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, role_id: int) -> Role | None:
-		return cls.select(cur=cur, equals={"id": role_id})
+		return cls.select(cur=cur, equals={Role.COLUMN_ID: role_id})
 	
 	@classmethod
 	def get_by_code(cls, cur: psycopg.Cursor, code: str) -> Role | None:
-		return cls.select(cur=cur, equals={"code": code})
+		return cls.select(cur=cur, equals={Role.COLUMN_CODE: code})
 	
 	@classmethod
 	def search(
@@ -90,10 +92,11 @@ class RolesRepository(
 		limit: int = 50,
 		offset: int = 0
 	) -> list[Role]:
+		norm_search = Utils.normalize_code(search)
 		return cls.select_many(
 			cur=cur,
-			is_null=("deactivated_at",) if exclude_deactivated else None,
-			ilike=(("code",), f"%{search}%",) if search else None,
+			is_null=(Role.COLUMN_DEACTIVATED_AT,) if exclude_deactivated else None,
+			ilike=((Role.COLUMN_CODE,), f"%{norm_search}%",) if norm_search else None,
 			limit=limit,
 			offset=offset
 		)

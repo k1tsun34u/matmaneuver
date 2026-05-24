@@ -1,14 +1,20 @@
 import psycopg
 from app.utils import Utils
+from collections.abc import Sequence
 from app.models.public.role import Role
+from app.types.update_result import UpdateResult
 from app.services.base_service import BaseService
 from app.types.service_result import ServiceResult
 from app.errors.not_found_error import NotFoundError
+from app.types.permission_code import PermissionCode
 from app.errors.not_allowed_error import NotAllowedError
 from app.types.deactivate_result import DeactivateResult
 from app.types.transaction_helper import TransactionHelper
 from app.errors.invalid_value_error import InvalidValueError
+from app.models.public.role_permission import RolePermission
 from app.repositories.public.roles_repository import RolesRepository
+from app.repositories.public.role_permissions_repository import RolePermissionsRepository as RPR
+from app.repositories.public.employee_permissions_repository import EmployeePermissionsRepository as EPR
 
 
 class RolesService(BaseService):
@@ -31,6 +37,7 @@ class RolesService(BaseService):
 		"""
 			Errors:
 			- InvalidValueError
+			- NotAllowedError
 			- AlreadyExistsError
 			- NotFoundError
 			- UnhandledError
@@ -40,7 +47,11 @@ class RolesService(BaseService):
 		if not Utils.is_valid_code(norm_code):
 			return ServiceResult(error=InvalidValueError(cls.ENTITY, Role.COLUMN_CODE))
 		
-		return ServiceResult(result=RolesRepository.create(
+		if created_by is not None and not EPR.has_permission(cur, created_by, PermissionCode.CREATE_ROLE):
+			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_ROLE, Role.COLUMN_CREATED_BY))
+		
+		return ServiceResult(
+			result=RolesRepository.create(
 				cur=cur,
 				code=norm_code,
 				is_system=is_system,
@@ -63,12 +74,15 @@ class RolesService(BaseService):
 			- NotFoundError
 			- UnhandledError
 		"""
+		
+		if not EPR.has_permission(cur, deactivated_by, PermissionCode.DEACTIVATE_ROLE):
+			return ServiceResult(error=NotAllowedError(PermissionCode.DEACTIVATE_ROLE, Role.COLUMN_DEACTIVATED_BY))
 
-		tmp = RolesRepository.deactivate(cur, role_id, deactivated_by)
-		if tmp == DeactivateResult.FAIL_IS_SYSTEM:
-			return ServiceResult(error=NotAllowedError(cls.ENTITY, Role.COLUMN_IS_SYSTEM))
-		elif tmp == DeactivateResult.FAIL_NOT_FOUND:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Role.COLUMN_ID))
+		match RolesRepository.deactivate(cur, role_id, deactivated_by):
+			case DeactivateResult.FAIL_IS_SYSTEM:
+				return ServiceResult(error=NotAllowedError(cls.ENTITY, Role.COLUMN_IS_SYSTEM))
+			case DeactivateResult.FAIL_NOT_FOUND:
+				return ServiceResult(error=NotFoundError(cls.ENTITY, Role.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -76,19 +90,65 @@ class RolesService(BaseService):
 	def restore(
 		cls,
 		cur: psycopg.Cursor,
-		role_id: int
+		role_id: int,
+		restored_by: int | None
 	) -> ServiceResult:
 		"""
 			Errors:
+			- NotAllowedError
+			- NotFoundError
+			- UnhandledError
+		"""
+		
+		if restored_by is not None and not EPR.has_permission(cur, restored_by, PermissionCode.CREATE_ROLE):
+			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_ROLE))
+
+		if RolesRepository.restore(cur, role_id) == UpdateResult.FAIL_NOT_FOUND:
+				return ServiceResult(error=NotFoundError(cls.ENTITY, Role.COLUMN_ID))
+		return ServiceResult()
+	
+	@classmethod
+	@BaseService.transaction
+	def assign_permissions(
+		cls,
+		cur: psycopg.Cursor,
+		role_id: int,
+		permission_ids: Sequence[int],
+		assigned_by: int | None
+	) -> ServiceResult:
+		"""
+			Errors:
+			- NotAllowedError
 			- NotFoundError
 			- UnhandledError
 		"""
 
-		role = RolesRepository.get_by_id(cur, role_id)
-		if not role:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Role.COLUMN_ID))
+		if assigned_by is not None and not EPR.has_permission(cur, assigned_by, PermissionCode.ASSIGN_PERMISSION):
+			return ServiceResult(error=NotAllowedError(PermissionCode.ASSIGN_PERMISSION, RolePermission.COLUMN_ASSIGNED_BY))
+		
+		RPR.assign_many(cur, role_id, permission_ids, assigned_by)
+		return ServiceResult()
+	
+	@classmethod
+	@BaseService.transaction
+	def unassign_permissions(
+		cls,
+		cur: psycopg.Cursor,
+		role_id: int,
+		permission_ids: Sequence[int],
+		unassigned_by: int | None
+	) -> ServiceResult:
+		"""
+			Errors:
+			- NotAllowedError
+			- NotFoundError
+			- UnhandledError
+		"""
 
-		RolesRepository.restore(cur, role_id)
+		if unassigned_by is not None and not EPR.has_permission(cur, unassigned_by, PermissionCode.UNASSIGN_PERMISSION):
+			return ServiceResult(error=NotAllowedError(PermissionCode.UNASSIGN_PERMISSION))
+		
+		RPR.unassign_many(cur, role_id, permission_ids)
 		return ServiceResult()
 	
 	@classmethod

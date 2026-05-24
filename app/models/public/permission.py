@@ -22,11 +22,3 @@ class Permission(BaseModel):
 	deactivated_at: datetime | None
 	created_by: int | None
 	created_at: datetime
-
-	HIRE_EMPLOYEE = "hire"
-	FIRE_EMPLOYEE = "fire"
-	CREATE_EMPLOYEE = "create_employee"
-
-	CREATE_USER = "create_user"
-	BLOCK_USER = "block_user"
-	DELETE_USER = "delete_user"
