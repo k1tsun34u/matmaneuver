@@ -29,9 +29,11 @@
 		| EmployeesRepository                 | +        |
 		| RolePermissionsRepository           | +        |
 		| RolesRepository                     | +        |
+		| PermissionsRepository               | +        |
 +	##	Services
 	|          Service          | Complete |
 	| :------------------------ | :------: |
 	| BaseService               | +        |
 	| EmployeesService          | +        |
 	| RolesService              | +        |
+	| PermissionsService        | +        |

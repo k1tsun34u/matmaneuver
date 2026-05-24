@@ -15,6 +15,7 @@ class PermissionCode(StrEnum):
 	ASSIGN_PERMISSION = "assign_permission"
 	UNASSIGN_PERMISSION = "unassign_permission"
 	DEACTIVATE_PERMISSION = "deactivate_permission"
+	SET_PERMISSION_DESCRIPTION = "set_permission_description"
 	
 	CREATE_ROLE = "create_role"
 	DEACTIVATE_ROLE = "deactivate_role"

@@ -1,5 +1,6 @@
 import psycopg
 from app.utils import Utils
+from app.types.update_result import UpdateResult
 from app.services.base_service import BaseService
 from app.types.service_result import ServiceResult
 from app.models.public.permission import Permission
@@ -47,7 +48,8 @@ class PermissionsService(BaseService):
 		if not Utils.is_valid_code(norm_code):
 			return ServiceResult(error=InvalidValueError(cls.ENTITY, Permission.COLUMN_CODE))
 		
-		return ServiceResult(result=PermissionsRepository.create(
+		return ServiceResult(
+			result=PermissionsRepository.create(
 				cur=cur,
 				code=norm_code,
 				description=description,
@@ -63,15 +65,19 @@ class PermissionsService(BaseService):
 		cur: psycopg.Cursor,
 		permission_id: int,
 		description: str | None,
+		set_by: int | None
 	) -> ServiceResult:
 		"""
 			Errors:
+			- NotAllowedError
 			- NotFoundError
 			- UnhandledError
 		"""
 
-		updated = PermissionsRepository.set_description(cur, permission_id, description)
-		if not updated:
+		if set_by is not None and not EPR.has_permission(cur, set_by, PermissionCode.SET_PERMISSION_DESCRIPTION):
+			return ServiceResult(error=NotAllowedError(PermissionCode.SET_PERMISSION_DESCRIPTION))
+
+		if PermissionsRepository.set_description(cur, permission_id, description) == UpdateResult.FAIL_NOT_FOUND:
 			return ServiceResult(error=NotFoundError(cls.ENTITY, Permission.COLUMN_ID))
 		return ServiceResult()
 	
@@ -94,11 +100,11 @@ class PermissionsService(BaseService):
 		if not EPR.has_permission(cur, deactivated_by, PermissionCode.DEACTIVATE_PERMISSION):
 			return ServiceResult(error=NotAllowedError(PermissionCode.DEACTIVATE_PERMISSION, Permission.COLUMN_DEACTIVATED_BY))
 
-		tmp = PermissionsRepository.deactivate(cur, permission_id, deactivated_by)
-		if tmp == DeactivateResult.FAIL_IS_SYSTEM:
-			return ServiceResult(error=NotAllowedError(cls.ENTITY, Permission.COLUMN_IS_SYSTEM))
-		elif tmp == DeactivateResult.FAIL_NOT_FOUND:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Permission.COLUMN_ID))
+		match PermissionsRepository.deactivate(cur, permission_id, deactivated_by):
+			case DeactivateResult.FAIL_IS_SYSTEM:
+				return ServiceResult(error=NotAllowedError(cls.ENTITY, Permission.COLUMN_IS_SYSTEM))
+			case DeactivateResult.FAIL_NOT_FOUND:
+				return ServiceResult(error=NotFoundError(cls.ENTITY, Permission.COLUMN_ID))
 		return ServiceResult()
 	
 	@classmethod
@@ -119,11 +125,7 @@ class PermissionsService(BaseService):
 		if not EPR.has_permission(cur, restored_by, PermissionCode.CREATE_PERMISSION):
 			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_PERMISSION))
 
-		permission = PermissionsRepository.get_by_id(cur, permission_id)
-		if not permission:
-			return ServiceResult(error=NotFoundError(cls.ENTITY, Permission.COLUMN_ID))
-
-		if not PermissionsRepository.restore(cur, permission_id):
+		if PermissionsRepository.restore(cur, permission_id) == UpdateResult.FAIL_NOT_FOUND:
 			return ServiceResult(error=NotFoundError(cls.ENTITY, Permission.COLUMN_ID))
 		return ServiceResult()
 	

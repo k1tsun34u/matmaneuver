@@ -1,7 +1,9 @@
 import psycopg
+from app.types.update_result import UpdateResult
 from app.models.public.permission import Permission
 from app.types.deactivate_result import DeactivateResult
 from app.repositories.base.base_repository import BaseRepository
+from app.repositories.base.mixins.updatable_mixin import UpdatableMixin
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
 
@@ -9,22 +11,23 @@ from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
 class PermissionsRepository(
 	BaseRepository,
 	AuditStateMixin,
+	UpdatableMixin,
 	SelectableMixin[Permission]
 ):
 	TABLE = "permissions"
 	MODEL = Permission
 	TABLE_COLUMNS = (
-		"id",
-		"code",
-		"description",
-		"is_system",
-		"deactivated_by",
-		"deactivated_at",
-		"created_by",
-		"created_at",
+		Permission.COLUMN_ID,
+		Permission.COLUMN_CODE,
+		Permission.COLUMN_DESCRIPTION,
+		Permission.COLUMN_IS_SYSTEM,
+		Permission.COLUMN_DEACTIVATED_BY,
+		Permission.COLUMN_DEACTIVATED_AT,
+		Permission.COLUMN_CREATED_BY,
+		Permission.COLUMN_CREATED_AT,
 	)
 
-	ORDER_BY = (("created_at", "DESC"),)
+	ORDER_BY = ((Permission.COLUMN_CREATED_AT, "DESC"),)
 
 	@classmethod
 	def create(
@@ -39,42 +42,39 @@ class PermissionsRepository(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				"code": code,
-				"description": description,
-				"is_system": is_system,
-				"created_by": created_by
+				Permission.COLUMN_CODE: code,
+				Permission.COLUMN_DESCRIPTION: description,
+				Permission.COLUMN_IS_SYSTEM: is_system,
+				Permission.COLUMN_CREATED_BY: created_by
 			},
-			returning="id"
-		)["id"]
+			returning=Permission.COLUMN_ID
+		)[Permission.COLUMN_ID]
 	
 	@classmethod
 	def set_description(
 		cls,
 		cur: psycopg.Cursor,
 		permission_id: int,
-		description: str
-	) -> bool:
-		cls.execute_update(
+		description: str | None
+	) -> UpdateResult:
+		return cls.update_by_conditions(
 			cur=cur,
-			table=cls.TABLE,
-			where={"id": permission_id},
-			fields={"description": description}
+			identity_where={Permission.COLUMN_ID: permission_id},
+			condition_where={},
+			fields={Permission.COLUMN_DESCRIPTION: description}
 		)
-
-		cur.execute(f"SELECT 1 FROM {cls.TABLE} WHERE id = %s", (permission_id,))
-		return bool(cur.fetchone())
 	
 	@classmethod
 	def deactivate(cls, cur: psycopg.Cursor, permission_id: int, deactivated_by: int) -> DeactivateResult:
 		query = f"""
 			UPDATE {cls.TABLE}
 			SET
-				deactivated_by = %s,
-				deactivated_at = NOW()
+				{Permission.COLUMN_DEACTIVATED_BY} = %s,
+				{Permission.COLUMN_DEACTIVATED_AT} = NOW()
 			WHERE
-				id = %s
-				AND is_system = FALSE
-				AND deactivated_at IS NULL
+				{Permission.COLUMN_ID} = %s
+				AND {Permission.COLUMN_IS_SYSTEM} = FALSE
+				AND {Permission.COLUMN_DEACTIVATED_AT} IS NULL
 		"""
 		cur.execute(query, (deactivated_by, permission_id,))
 		if cur.rowcount != 0:
@@ -89,16 +89,16 @@ class PermissionsRepository(
 		return DeactivateResult.SUCCESS
 	
 	@classmethod
-	def restore(cls, cur: psycopg.Cursor, permission_id: int) -> int:
-		return cls.clear_state(cur, "deactivated", {"id": permission_id})
+	def restore(cls, cur: psycopg.Cursor, permission_id: int) -> UpdateResult:
+		return cls.clear_state(cur, "deactivated", {Permission.COLUMN_ID: permission_id})
 	
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, permission_id: int) -> Permission | None:
-		return cls.select(cur=cur, equals={"id": permission_id})
+		return cls.select(cur=cur, equals={Permission.COLUMN_ID: permission_id})
 	
 	@classmethod
 	def get_by_code(cls, cur: psycopg.Cursor, code: str) -> Permission | None:
-		return cls.select(cur=cur, equals={"code": code})
+		return cls.select(cur=cur, equals={Permission.COLUMN_CODE: code})
 	
 	@classmethod
 	def search(
@@ -111,8 +111,8 @@ class PermissionsRepository(
 	) -> list[Permission]:
 		return cls.select_many(
 			cur=cur,
-			is_null=("deactivated_at",) if exclude_deactivated else None,
-			ilike=(("code", "description",), f"%{search}%",) if search else None,
+			is_null=(Permission.COLUMN_DEACTIVATED_AT,) if exclude_deactivated else None,
+			ilike=((Permission.COLUMN_CODE, Permission.COLUMN_DESCRIPTION,), f"%{search}%",) if search else None,
 			limit=limit,
 			offset=offset
 		)
