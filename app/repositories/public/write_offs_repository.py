@@ -1,30 +1,31 @@
 import psycopg
-from datetime import date
+from typing import ClassVar
+from app.utils import Utils
 from app.models.public.write_off import WriteOff
+from datetime import date, datetime, time, timedelta
 from app.types.write_off_reason import WriteOffReason
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
-from app.utils import Utils
 
 
 class WriteOffsRepository(
 	BaseRepository,
 	SelectableMixin[WriteOff]
 ):
-	TABLE = "write_offs"
+	TABLE: ClassVar[str] = WriteOff.TABLE
 	MODEL = WriteOff
 	TABLE_COLUMNS = (
-		"id",
-		"warehouse_id",
-		"reason",
-		"comment",
-		"created_by",
-		"created_at",
+		WriteOff.COLUMN_ID,
+		WriteOff.COLUMN_WAREHOUSE_ID,
+		WriteOff.COLUMN_REASON,
+		WriteOff.COLUMN_COMMENT,
+		WriteOff.COLUMN_CREATED_BY,
+		WriteOff.COLUMN_CREATED_AT,
 	)
 
 	ORDER_BY = (
-		("created_at", "DESC",),
-		("id", "DESC",),
+		(WriteOff.COLUMN_CREATED_AT, "DESC",),
+		(WriteOff.COLUMN_ID, "DESC",),
 	)
 
 	@classmethod
@@ -40,17 +41,32 @@ class WriteOffsRepository(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				"warehouse_id": warehouse_id,
-				"reason": reason,
-				"comment": comment,
-				"created_by": created_by
+				WriteOff.COLUMN_WAREHOUSE_ID: warehouse_id,
+				WriteOff.COLUMN_REASON: reason,
+				WriteOff.COLUMN_COMMENT: comment,
+				WriteOff.COLUMN_CREATED_BY: created_by
 			},
-			returning="id"
-		)["id"]
+			returning=WriteOff.COLUMN_ID
+		)[WriteOff.COLUMN_ID]
 	
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, write_off_id: int) -> WriteOff | None:
-		return cls.select(cur, {"id": write_off_id})
+		return cls.select(cur, {WriteOff.COLUMN_ID: write_off_id})
+	
+	@classmethod
+	def get_many_by_warehouse_id(
+		cls,
+		cur: psycopg.Cursor,
+		warehouse_id: int,
+		limit: int = 50,
+		offset: int = 0
+	) -> list[WriteOff]:
+		return cls.select_many(
+			cur=cur,
+			equals={WriteOff.COLUMN_WAREHOUSE_ID: warehouse_id},
+			limit=limit,
+			offset=offset
+		)
 	
 	@classmethod
 	def search(
@@ -68,20 +84,20 @@ class WriteOffsRepository(
 		conditions = []
 		params = []
 		if search:
-			conditions.append("comment ILIKE %s")
+			conditions.append(f"{WriteOff.COLUMN_COMMENT} ILIKE %s")
 			params.append(f"%{search}%")
 		if warehouse_id is not None:
-			conditions.append("warehouse_id = %s")
+			conditions.append(f"{WriteOff.COLUMN_WAREHOUSE_ID} = %s")
 			params.append(warehouse_id)
 		if reason is not None:
-			conditions.append("reason = %s")
+			conditions.append(f"{WriteOff.COLUMN_REASON} = %s")
 			params.append(reason)
 		if created_from is not None:
-			conditions.append("created_at::date >= %s")
-			params.append(created_from)
+			conditions.append(f"{WriteOff.COLUMN_CREATED_AT} >= %s")
+			params.append(datetime.combine(created_from, time.min))
 		if created_to is not None:
-			conditions.append("created_at::date <= %s")
-			params.append(created_to)
+			conditions.append(f"{WriteOff.COLUMN_CREATED_AT} < %s")
+			params.append(datetime.combine(created_to + timedelta(days=1), time.min))
 		
 		query = Utils.build_select_statement(
 			select_fields=cls.TABLE_COLUMNS,

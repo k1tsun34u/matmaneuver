@@ -49,4 +49,10 @@ class PermissionCode(StrEnum):
 	DELETE_SUPPLY_ITEM = "delete_supply_item"
 
 	SET_ORDER_STATUS = "set_order_status"
+
+	CREATE_WRITE_OFF = "create_write_off"
+	DELETE_WRITE_OFF = "delete_write_off"
+
+	CREATE_WRITE_OFF_ITEM = "create_write_off_item"
+	DELETE_WRITE_OFF_ITEM = "delete_write_off_item"
 	

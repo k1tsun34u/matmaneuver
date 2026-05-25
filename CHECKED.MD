@@ -25,6 +25,8 @@
 		| Order                     | +        |
 		| OrderItem                 | +        |
 		| OrderStatusHistory        | +        |
+		| WriteOff                  | +        |
+		| WriteOffItem              | +        |
 +	##	Repositories
 	-	###	Base
 		*	####	Mixins
@@ -56,6 +58,8 @@
 		| OrdersRepository                    | +        |
 		| OrderItemsRepository                | +        |
 		| OrderStatusHistoryRepository        | +        |
+		| WriteOffsRepository                 | +        |
+		| WriteOffItemsRepository             | +        |
 +	##	Services
 	|          Service          | Complete |
 	| :------------------------ | :------: |
@@ -71,3 +75,4 @@
 	| SuppliersService          | +        |
 	| SuppliesService           | +        |
 	| OrdersService             | +        |
+	| WriteOffsService          | +        |

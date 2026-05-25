@@ -6,3 +6,4 @@ class ReturnStatus(StrEnum):
 	CONFIRMED = "confirmed"
 	IN_TRANSIT = "in_transit"
 	FINISHED = "finished"
+	CANCELLED = "cancelled"

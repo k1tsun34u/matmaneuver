@@ -1,8 +1,8 @@
 import psycopg
 from datetime import date
 from app.utils import Utils
-from decimal import Decimal
 from app.models.public.order import Order
+from app.models.public.product import Product
 from app.types.order_status import OrderStatus
 from app.types.update_result import UpdateResult
 from app.types.delete_result import DeleteResult
@@ -14,7 +14,9 @@ from app.types.permission_code import PermissionCode
 from app.errors.not_allowed_error import NotAllowedError
 from app.types.transaction_helper import TransactionHelper
 from app.errors.invalid_value_error import InvalidValueError
+from app.models.public.order_status_history import OrderStatusHistory
 from app.repositories.public.orders_repository import OrdersRepository
+from app.repositories.public.products_repository import ProductsRepository
 from app.repositories.public.order_items_repository import OrderItemsRepository
 from app.repositories.public.order_status_history_repository import OrderStatusHistoryRepository as OSHR
 from app.repositories.public.employee_permissions_repository import EmployeePermissionsRepository as EPR
@@ -22,7 +24,17 @@ from app.repositories.public.employee_permissions_repository import EmployeePerm
 
 class OrdersService(BaseService):
 	KEY_HELPERS = (TransactionHelper(Order.ENTITY, Order.TABLE, (Order.COLUMN_TRACK_NUMBER,)),)
-	FKEY_HELPERS = (TransactionHelper(Order.ENTITY, Order.TABLE, (Order.COLUMN_CREATED_BY)),)
+	FKEY_HELPERS = (
+		TransactionHelper(Order.ENTITY, Order.TABLE, (Order.COLUMN_CREATED_BY,)),
+		TransactionHelper(OrderItem.ENTITY, OrderItem.TABLE, (
+			OrderItem.COLUMN_ORDER_ID,
+			OrderItem.COLUMN_PRODUCT_ID,
+		)),
+		TransactionHelper(OrderStatusHistory.ENTITY, OrderStatusHistory.TABLE, (
+			OrderStatusHistory.COLUMN_ORDER_ID,
+			OrderStatusHistory.COLUMN_CHANGED_BY,
+		)),
+	)
 
 	ALLOWED_STATUS_TRANSITIONS = {
 		OrderStatus.CREATED: (OrderStatus.CONFIRMED, OrderStatus.CANCELLED,),
@@ -183,11 +195,11 @@ class OrdersService(BaseService):
 		cur: psycopg.Cursor,
 		order_id: int,
 		product_id: int,
-		quantity: int,
-		price: Decimal
+		quantity: int
 	) -> ServiceResult:
 		"""
 			Errors:
+			- InvalidValueError
 			- AlreadyExistsError
 			- NotFoundError
 			- UnhandledError
@@ -200,13 +212,17 @@ class OrdersService(BaseService):
 		if order.current_status not in cls.ALLOWED_ITEM_EDIT_STATUSES:
 			return ServiceResult(error=InvalidValueError(Order.ENTITY, Order.COLUMN_CURRENT_STATUS))
 		
+		product = ProductsRepository.get_by_id(cur, product_id)
+		if product is None:
+			return ServiceResult(error=NotFoundError(Product.ENTITY, Product.COLUMN_ID))
+		
 		return ServiceResult(
 			result=OrderItemsRepository.create(
 				cur=cur,
 				order_id=order_id,
 				product_id=product_id,
 				quantity=quantity,
-				price=price
+				price=product.price
 			)
 		)
 	
@@ -219,6 +235,7 @@ class OrdersService(BaseService):
 	) -> ServiceResult:
 		"""
 			Errors:
+			- InvalidValueError
 			- NotFoundError
 			- UnhandledError
 		"""
@@ -300,22 +317,6 @@ class OrdersService(BaseService):
 				limit=limit,
 				offset=offset
 			)
-		)
-	
-	@classmethod
-	@BaseService.transaction
-	def get_products_by_order_id(
-		cls,
-		cur: psycopg.Cursor,
-		order_id: int
-	) -> ServiceResult:
-		"""
-			Errors:
-			- UnhandledError
-		"""
-
-		return ServiceResult(
-			result=OrderItemsRepository.get_products_by_order_id(cur, order_id)
 		)
 	
 	@classmethod

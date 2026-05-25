@@ -94,18 +94,3 @@ class SupplyItemsRepository(
 			limit=limit,
 			offset=offset
 		)
-	
-	@classmethod
-	def get_products_by_supply_id(
-		cls,
-		cur: psycopg.Cursor,
-		supply_id: int
-	) -> list[Product]:
-		query = f"""
-			SELECT p.*
-			FROM {Product.TABLE} p
-			JOIN {SupplyItem.TABLE} si ON si.{SupplyItem.COLUMN_PRODUCT_ID} = p.{Product.COLUMN_ID}
-			WHERE si.{SupplyItem.COLUMN_SUPPLY_ID} = %s
-		"""
-		cur.execute(query, (supply_id,))
-		return [Product(**row) for row in cur.fetchall()]

@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 import psycopg
 from decimal import Decimal
 from app.models.public.write_off_item import WriteOffItem
@@ -9,17 +11,17 @@ class WriteOffItemsRepository(
 	BaseRepository,
 	SelectableMixin[WriteOffItem]
 ):
-	TABLE = "write_off_items"
+	TABLE: ClassVar[str] = WriteOffItem.TABLE
 	MODEL = WriteOffItem
 	TABLE_COLUMNS = (
-		"id",
-		"write_off_id",
-		"product_id",
-		"quantity",
-		"price",
+		WriteOffItem.COLUMN_ID,
+		WriteOffItem.COLUMN_WRITE_OFF_ID,
+		WriteOffItem.COLUMN_PRODUCT_ID,
+		WriteOffItem.COLUMN_QUANTITY,
+		WriteOffItem.COLUMN_PRICE,
 	)
 
-	ORDER_BY = (("id", "ASC",),)
+	ORDER_BY = ((WriteOffItem.COLUMN_ID, "ASC",),)
 
 	@classmethod
 	def create(
@@ -34,17 +36,17 @@ class WriteOffItemsRepository(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				"write_off_id": write_off_id,
-				"product_id": product_id,
-				"quantity": quantity,
-				"price": price
+				WriteOffItem.COLUMN_WRITE_OFF_ID: write_off_id,
+				WriteOffItem.COLUMN_PRODUCT_ID: product_id,
+				WriteOffItem.COLUMN_QUANTITY: quantity,
+				WriteOffItem.COLUMN_PRICE: price
 			},
-			returning="id"
-		)["id"]
+			returning=WriteOffItem.COLUMN_ID
+		)[WriteOffItem.COLUMN_ID]
 	
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, write_off_item_id: int) -> WriteOffItem | None:
-		return cls.select(cur, {"id": write_off_item_id})
+		return cls.select(cur, {WriteOffItem.COLUMN_ID: write_off_item_id})
 	
 	@classmethod
 	def get_many_by_write_off_id(
@@ -56,7 +58,7 @@ class WriteOffItemsRepository(
 	) -> list[WriteOffItem]:
 		return cls.select_many(
 			cur=cur,
-			equals={"write_off_id": write_off_id},
+			equals={WriteOffItem.COLUMN_WRITE_OFF_ID: write_off_id},
 			limit=limit,
 			offset=offset
 		)
@@ -71,7 +73,7 @@ class WriteOffItemsRepository(
 	) -> list[WriteOffItem]:
 		return cls.select_many(
 			cur=cur,
-			equals={"product_id": product_id},
+			equals={WriteOffItem.COLUMN_PRODUCT_ID: product_id},
 			limit=limit,
 			offset=offset
 		)

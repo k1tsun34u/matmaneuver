@@ -94,18 +94,3 @@ class OrderItemsRepository(
 			limit=limit,
 			offset=offset
 		)
-
-	@classmethod
-	def get_products_by_order_id(
-		cls,
-		cur: psycopg.Cursor,
-		order_id: int
-	) -> list[Product]:
-		query = f"""
-			SELECT p.*
-			FROM {Product.TABLE} p
-			JOIN {OrderItem.TABLE} oi ON oi.{OrderItem.COLUMN_PRODUCT_ID} = p.{Product.COLUMN_ID}
-			WHERE oi.{OrderItem.COLUMN_ORDER_ID} = %s
-		"""
-		cur.execute(query, (order_id,))
-		return [Product(**row) for row in cur.fetchall()]

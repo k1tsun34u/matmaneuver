@@ -302,45 +302,6 @@ CREATE TABLE order_status_history (
 );
 
 -- ==========================
--- Возвраты
--- ==========================
-
-CREATE TYPE return_status AS ENUM (
-	'created',
-	'confirmed',
-	'in_transit',
-	'finished'
-);
-
-CREATE TABLE order_returns (
-	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	order_id BIGINT NOT NULL REFERENCES orders(id),
-	reason TEXT NOT NULL,
-	current_status return_status NOT NULL DEFAULT 'created',
-
-	created_by BIGINT NOT NULL REFERENCES users(id),
-	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE order_return_items (
-	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	order_return_id BIGINT NOT NULL REFERENCES order_returns(id),
-	order_item_id BIGINT NOT NULL REFERENCES order_items(id),
-	quantity INT NOT NULL CHECK (quantity > 0),
-	price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
-	UNIQUE (order_return_id, order_item_id)
-);
-
-CREATE TABLE order_return_status_history (
-	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	order_return_id BIGINT NOT NULL REFERENCES order_returns(id),
-	status return_status NOT NULL,
-	
-	changed_by BIGINT REFERENCES employees(id),
-	changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- ==========================
 -- Списания
 -- ==========================
 
@@ -485,9 +446,6 @@ CREATE INDEX idx_orders_created_by ON orders(created_by);
 CREATE INDEX idx_order_items_order_id ON order_items(order_id);
 CREATE INDEX idx_order_items_product_id ON order_items(product_id);
 
-CREATE INDEX idx_order_returns_order_id ON order_returns(order_id);
-CREATE INDEX idx_order_returns_status ON order_returns(current_status);
-
 CREATE INDEX idx_write_offs_created_at ON write_offs(created_at DESC);
 CREATE INDEX idx_write_offs_warehouse_id ON write_offs(warehouse_id);
 CREATE INDEX idx_write_offs_reason ON write_offs(reason);
@@ -501,4 +459,3 @@ CREATE INDEX idx_cart_items_product_id ON cart_items(product_id);
 
 CREATE INDEX idx_order_status_history_order_id ON order_status_history(order_id);
 CREATE INDEX idx_supply_status_history_supply_id ON supply_status_history(supply_id);
-CREATE INDEX idx_order_return_status_history_order_return_id ON order_return_status_history(order_return_id);
