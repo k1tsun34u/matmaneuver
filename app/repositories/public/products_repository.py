@@ -1,9 +1,11 @@
 import psycopg
+from typing import ClassVar
 from decimal import Decimal
 from app.utils import Utils
 from app.models.public.product import Product
 from app.types.update_result import UpdateResult
 from app.repositories.base.base_repository import BaseRepository
+from app.repositories.base.mixins.updatable_mixin import UpdatableMixin
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
 
@@ -11,22 +13,23 @@ from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
 class ProductsRepository(
 	BaseRepository,
 	AuditStateMixin,
+	UpdatableMixin,
 	SelectableMixin[Product]
 ):
-	TABLE = "products"
+	TABLE: ClassVar[str] = Product.TABLE
 	MODEL = Product
 	TABLE_COLUMNS = (
-		"id",
-		"name",
-		"description",
-		"price",
-		"deleted_by",
-		"deleted_at",
-		"created_by",
-		"created_at",
+		Product.COLUMN_ID,
+		Product.COLUMN_NAME,
+		Product.COLUMN_DESCRIPTION,
+		Product.COLUMN_PRICE,
+		Product.COLUMN_DELETED_BY,
+		Product.COLUMN_DELETED_AT,
+		Product.COLUMN_CREATED_BY,
+		Product.COLUMN_CREATED_AT,
 	)
 
-	ORDER_BY = (("created_at", "DESC"),)
+	ORDER_BY = ((Product.COLUMN_CREATED_AT, "DESC",),)
 
 	@classmethod
 	def create(
@@ -41,13 +44,13 @@ class ProductsRepository(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				"name": name,
-				"description": description,
-				"price": price,
-				"created_by": created_by
+				Product.COLUMN_NAME: name,
+				Product.COLUMN_DESCRIPTION: description,
+				Product.COLUMN_PRICE: price,
+				Product.COLUMN_CREATED_BY: created_by
 			},
-			returning="id"
-		)["id"]
+			returning=Product.COLUMN_ID
+		)[Product.COLUMN_ID]
 	
 	@classmethod
 	def set_description(
@@ -55,16 +58,13 @@ class ProductsRepository(
 		cur: psycopg.Cursor,
 		product_id: int,
 		description: str | None
-	) -> bool:
-		cls.execute_update(
+	) -> UpdateResult:
+		return cls.update_by_conditions(
 			cur=cur,
-			table=cls.TABLE,
-			where={"id": product_id},
-			fields={"description": description}
+			identity_where={Product.COLUMN_ID: product_id},
+			condition_where={},
+			fields={Product.COLUMN_DESCRIPTION: description}
 		)
-
-		cur.execute(f"SELECT 1 FROM {cls.TABLE} WHERE id = %s", (product_id,))
-		return bool(cur.fetchone())
 	
 	@classmethod
 	def set_price(
@@ -72,28 +72,45 @@ class ProductsRepository(
 		cur: psycopg.Cursor,
 		product_id: int,
 		price: Decimal
-	) -> bool:
-		cls.execute_update(
+	) -> UpdateResult:
+		return cls.update_by_conditions(
 			cur=cur,
-			table=cls.TABLE,
-			where={"id": product_id},
-			fields={"price": price}
+			identity_where={Product.COLUMN_ID: product_id},
+			condition_where={},
+			fields={Product.COLUMN_PRICE: price}
 		)
-
-		cur.execute(f"SELECT 1 FROM {cls.TABLE} WHERE id = %s", (product_id,))
-		return bool(cur.fetchone())
 	
 	@classmethod
-	def soft_delete(cls, cur: psycopg.Cursor, product_id: int, deleted_by: int) -> UpdateResult:
-		return cls.set_state(cur, "deleted", {"id": product_id}, deleted_by)
+	def soft_delete(cls, cur: psycopg.Cursor, product_id: int, deleted_by: int | None) -> UpdateResult:
+		return cls.set_state(cur, "deleted", {Product.COLUMN_ID: product_id}, deleted_by)
 	
 	@classmethod
 	def restore(cls, cur: psycopg.Cursor, product_id: int) -> UpdateResult:
-		return cls.clear_state(cur, "deleted", {"id": product_id})
+		return cls.clear_state(cur, "deleted", {Product.COLUMN_ID: product_id})
 	
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, product_id: int) -> Product | None:
-		return cls.select(cur, {"id": product_id})
+		return cls.select(
+			cur=cur,
+			equals={Product.COLUMN_ID: product_id}
+		)
+	
+	@classmethod
+	def get_many_by_employee_id(
+		cls,
+		cur: psycopg.Cursor,
+		employee_id: int,
+		exclude_deleted: bool = True,
+		limit: int = 50,
+		offset: int = 0
+	) -> list[Product]:
+		return cls.select_many(
+			cur=cur,
+			equals={Product.COLUMN_CREATED_BY: employee_id},
+			is_null=(Product.COLUMN_DELETED_AT,) if exclude_deleted else None,
+			limit=limit,
+			offset=offset
+		)
 	
 	@classmethod
 	def search(
@@ -110,16 +127,16 @@ class ProductsRepository(
 		conditions = []
 		params = []
 		if exclude_deleted:
-			conditions.append("deleted_at IS NULL")
+			conditions.append(f"{Product.COLUMN_DELETED_AT} IS NULL")
 		if search:
-			conditions.append("(name ILIKE %s OR description ILIKE %s)")
+			conditions.append(f"({Product.COLUMN_NAME} ILIKE %s OR {Product.COLUMN_DESCRIPTION} ILIKE %s)")
 			pattern = f"%{search}%"
 			params.extend([pattern, pattern])
 		if min_price is not None:
-			conditions.append("price >= %s")
+			conditions.append(f"{Product.COLUMN_PRICE} >= %s")
 			params.append(min_price)
 		if max_price is not None:
-			conditions.append("price <= %s")
+			conditions.append(f"{Product.COLUMN_PRICE} <= %s")
 			params.append(max_price)
 
 		query = f"""

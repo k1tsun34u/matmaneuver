@@ -1,6 +1,7 @@
 
 import psycopg
 from app.utils import Utils
+from typing import ClassVar
 from app.models.public.role import Role
 from app.types.update_result import UpdateResult
 from app.types.deactivate_result import DeactivateResult
@@ -14,7 +15,7 @@ class RolesRepository(
 	AuditStateMixin,
 	SelectableMixin[Role]
 ):
-	TABLE = "roles"
+	TABLE: ClassVar[str] = Role.TABLE
 	MODEL = Role
 	TABLE_COLUMNS = (
 		Role.COLUMN_ID,
@@ -26,7 +27,7 @@ class RolesRepository(
 		Role.COLUMN_CREATED_AT,
 	)
 
-	ORDER_BY = ((Role.COLUMN_CREATED_AT, "DESC"),)
+	ORDER_BY = ((Role.COLUMN_CREATED_AT, "DESC",),)
 
 	@classmethod
 	def create(
@@ -38,7 +39,7 @@ class RolesRepository(
 	) -> int:
 		return cls.execute_create(
 			cur=cur,
-			table=cls.TABLE,
+			table=Role.TABLE,
 			fields={
 				Role.COLUMN_CODE: code,
 				Role.COLUMN_IS_SYSTEM: is_system,
@@ -50,7 +51,7 @@ class RolesRepository(
 	@classmethod
 	def deactivate(cls, cur: psycopg.Cursor, role_id: int, deactivated_by: int) -> DeactivateResult:
 		query = f"""
-			UPDATE {cls.TABLE}
+			UPDATE {Role.TABLE}
 			SET
 				{Role.COLUMN_DEACTIVATED_BY} = %s,
 				{Role.COLUMN_DEACTIVATED_AT} = NOW()

@@ -19,7 +19,7 @@ class WriteOffItemsRepository(
 		"price",
 	)
 
-	ORDER_BY = (("id", "ASC"),)
+	ORDER_BY = (("id", "ASC",),)
 
 	@classmethod
 	def create(

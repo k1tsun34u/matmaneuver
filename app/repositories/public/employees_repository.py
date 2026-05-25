@@ -1,5 +1,6 @@
 import psycopg
 from datetime import date
+from typing import ClassVar
 from app.models.public.employee import Employee
 from app.types.update_result import UpdateResult
 from app.repositories.base.base_repository import BaseRepository
@@ -12,7 +13,7 @@ class EmployeesRepository(
 	AuditStateMixin,
 	SelectableMixin[Employee]
 ):
-	TABLE = "employees"
+	TABLE: ClassVar[str] = Employee.TABLE
 	MODEL = Employee
 	TABLE_COLUMNS = (
 		Employee.COLUMN_ID,
@@ -25,7 +26,7 @@ class EmployeesRepository(
 		Employee.COLUMN_CREATED_AT,
 	)
 
-	ORDER_BY = ((Employee.COLUMN_CREATED_AT, "DESC"),)
+	ORDER_BY = ((Employee.COLUMN_CREATED_AT, "DESC",),)
 
 	@classmethod
 	def create(
@@ -38,7 +39,7 @@ class EmployeesRepository(
 	) -> int:
 		return cls.execute_create(
 			cur=cur,
-			table=cls.TABLE,
+			table=Employee.TABLE,
 			fields={
 				Employee.COLUMN_USER_ID: user_id,
 				Employee.COLUMN_HIRED_BY: hired_by,

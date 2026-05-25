@@ -1,5 +1,6 @@
 
 import psycopg
+from typing import ClassVar
 from app.types.update_result import UpdateResult
 from app.models.public.warehouse import Warehouse
 from app.repositories.base.base_repository import BaseRepository
@@ -14,7 +15,7 @@ class WarehousesRepository(
 	UpdatableMixin,
 	SelectableMixin[Warehouse]
 ):
-	TABLE = "warehouses"
+	TABLE: ClassVar[str] = Warehouse.TABLE
 	MODEL = Warehouse
 	TABLE_COLUMNS = (
 		Warehouse.COLUMN_ID,
@@ -26,7 +27,7 @@ class WarehousesRepository(
 		Warehouse.COLUMN_CREATED_AT,
 	)
 
-	ORDER_BY = ((Warehouse.COLUMN_CREATED_AT, "DESC"),)
+	ORDER_BY = ((Warehouse.COLUMN_CREATED_AT, "DESC",),)
 
 	@classmethod
 	def create(
@@ -38,7 +39,7 @@ class WarehousesRepository(
 	) -> int:
 		return cls.execute_create(
 			cur=cur,
-			table=cls.TABLE,
+			table=Warehouse.TABLE,
 			fields={
 				Warehouse.COLUMN_ADDRESS: address,
 				Warehouse.COLUMN_DESCRIPTION: description,

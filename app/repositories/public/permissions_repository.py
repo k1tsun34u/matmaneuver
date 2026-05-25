@@ -1,4 +1,5 @@
 import psycopg
+from typing import ClassVar
 from app.types.update_result import UpdateResult
 from app.models.public.permission import Permission
 from app.types.deactivate_result import DeactivateResult
@@ -14,7 +15,7 @@ class PermissionsRepository(
 	UpdatableMixin,
 	SelectableMixin[Permission]
 ):
-	TABLE = "permissions"
+	TABLE: ClassVar[str] = Permission.TABLE
 	MODEL = Permission
 	TABLE_COLUMNS = (
 		Permission.COLUMN_ID,
@@ -27,7 +28,7 @@ class PermissionsRepository(
 		Permission.COLUMN_CREATED_AT,
 	)
 
-	ORDER_BY = ((Permission.COLUMN_CREATED_AT, "DESC"),)
+	ORDER_BY = ((Permission.COLUMN_CREATED_AT, "DESC",),)
 
 	@classmethod
 	def create(
@@ -40,7 +41,7 @@ class PermissionsRepository(
 	) -> int:
 		return cls.execute_create(
 			cur=cur,
-			table=cls.TABLE,
+			table=Permission.TABLE,
 			fields={
 				Permission.COLUMN_CODE: code,
 				Permission.COLUMN_DESCRIPTION: description,
@@ -67,7 +68,7 @@ class PermissionsRepository(
 	@classmethod
 	def deactivate(cls, cur: psycopg.Cursor, permission_id: int, deactivated_by: int) -> DeactivateResult:
 		query = f"""
-			UPDATE {cls.TABLE}
+			UPDATE {Permission.TABLE}
 			SET
 				{Permission.COLUMN_DEACTIVATED_BY} = %s,
 				{Permission.COLUMN_DEACTIVATED_AT} = NOW()

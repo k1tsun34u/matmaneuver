@@ -17,7 +17,7 @@ class CartItemsRepository(
 		"created_at",
 	)
 
-	ORDER_BY = (("created_at", "DESC"),)
+	ORDER_BY = (("created_at", "DESC",),)
 
 	@classmethod
 	def add_or_increment(

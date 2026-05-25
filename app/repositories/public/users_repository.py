@@ -1,6 +1,7 @@
 
 import psycopg
 from app.utils import Utils
+from typing import ClassVar
 from app.unset import Unset, UNSET
 from app.models.db.db_user import DbUser
 from app.types.update_result import UpdateResult
@@ -17,7 +18,7 @@ class UsersRepository(
 	UpdatableMixin,
 	SelectableMixin[DbUser]
 ):
-	TABLE = "users"
+	TABLE = DbUser.TABLE
 	MODEL = DbUser
 	TABLE_COLUMNS = (
 		DbUser.COLUMN_ID,
@@ -34,7 +35,7 @@ class UsersRepository(
 		DbUser.COLUMN_CREATED_AT,
 	)
 
-	ORDER_BY = ((DbUser.COLUMN_CREATED_AT, "DESC"),)
+	ORDER_BY = ((DbUser.COLUMN_CREATED_AT, "DESC",),)
 
 	@classmethod
 	def create(
@@ -48,7 +49,7 @@ class UsersRepository(
 	) -> int:
 		return cls.execute_create(
 			cur=cur,
-			table=cls.TABLE,
+			table=DbUser.TABLE,
 			fields={
 				DbUser.COLUMN_PHONE: phone,
 				DbUser.COLUMN_EMAIL: email,

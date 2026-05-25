@@ -1,7 +1,11 @@
 import re
+import psycopg
 from app.unset import Unset
-from typing import Any, Literal
+from os.path import normpath
+from typing import Any, Literal, TypeVar
 
+
+T = TypeVar("T")
 
 class Utils:
 	@staticmethod
@@ -94,6 +98,14 @@ class Utils:
 	@staticmethod
 	def normalize_code(code: str) -> str:
 		return code.strip().lower()
+	
+	@staticmethod
+	def normalize_name(name: str) -> str:
+		return name.strip()
+	
+	@staticmethod
+	def normalize_storage_key(storage_key: str) -> str:
+		return normpath(storage_key.strip())
 
 	@staticmethod
 	def is_valid_phone(normalized_phone: str) -> bool:
@@ -136,3 +148,33 @@ class Utils:
 			password_hash
 			and len(password_hash) > 0
 		)
+	
+	@staticmethod
+	def is_valid_storage_key(norm_storage_key: str) -> bool:
+		pattern = r"^[a-zA-Z0-9_-]+"
+		return (
+			norm_storage_key
+			and bool(re.fullmatch(pattern, norm_storage_key))
+		)
+	
+	@classmethod
+	def determine_result(
+		cls,
+		cur: psycopg.Cursor,
+		table: str,
+		where: dict[str, Any],
+		rowcount: int,
+		result_type: type[T]
+	) -> T:
+		if rowcount != 0:
+			return result_type.SUCCESS
+
+		conditions, params = cls.build_conditions_params(equals=where)
+		query = f"""
+			SELECT 1 FROM {table}
+			{cls.build_where(conditions)}
+		"""
+		cur.execute(query, params)
+		if not cur.fetchone():
+			return result_type.FAIL_NOT_FOUND
+		return result_type.FAIL_CONDITION

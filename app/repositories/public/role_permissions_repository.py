@@ -1,17 +1,18 @@
 import psycopg
+from typing import ClassVar
 from collections.abc import Sequence
 from app.models.public.role_permission import RolePermission
 from app.repositories.base.base_repository import BaseRepository
-from app.repositories.base.mixins.assignable_mixin import AssignableMixin
+from app.repositories.base.mixins.relation_mixin import RelationMixin
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 
 
 class RolePermissionsRepository(
 	BaseRepository,
-	AssignableMixin,
+	RelationMixin,
 	SelectableMixin[RolePermission]
 ):
-	TABLE = "role_permissions"
+	TABLE: ClassVar[str] = RolePermission.TABLE
 	MODEL = RolePermission
 	TABLE_COLUMNS = (
 		RolePermission.COLUMN_ROLE_ID,
@@ -20,7 +21,7 @@ class RolePermissionsRepository(
 		RolePermission.COLUMN_ASSIGNED_AT,
 	)
 
-	ORDER_BY = ((RolePermission.COLUMN_ASSIGNED_AT, "DESC"),)
+	ORDER_BY = ((RolePermission.COLUMN_ASSIGNED_AT, "DESC",),)
 
 	@classmethod
 	def assign(
@@ -30,7 +31,7 @@ class RolePermissionsRepository(
 		permission_id: int,
 		assigned_by: int | None
 	) -> None:
-		cls.assign_by_fields(
+		cls.create_relation(
 			cur=cur,
 			fixed_field=RolePermission.COLUMN_ROLE_ID,
 			fixed_value=role_id,
@@ -45,7 +46,7 @@ class RolePermissionsRepository(
 		role_id: int,
 		permission_id: int
 	) -> None:
-		cls.unassign_by_fields(
+		cls.delete_relation(
 			cur=cur,
 			fixed_field=RolePermission.COLUMN_ROLE_ID,
 			fixed_value=role_id,
@@ -61,7 +62,7 @@ class RolePermissionsRepository(
 		permission_ids: Sequence[int],
 		assigned_by: int | None
 	) -> None:
-		cls.assign_many_by_fields(
+		cls.create_relations(
 			cur=cur,
 			fixed_field=RolePermission.COLUMN_ROLE_ID,
 			fixed_value=role_id,
@@ -77,7 +78,7 @@ class RolePermissionsRepository(
 		role_id: int,
 		permission_ids: Sequence[int]
 	) -> None:
-		cls.unassign_many_by_fields(
+		cls.delete_relations(
 			cur=cur,
 			fixed_field=RolePermission.COLUMN_ROLE_ID,
 			fixed_value=role_id,

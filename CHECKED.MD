@@ -7,20 +7,24 @@
 	-	###	Public
 		|       Model               | Complete |
 		| :------------------------ | :------: |
+		| BaseModel                 | +        |
 		| Role                      | +        |
 		| RolePermission            | +        |
 		| EmployeeRole              | +        |
 		| Employee                  | +        |
 		| Permission                | +        |
-		| Warehouse                 | ?        |
-		| WarehouseProduct          | ?        |
+		| Warehouse                 | +        |
+		| WarehouseProduct          | +        |
+		| Product                   | +        |
+		| ProductCategory           | +        |
+		| ProductImage              | +        |
 +	##	Repositories
 	-	###	Base
 		*	####	Mixins
 			|       Mixin       | Complete |
 			| :---------------- | :------: |
 			| AuditStateMixin   | +        |
-			| AssignableMixin   | +        |
+			| RelationMixin     | +        |
 			| SelectableMixin   | +        |
 			| UpdatableMixin    | +        |
 	-	###	Public
@@ -35,6 +39,9 @@
 		| UsersRepository                     | +        |
 		| WarehousesRepository                | +-       |
 		| WarehouseProductsRepository         | +-       |
+		| ProductsRepository                  | +        |
+		| ProductCategoriesRepository         | +        |
+		| ProductImagesRepository             | +        |
 +	##	Services
 	|          Service          | Complete |
 	| :------------------------ | :------: |
@@ -44,3 +51,6 @@
 	| PermissionsService        | +        |
 	| UsersService              | +        |
 	| WarehousesService         | +        |
+	| ProductsService           | +        |
+	| ProductCategoriesService  | +        |
+	| ProductImagesService      | +        |

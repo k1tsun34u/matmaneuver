@@ -1,19 +1,20 @@
 import psycopg
+from typing import ClassVar
 from collections.abc import Sequence
 from app.models.public.role import Role
 from app.models.public.employee import Employee
 from app.models.public.employee_role import EmployeeRole
 from app.repositories.base.base_repository import BaseRepository
-from app.repositories.base.mixins.assignable_mixin import AssignableMixin
+from app.repositories.base.mixins.relation_mixin import RelationMixin
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 
 
 class EmployeeRolesRepository(
 	BaseRepository,
-	AssignableMixin,
+	RelationMixin,
 	SelectableMixin[EmployeeRole]
 ):
-	TABLE = "employee_roles"
+	TABLE: ClassVar[str] = EmployeeRole.TABLE
 	MODEL = EmployeeRole
 	TABLE_COLUMNS = (
 		EmployeeRole.COLUMN_EMPLOYEE_ID,
@@ -22,7 +23,7 @@ class EmployeeRolesRepository(
 		EmployeeRole.COLUMN_ASSIGNED_AT,
 	)
 
-	ORDER_BY = ((EmployeeRole.COLUMN_ASSIGNED_AT, "DESC"),)
+	ORDER_BY = ((EmployeeRole.COLUMN_ASSIGNED_AT, "DESC",),)
 
 	@classmethod
 	def assign(
@@ -32,7 +33,7 @@ class EmployeeRolesRepository(
 		role_id: int,
 		assigned_by: int | None
 	) -> None:
-		cls.assign_by_fields(
+		cls.create_relation(
 			cur=cur,
 			fixed_field=EmployeeRole.COLUMN_EMPLOYEE_ID,
 			fixed_value=employee_id,
@@ -48,7 +49,7 @@ class EmployeeRolesRepository(
 		employee_id: int,
 		role_id: int
 	) -> None:
-		cls.unassign_by_fields(
+		cls.delete_relation(
 			cur=cur,
 			fixed_field=EmployeeRole.COLUMN_EMPLOYEE_ID,
 			fixed_value=employee_id,
@@ -64,7 +65,7 @@ class EmployeeRolesRepository(
 		role_ids: Sequence[int],
 		assigned_by: int | None
 	) -> None:
-		cls.assign_many_by_fields(
+		cls.create_relations(
 			cur=cur,
 			fixed_field=EmployeeRole.COLUMN_EMPLOYEE_ID,
 			fixed_value=employee_id,
@@ -80,7 +81,7 @@ class EmployeeRolesRepository(
 		employee_id: int,
 		role_ids: Sequence[int]
 	) -> None:
-		cls.unassign_many_by_fields(
+		cls.delete_relations(
 			cur=cur,
 			fixed_field=EmployeeRole.COLUMN_EMPLOYEE_ID,
 			fixed_value=employee_id,

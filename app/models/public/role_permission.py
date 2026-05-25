@@ -10,6 +10,9 @@ class RolePermission(BaseModel):
 	COLUMN_ASSIGNED_BY: ClassVar[str] = "assigned_by"
 	COLUMN_ASSIGNED_AT: ClassVar[str] = "assigned_at"
 
+	TABLE: ClassVar[str] = "role_permissions"
+	ENTITY: ClassVar[str] = "RolePermission"
+
 	role_id: int
 	permission_id: int
 	assigned_by: int | None

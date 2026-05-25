@@ -3,7 +3,7 @@ from typing import ClassVar
 from collections.abc import Sequence
 
 
-class AssignableMixin:
+class RelationMixin:
 	"""
 		Only for M:N link tables. Table should have following form:
 		- <prim_key_first_part>: int
@@ -12,24 +12,20 @@ class AssignableMixin:
 		- assigned_at: datetime
 
 		Implements:
-		+ assign_by_conditions(...)
-		+ unassign_by_conditions(...)
-		+ assign_many_by_conditions(...)
-		+ unassign_many_by_conditions(...)
+		+ create_relation(...)
+		+ delete_relation(...)
+		+ create_relations(...)
+		+ delete_relations(...)
 
 		Requires class vars:
 		- TABLE
 		- TABLE_COLUMNS
-
-		Requires methods:
-		- execute_update(...)
-		- execute_delete(...)
 	"""
 	
 	TABLE_COLUMNS: ClassVar[tuple[str, ...]]
 
 	@classmethod
-	def assign_by_fields(
+	def create_relation(
 		cls,
 		cur: psycopg.Cursor,
 		fixed_field: str,
@@ -44,7 +40,7 @@ class AssignableMixin:
 			- UnhandledError
 		"""
 
-		cls.assign_many_by_fields(
+		cls.create_relations(
 			cur=cur,
 			fixed_field=fixed_field,
 			fixed_value=fixed_value,
@@ -54,7 +50,7 @@ class AssignableMixin:
 		)
 
 	@classmethod
-	def unassign_by_fields(
+	def delete_relation(
 		cls,
 		cur: psycopg.Cursor,
 		fixed_field: str,
@@ -64,11 +60,10 @@ class AssignableMixin:
 	) -> None:
 		"""
 			May cause:
-			- NotFoundError
 			- UnhandledError
 		"""
 
-		cls.unassign_many_by_fields(
+		cls.delete_relations(
 			cur=cur,
 			fixed_field=fixed_field,
 			fixed_value=fixed_value,
@@ -77,7 +72,7 @@ class AssignableMixin:
 		)
 	
 	@classmethod
-	def assign_many_by_fields(
+	def create_relations(
 		cls,
 		cur: psycopg.Cursor,
 		fixed_field: str,
@@ -108,7 +103,7 @@ class AssignableMixin:
 		cur.execute(query, (fixed_value, varying_values, actor_id,))
 	
 	@classmethod
-	def unassign_many_by_fields(
+	def delete_relations(
 		cls,
 		cur: psycopg.Cursor,
 		fixed_field: str,
@@ -118,7 +113,6 @@ class AssignableMixin:
 	) -> None:
 		"""
 			May cause:
-			- NotFoundError
 			- UnhandledError
 		"""
 

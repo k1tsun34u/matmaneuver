@@ -159,14 +159,14 @@ CREATE TABLE categories (
 -- Товары
 CREATE TABLE products (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	name TEXT NOT NULL,
+	name TEXT UNIQUE NOT NULL,
 	description TEXT,
 	price NUMERIC(10, 2) NOT NULL CHECK (price > 0),
 	
-	deleted_by BIGINT REFERENCES users(id),
+	deleted_by BIGINT REFERENCES employees(id),
 	deleted_at TIMESTAMPTZ DEFAULT NULL,
 
-	created_by BIGINT REFERENCES users(id),
+	created_by BIGINT REFERENCES employees(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -174,7 +174,7 @@ CREATE TABLE product_categories (
 	product_id BIGINT NOT NULL REFERENCES products(id),
 	category_id BIGINT NOT NULL REFERENCES categories(id),
 
-	assigned_by BIGINT REFERENCES users(id),
+	assigned_by BIGINT REFERENCES employees(id),
 	assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 	PRIMARY KEY (product_id, category_id)
 );
@@ -182,9 +182,9 @@ CREATE TABLE product_categories (
 CREATE TABLE product_images (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	product_id BIGINT NOT NULL REFERENCES products(id),
-	storage_key TEXT NOT NULL,
+	storage_key TEXT UNIQUE NOT NULL,
 
-	created_by BIGINT REFERENCES users(id),
+	created_by BIGINT REFERENCES employees(id),
 	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

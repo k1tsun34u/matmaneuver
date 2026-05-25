@@ -1,4 +1,6 @@
 import psycopg
+from typing import ClassVar
+from app.types.delete_result import DeleteResult
 from app.models.public.product_review import ProductReview
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
@@ -8,17 +10,17 @@ class ProductReviewsRepository(
 	BaseRepository,
 	SelectableMixin[ProductReview]
 ):
-	TABLE = "product_reviews"
+	TABLE: ClassVar[str] = ProductReview.TABLE
 	MODEL = ProductReview
 	TABLE_COLUMNS = (
-		"product_id",
-		"user_id",
-		"rating",
-		"comment",
-		"created_at",
+		ProductReview.COLUMN_PRODUCT_ID,
+		ProductReview.COLUMN_USER_ID,
+		ProductReview.COLUMN_RATING,
+		ProductReview.COLUMN_COMMENT,
+		ProductReview.COLUMN_CREATED_AT,
 	)
 
-	ORDER_BY = (("created_at", "DESC"),)
+	ORDER_BY = ((ProductReview.COLUMN_CREATED_AT, "DESC",),)
 
 	@classmethod
 	def create(
@@ -33,41 +35,64 @@ class ProductReviewsRepository(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				"product_id": product_id,
-				"user_id": user_id,
-				"rating": rating,
-				"comment": comment
+				ProductReview.COLUMN_PRODUCT_ID: product_id,
+				ProductReview.COLUMN_USER_ID: user_id,
+				ProductReview.COLUMN_RATING: rating,
+				ProductReview.COLUMN_COMMENT: comment
 			},
 			returning=None
 		)
 	
 	@classmethod
-	def delete(cls, cur: psycopg.Cursor, product_id: int, user_id: int) -> int:
-		return cls.execute_delete(cur, cls.TABLE, {"product_id": product_id, "user_id": user_id})
+	def delete(cls, cur: psycopg.Cursor, product_id: int, user_id: int) -> DeleteResult:
+		rowcount = cls.execute_delete(
+			cur=cur,
+			table=cls.TABLE,
+			where={
+				ProductReview.COLUMN_PRODUCT_ID: product_id,
+				ProductReview.COLUMN_USER_ID: user_id
+			}
+		)
+
+		if rowcount != 0:
+			return DeleteResult.SUCCESS
+		return DeleteResult.FAIL_NOT_FOUND
 	
 	@classmethod
 	def delete_many_by_product_id(
 		cls,
 		cur: psycopg.Cursor,
 		product_id: int
-	) -> int:
-		return cls.execute_delete(
+	) -> DeleteResult:
+		rowcount = cls.execute_delete(
 			cur=cur,
 			table=cls.TABLE,
-			where={"product_id": product_id}
+			where={ProductReview.COLUMN_PRODUCT_ID: product_id}
 		)
+
+		if rowcount != 0:
+			return DeleteResult.SUCCESS
+		
+		# product may not have any reviews
+		return DeleteResult.SUCCESS
 	
 	@classmethod
 	def delete_many_by_user_id(
 		cls,
 		cur: psycopg.Cursor,
 		user_id: int
-	) -> int:
-		return cls.execute_delete(
+	) -> DeleteResult:
+		rowcount = cls.execute_delete(
 			cur=cur,
 			table=cls.TABLE,
-			where={"user_id": user_id}
+			where={ProductReview.COLUMN_USER_ID: user_id}
 		)
+
+		if rowcount != 0:
+			return DeleteResult.SUCCESS
+		
+		# user may not have any reviews
+		return DeleteResult.SUCCESS
 
 	@classmethod
 	def get_by_product_id_user_id(
@@ -76,7 +101,7 @@ class ProductReviewsRepository(
 		product_id: int,
 		user_id: int
 	) -> ProductReview | None:
-		return cls.select(cur, {"product_id": product_id, "user_id": user_id})
+		return cls.select(cur, {ProductReview.COLUMN_PRODUCT_ID: product_id, ProductReview.COLUMN_USER_ID: user_id})
 	
 	@classmethod
 	def get_many_by_product_id(
@@ -88,7 +113,7 @@ class ProductReviewsRepository(
 	) -> list[ProductReview]:
 		return cls.select_many(
 			cur=cur,
-			equals={"product_id": product_id},
+			equals={ProductReview.COLUMN_PRODUCT_ID: product_id},
 			limit=limit,
 			offset=offset
 		)

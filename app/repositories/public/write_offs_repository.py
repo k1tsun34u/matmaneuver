@@ -22,7 +22,7 @@ class WriteOffsRepository(
 		"created_at",
 	)
 
-	ORDER_BY = (("created_at", "DESC"), ("id", "DESC"),)
+	ORDER_BY = (("created_at", "DESC"), ("id", "DESC",),)
 
 	@classmethod
 	def create(

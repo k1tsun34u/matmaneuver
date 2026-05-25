@@ -1,4 +1,6 @@
 import psycopg
+from typing import ClassVar
+from app.types.delete_result import DeleteResult
 from app.models.public.product_image import ProductImage
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
@@ -8,17 +10,17 @@ class ProductImagesRepository(
 	BaseRepository,
 	SelectableMixin[ProductImage]
 ):
-	TABLE = "product_images"
+	TABLE: ClassVar[str] = ProductImage.TABLE
 	MODEL = ProductImage
 	TABLE_COLUMNS = (
-		"id",
-		"product_id",
-		"storage_key",
-		"created_by",
-		"created_at",
+		ProductImage.COLUMN_ID,
+		ProductImage.COLUMN_PRODUCT_ID,
+		ProductImage.COLUMN_STORAGE_KEY,
+		ProductImage.COLUMN_CREATED_BY,
+		ProductImage.COLUMN_CREATED_AT,
 	)
 
-	ORDER_BY = (("created_at", "DESC"),)
+	ORDER_BY = ((ProductImage.COLUMN_ID, "ASC",),)
 
 	@classmethod
 	def create(
@@ -30,31 +32,67 @@ class ProductImagesRepository(
 	) -> int:
 		return cls.execute_create(
 			cur=cur,
-			table=cls.TABLE,
+			table=ProductImage.TABLE,
 			fields={
-				"product_id": product_id,
-				"storage_key": storage_key,
-				"created_by": created_by
+				ProductImage.COLUMN_PRODUCT_ID: product_id,
+				ProductImage.COLUMN_STORAGE_KEY: storage_key,
+				ProductImage.COLUMN_CREATED_BY: created_by
 			},
-			returning="id"
-		)["id"]
+			returning=ProductImage.COLUMN_ID
+		)[ProductImage.COLUMN_ID]
 	
 	@classmethod
-	def delete(cls, cur: psycopg.Cursor, product_image_id: int) -> int:
-		return cls.execute_delete(cur, cls.TABLE, {"id": product_image_id})
-	
-	@classmethod
-	def delete_many_by_product_id(cls, cur: psycopg.Cursor, product_id: int) -> int:
-		return cls.execute_delete(
+	def delete(cls, cur: psycopg.Cursor, product_image_id: int) -> DeleteResult:
+		rowcount = cls.execute_delete(
 			cur=cur,
-			table=cls.TABLE,
-			where={"product_id": product_id}
+			table=ProductImage.TABLE,
+			where={ProductImage.COLUMN_ID: product_image_id}
 		)
+		
+		if rowcount != 0:
+			return DeleteResult.SUCCESS
+		return DeleteResult.FAIL_NOT_FOUND
+	
+	@classmethod
+	def delete_many_by_product_id(cls, cur: psycopg.Cursor, product_id: int) -> DeleteResult:
+		rowcount = cls.execute_delete(
+			cur=cur,
+			table=ProductImage.TABLE,
+			where={ProductImage.COLUMN_PRODUCT_ID: product_id}
+		)
+
+		if rowcount != 0:
+			return DeleteResult.SUCCESS
+		
+		# product may not have any images
+		return DeleteResult.SUCCESS
 
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, product_image_id: int) -> ProductImage | None:
-		return cls.select(cur, {"id": product_image_id})
+		return cls.select(cur=cur, equals={ProductImage.COLUMN_ID: product_image_id})
+
+	@classmethod
+	def get_by_storage_key(cls, cur: psycopg.Cursor, storage_key: str) -> ProductImage | None:
+		return cls.select(cur=cur, equals={ProductImage.COLUMN_STORAGE_KEY: storage_key})
 	
 	@classmethod
 	def get_many_by_product_id(cls, cur: psycopg.Cursor, product_id: int) -> list[ProductImage]:
-		return cls.select_many(cur, {"product_id": product_id})
+		return cls.select_many(
+			cur=cur,
+			equals={ProductImage.COLUMN_PRODUCT_ID: product_id}
+		)
+	
+	@classmethod
+	def get_many_by_employee_id(
+		cls,
+		cur: psycopg.Cursor,
+		employee_id: int,
+		limit: int = 50,
+		offset: int = 0
+	) -> list[ProductImage]:
+		return cls.select_many(
+			cur=cur,
+			equals={ProductImage.COLUMN_CREATED_BY: employee_id},
+			limit=limit,
+			offset=offset
+		)

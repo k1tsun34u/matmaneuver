@@ -9,6 +9,9 @@ class EmployeeRole(BaseModel):
 	COLUMN_ROLE_ID: ClassVar[str] = "role_id"
 	COLUMN_ASSIGNED_BY: ClassVar[str] = "assigned_by"
 	COLUMN_ASSIGNED_AT: ClassVar[str] = "assigned_at"
+	
+	TABLE: ClassVar[str] = "employee_roles"
+	ENTITY: ClassVar[str] = "EmployeeRole"
 
 	employee_id: int
 	role_id: int
