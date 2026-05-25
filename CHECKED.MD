@@ -18,6 +18,10 @@
 		| Product                   | +        |
 		| ProductCategory           | +        |
 		| ProductImage              | +        |
+		| Supplier                  | +        |
+		| Supply                    | +        |
+		| SupplyItem                | +        |
+		| SupplyStatusHistory       | +        |
 +	##	Repositories
 	-	###	Base
 		*	####	Mixins
@@ -42,6 +46,10 @@
 		| ProductsRepository                  | +        |
 		| ProductCategoriesRepository         | +        |
 		| ProductImagesRepository             | +        |
+		| SuppliersRepository                 | +        |
+		| SuppliesRepository                  | +        |
+		| SupplyItemsRepository               | +        |
+		| SupplyStatusHistoryRepository       | +        |
 +	##	Services
 	|          Service          | Complete |
 	| :------------------------ | :------: |
@@ -54,3 +62,6 @@
 	| ProductsService           | +        |
 	| ProductCategoriesService  | +        |
 	| ProductImagesService      | +        |
+	| SuppliersService          | +        |
+	| SuppliesService           | +        |
+	| SupplyItemsService        | +        |

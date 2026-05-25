@@ -210,7 +210,7 @@ CREATE TABLE warehouse_products (
 -- Поставщики
 CREATE TABLE suppliers (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	name TEXT NOT NULL,
+	full_name TEXT NOT NULL,
 	phone VARCHAR(32) UNIQUE NOT NULL,
 	email VARCHAR(256) UNIQUE,
 	address TEXT,

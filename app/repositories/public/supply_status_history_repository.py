@@ -1,4 +1,5 @@
 import psycopg
+from typing import ClassVar
 from app.types.supply_status import SupplyStatus
 from app.repositories.base.base_repository import BaseRepository
 from app.models.public.supply_status_history import SupplyStatusHistory
@@ -9,18 +10,21 @@ class SupplyStatusHistoryRepository(
 	BaseRepository,
 	SelectableMixin[SupplyStatusHistory]
 ):
-	TABLE = "supply_status_history"
+	TABLE: ClassVar[str] = SupplyStatusHistory.TABLE
 	MODEL = SupplyStatusHistory
 	TABLE_COLUMNS = (
-		"id",
-		"supply_id",
-		"status",
-		"changed_by",
-		"changed_at",
+		SupplyStatusHistory.COLUMN_ID,
+		SupplyStatusHistory.COLUMN_SUPPLY_ID,
+		SupplyStatusHistory.COLUMN_STATUS,
+		SupplyStatusHistory.COLUMN_CHANGED_BY,
+		SupplyStatusHistory.COLUMN_CHANGED_AT,
 	)
 
 	# warning: get_latest_by_supply_id uses this class var!
-	ORDER_BY = (("changed_at", "DESC"), ("id", "DESC",),)
+	ORDER_BY = (
+		(SupplyStatusHistory.COLUMN_CHANGED_AT, "DESC",),
+		(SupplyStatusHistory.COLUMN_ID, "DESC",),
+	)
 
 	@classmethod
 	def create(
@@ -28,22 +32,22 @@ class SupplyStatusHistoryRepository(
 		cur: psycopg.Cursor,
 		supply_id: int,
 		status: SupplyStatus,
-		changed_by: int | None
+		set_by: int | None
 	) -> int:
 		return cls.execute_create(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				"supply_id": supply_id,
-				"status": status,
-				"changed_by": changed_by
+				SupplyStatusHistory.COLUMN_SUPPLY_ID: supply_id,
+				SupplyStatusHistory.COLUMN_STATUS: status,
+				SupplyStatusHistory.COLUMN_CHANGED_BY: set_by
 			},
-			returning="id"
-		)["id"]
+			returning=SupplyStatusHistory.COLUMN_ID
+		)[SupplyStatusHistory.COLUMN_ID]
 	
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, supply_status_history_id: int) -> SupplyStatusHistory | None:
-		return cls.select(cur=cur, equals={"id": supply_status_history_id})
+		return cls.select(cur=cur, equals={SupplyStatusHistory.COLUMN_ID: supply_status_history_id})
 	
 	@classmethod
 	def get_many_by_supply_id(
@@ -55,7 +59,7 @@ class SupplyStatusHistoryRepository(
 	) -> list[SupplyStatusHistory]:
 		return cls.select_many(
 			cur=cur,
-			equals={"supply_id": supply_id},
+			equals={SupplyStatusHistory.COLUMN_SUPPLY_ID: supply_id},
 			limit=limit,
 			offset=offset
 		)
@@ -68,7 +72,7 @@ class SupplyStatusHistoryRepository(
 	) -> SupplyStatusHistory | None:
 		res = cls.select_many(
 			cur=cur,
-			equals={"supply_id": supply_id},
+			equals={SupplyStatusHistory.COLUMN_SUPPLY_ID: supply_id},
 			limit=1,
 			offset=0
 		)

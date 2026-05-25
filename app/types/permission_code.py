@@ -37,3 +37,13 @@ class PermissionCode(StrEnum):
 	UNASSIGN_PRODUCT_CATEGORY = "unassign_product_category"
 	CREATE_PRODUCT_IMAGE = "create_product_image"
 	DELETE_PRODUCT_IMAGE = "delete_product_image"
+
+	CREATE_SUPPLIER = "create_supplier"
+	DEACTIVATE_SUPPLIER = "deactivate_supplier"
+	SET_SUPPLIER_FIELDS = "set_supplier_fields"
+
+	CREATE_SUPPLY = "create_supply"
+	SET_SUPPLY_STATUS = "set_supply_status"
+
+	CREATE_SUPPLY_ITEM = "create_supply_item"
+	

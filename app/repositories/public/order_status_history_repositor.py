@@ -20,7 +20,10 @@ class OrderStatusHistoryRepository(
 	)
 
 	# warning: get_latest_by_product_id uses this class var!
-	ORDER_BY = (("changed_at", "DESC"), ("id", "DESC",),)
+	ORDER_BY = (
+		("changed_at", "DESC",),
+		("id", "DESC",),
+	)
 
 	@classmethod
 	def create(

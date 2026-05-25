@@ -24,6 +24,9 @@ class UpdatableMixin:
 		condition_where: dict[str, Any],
 		fields: dict[str, Any]
 	) -> UpdateResult:
+		if not fields:
+			return UpdateResult.SUCCESS
+
 		count = cls.execute_update(
 			cur=cur,
 			table=cls.TABLE,
