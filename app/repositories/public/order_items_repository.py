@@ -1,5 +1,8 @@
 import psycopg
 from decimal import Decimal
+from typing import ClassVar
+from app.models.public.product import Product
+from app.types.delete_result import DeleteResult
 from app.models.public.order_item import OrderItem
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
@@ -9,17 +12,17 @@ class OrderItemsRepository(
 	BaseRepository,
 	SelectableMixin[OrderItem]
 ):
-	TABLE = "order_items"
+	TABLE: ClassVar[str] = OrderItem.TABLE
 	MODEL = OrderItem
 	TABLE_COLUMNS = (
-		"id",
-		"order_id",
-		"product_id",
-		"quantity",
-		"price",
+		OrderItem.COLUMN_ID,
+		OrderItem.COLUMN_ORDER_ID,
+		OrderItem.COLUMN_PRODUCT_ID,
+		OrderItem.COLUMN_QUANTITY,
+		OrderItem.COLUMN_PRICE,
 	)
 
-	ORDER_BY = (("id", "ASC",),)
+	ORDER_BY = ((OrderItem.COLUMN_ID, "ASC",),)
 
 	@classmethod
 	def create(
@@ -34,17 +37,33 @@ class OrderItemsRepository(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				"order_id": order_id,
-				"product_id": product_id,
-				"quantity": quantity,
-				"price": price
+				OrderItem.COLUMN_ORDER_ID: order_id,
+				OrderItem.COLUMN_PRODUCT_ID: product_id,
+				OrderItem.COLUMN_QUANTITY: quantity,
+				OrderItem.COLUMN_PRICE: price
 			},
-			returning="id"
-		)["id"]
+			returning=OrderItem.COLUMN_ID
+		)[OrderItem.COLUMN_ID]
+	
+	@classmethod
+	def delete(
+		cls,
+		cur: psycopg.Cursor,
+		order_item_id: int
+	) -> DeleteResult:
+		rowcount = cls.execute_delete(
+			cur=cur,
+			table=cls.TABLE,
+			where={OrderItem.COLUMN_ID: order_item_id}
+		)
+
+		if rowcount != 0:
+			return DeleteResult.SUCCESS
+		return DeleteResult.FAIL_NOT_FOUND
 	
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, order_item_id: int) -> OrderItem | None:
-		return cls.select(cur, {"id": order_item_id})
+		return cls.select(cur, {OrderItem.COLUMN_ID: order_item_id})
 	
 	@classmethod
 	def get_many_by_order_id(
@@ -56,7 +75,7 @@ class OrderItemsRepository(
 	) -> list[OrderItem]:
 		return cls.select_many(
 			cur=cur,
-			equals={"order_id": order_id},
+			equals={OrderItem.COLUMN_ORDER_ID: order_id},
 			limit=limit,
 			offset=offset
 		)
@@ -71,7 +90,22 @@ class OrderItemsRepository(
 	) -> list[OrderItem]:
 		return cls.select_many(
 			cur=cur,
-			equals={"product_id": product_id},
+			equals={OrderItem.COLUMN_PRODUCT_ID: product_id},
 			limit=limit,
 			offset=offset
 		)
+
+	@classmethod
+	def get_products_by_order_id(
+		cls,
+		cur: psycopg.Cursor,
+		order_id: int
+	) -> list[Product]:
+		query = f"""
+			SELECT p.*
+			FROM {Product.TABLE} p
+			JOIN {OrderItem.TABLE} oi ON oi.{OrderItem.COLUMN_PRODUCT_ID} = p.{Product.COLUMN_ID}
+			WHERE oi.{OrderItem.COLUMN_ORDER_ID} = %s
+		"""
+		cur.execute(query, (order_id,))
+		return [Product(**row) for row in cur.fetchall()]

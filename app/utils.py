@@ -106,6 +106,10 @@ class Utils:
 	@staticmethod
 	def normalize_storage_key(storage_key: str) -> str:
 		return normpath(storage_key.strip())
+	
+	@staticmethod
+	def normalize_track_number(track_number: str) -> str:
+		return re.sub(r"[^\w-]", '', track_number.strip().upper())
 
 	@staticmethod
 	def is_valid_phone(normalized_phone: str) -> bool:
@@ -155,6 +159,14 @@ class Utils:
 		return (
 			norm_storage_key
 			and bool(re.fullmatch(pattern, norm_storage_key))
+		)
+	
+	@staticmethod
+	def is_valid_track_number(norm_track_number: str) -> bool:
+		pattern = r"^\w+(?:-\w)*$"
+		return (
+			norm_track_number
+			and bool(re.fullmatch(pattern, norm_track_number))
 		)
 	
 	@classmethod

@@ -1,4 +1,5 @@
 import psycopg
+from typing import ClassVar
 from app.types.order_status import OrderStatus
 from app.repositories.base.base_repository import BaseRepository
 from app.models.public.order_status_history import OrderStatusHistory
@@ -9,20 +10,20 @@ class OrderStatusHistoryRepository(
 	BaseRepository,
 	SelectableMixin[OrderStatusHistory]
 ):
-	TABLE = "order_status_history"
+	TABLE: ClassVar[str] = OrderStatusHistory.TABLE
 	MODEL = OrderStatusHistory
 	TABLE_COLUMNS = (
-		"id",
-		"order_id",
-		"status",
-		"changed_by",
-		"changed_at",
+		OrderStatusHistory.COLUMN_ID,
+		OrderStatusHistory.COLUMN_ORDER_ID,
+		OrderStatusHistory.COLUMN_STATUS,
+		OrderStatusHistory.COLUMN_CHANGED_BY,
+		OrderStatusHistory.COLUMN_CHANGED_AT,
 	)
 
 	# warning: get_latest_by_product_id uses this class var!
 	ORDER_BY = (
-		("changed_at", "DESC",),
-		("id", "DESC",),
+		(OrderStatusHistory.COLUMN_CHANGED_AT, "DESC",),
+		(OrderStatusHistory.COLUMN_ID, "DESC",),
 	)
 
 	@classmethod
@@ -37,16 +38,16 @@ class OrderStatusHistoryRepository(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				"order_id": order_id,
-				"status": status,
-				"changed_by": changed_by
+				OrderStatusHistory.COLUMN_ORDER_ID: order_id,
+				OrderStatusHistory.COLUMN_STATUS: status,
+				OrderStatusHistory.COLUMN_CHANGED_BY: changed_by
 			},
-			returning="id"
-		)["id"]
+			returning=OrderStatusHistory.COLUMN_ID
+		)[OrderStatusHistory.COLUMN_ID]
 	
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, order_status_history_id: int) -> OrderStatusHistory | None:
-		return cls.select(cur=cur, equals={"id": order_status_history_id})
+		return cls.select(cur=cur, equals={OrderStatusHistory.COLUMN_ID: order_status_history_id})
 	
 	@classmethod
 	def get_many_by_order_id(
@@ -58,7 +59,7 @@ class OrderStatusHistoryRepository(
 	) -> list[OrderStatusHistory]:
 		return cls.select_many(
 			cur=cur,
-			equals={"order_id": order_id},
+			equals={OrderStatusHistory.COLUMN_ORDER_ID: order_id},
 			limit=limit,
 			offset=offset
 		)
@@ -71,7 +72,7 @@ class OrderStatusHistoryRepository(
 	) -> OrderStatusHistory | None:
 		res = cls.select_many(
 			cur=cur,
-			equals={"order_id": order_id},
+			equals={OrderStatusHistory.COLUMN_ORDER_ID: order_id},
 			limit=1,
 			offset=0
 		)

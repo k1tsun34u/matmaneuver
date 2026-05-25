@@ -1,9 +1,9 @@
 import psycopg
-from datetime import date
 from typing import ClassVar
 from app.models.public.supply import Supply
 from app.types.supply_status import SupplyStatus
 from app.types.update_result import UpdateResult
+from datetime import date, datetime, time, timedelta
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.updatable_mixin import UpdatableMixin
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
@@ -119,3 +119,45 @@ class SuppliesRepository(
 			limit=limit,
 			offset=offset
 		)
+
+	@classmethod
+	def search(
+		cls,
+		cur: psycopg.Cursor,
+		status: SupplyStatus | None = None,
+		created_from: date | None = None,
+		created_to: date | None = None,
+		planned_delivery_from: date | None = None,
+		planned_delivery_to: date | None = None,
+		limit: int = 50,
+		offset: int = 0
+	) -> list[Supply]:
+		limit, offset = Utils.normalize_pagination(limit, offset)
+		conditions = []
+		params = []
+		if status is not None:
+			conditions.append(f"{Supply.COLUMN_CURRENT_STATUS} = %s")
+			params.append(status)
+		if created_from is not None:
+			conditions.append(f"{Supply.COLUMN_CREATED_AT} >= %s")
+			params.append(datetime.combine(created_from, time.min))
+		if created_to is not None:
+			conditions.append(f"{Supply.COLUMN_CREATED_AT} < %s")
+			params.append(datetime.combine(created_to + timedelta(days=1), time.min))
+		if planned_delivery_from is not None:
+			conditions.append(f"{Supply.COLUMN_PLANNED_DELIVERY_DATE} >= %s")
+			params.append(planned_delivery_from)
+		if planned_delivery_to is not None:
+			conditions.append(f"{Supply.COLUMN_PLANNED_DELIVERY_DATE} <= %s")
+			params.append(planned_delivery_to)
+		
+		query = Utils.build_select_statement(
+			select_fields=cls.TABLE_COLUMNS,
+			table=cls.TABLE,
+			conditions=tuple(conditions),
+			order_by=cls.ORDER_BY,
+			many=True
+		)
+
+		cur.execute(query, (*params, limit, offset,))
+		return [Supply(**row) for row in cur.fetchall()]

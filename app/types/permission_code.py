@@ -47,4 +47,6 @@ class PermissionCode(StrEnum):
 
 	CREATE_SUPPLY_ITEM = "create_supply_item"
 	DELETE_SUPPLY_ITEM = "delete_supply_item"
+
+	SET_ORDER_STATUS = "set_order_status"
 	

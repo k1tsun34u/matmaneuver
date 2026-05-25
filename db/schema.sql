@@ -297,7 +297,7 @@ CREATE TABLE order_status_history (
 	order_id BIGINT NOT NULL REFERENCES orders(id),
 	status order_status NOT NULL,
 
-	changed_by BIGINT REFERENCES users(id),
+	changed_by BIGINT REFERENCES employees(id),
 	changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

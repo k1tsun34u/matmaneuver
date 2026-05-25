@@ -1,26 +1,32 @@
 import psycopg
+from app.utils import Utils
+from typing import ClassVar
 from app.models.public.order import Order
 from app.types.order_status import OrderStatus
+from app.types.update_result import UpdateResult
+from datetime import date, datetime, time, timedelta
 from app.repositories.base.base_repository import BaseRepository
+from app.repositories.base.mixins.updatable_mixin import UpdatableMixin
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 
 
 class OrdersRepository(
 	BaseRepository,
+	UpdatableMixin,
 	SelectableMixin[Order]
 ):
-	TABLE = "orders"
+	TABLE: ClassVar[str] = Order.TABLE
 	MODEL = Order
 	TABLE_COLUMNS = (
-		"id",
-		"current_status",
-		"track_number",
-		"delivery_address",
-		"created_by",
-		"created_at",
+		Order.COLUMN_ID,
+		Order.COLUMN_CURRENT_STATUS,
+		Order.COLUMN_TRACK_NUMBER,
+		Order.COLUMN_DELIVERY_ADDRESS,
+		Order.COLUMN_CREATED_BY,
+		Order.COLUMN_CREATED_AT,
 	)
 
-	ORDER_BY = (("created_at", "DESC",),)
+	ORDER_BY = ((Order.COLUMN_CREATED_AT, "DESC",),)
 
 	@classmethod
 	def create(
@@ -34,35 +40,88 @@ class OrdersRepository(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				"current_status": OrderStatus.CREATED,
-				"track_number": track_number,
-				"delivery_address": delivery_address,
-				"created_by": created_by
+				Order.COLUMN_CURRENT_STATUS: OrderStatus.CREATED,
+				Order.COLUMN_TRACK_NUMBER: track_number,
+				Order.COLUMN_DELIVERY_ADDRESS: delivery_address,
+				Order.COLUMN_CREATED_BY: created_by
 			},
-			returning="id"
-		)["id"]
+			returning=Order.COLUMN_ID
+		)[Order.COLUMN_ID]
 	
 	@classmethod
-	def change_status(
+	def set_status(
 		cls,
 		cur: psycopg.Cursor,
 		order_id: int,
 		status: OrderStatus
-	) -> bool:
-		cls.execute_update(
+	) -> UpdateResult:
+		return cls.update_by_conditions(
 			cur=cur,
-			table=cls.TABLE,
-			where={"id": order_id},
-			fields={"current_status": status}
+			identity_where={Order.COLUMN_ID: order_id},
+			condition_where={},
+			fields={Order.COLUMN_CURRENT_STATUS: status}
 		)
-
-		cur.execute(f"SELECT 1 FROM {cls.TABLE} WHERE id = %s", (order_id,))
-		return bool(cur.fetchone())
 	
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, order_id: int) -> Order | None:
-		return cls.select(cur, {"id": order_id})
+		return cls.select(cur, {Order.COLUMN_ID: order_id})
+	
+	@classmethod
+	def get_by_id_for_update(
+		cls,
+		cur: psycopg.Cursor,
+		order_id: int
+	) -> Order | None:
+		query = f"""
+			SELECT {", ".join(cls.TABLE_COLUMNS)}
+			FROM {cls.TABLE}
+			WHERE {Order.COLUMN_ID} = %s
+			FOR UPDATE
+			LIMIT 1
+		"""
+		cur.execute(query, (order_id,))
+		row = cur.fetchone()
+		return Order(**row) if row else None
 	
 	@classmethod
 	def get_by_track_number(cls, cur: psycopg.Cursor, track_number: str) -> Order | None:
-		return cls.select(cur, {"track_number": track_number})
+		return cls.select(cur, {Order.COLUMN_TRACK_NUMBER: track_number})
+	
+	@classmethod
+	def search(
+		cls,
+		cur: psycopg.Cursor,
+		search: str | None = None,
+		status: OrderStatus | None = None,
+		created_from: date | None = None,
+		created_to: date | None = None,
+		limit: int = 50,
+		offset: int = 0
+	) -> list[Order]:
+		limit, offset = Utils.normalize_pagination(limit, offset)
+		conditions = []
+		params = []
+		if search is not None:
+			conditions.append(f"({Order.COLUMN_TRACK_NUMBER} ILIKE %s OR {Order.COLUMN_DELIVERY_ADDRESS} ILIKE %s)")
+			params.append(f"%{search}%")
+			params.append(f"%{search}%")
+		if status is not None:
+			conditions.append(f"{Order.COLUMN_CURRENT_STATUS} = %s")
+			params.append(status)
+		if created_from is not None:
+			conditions.append(f"{Order.COLUMN_CREATED_AT} >= %s")
+			params.append(datetime.combine(created_from, time.min))
+		if created_to is not None:
+			conditions.append(f"{Order.COLUMN_CREATED_AT} < %s")
+			params.append(datetime.combine(created_to + timedelta(days=1), time.min))
+		
+		query = Utils.build_select_statement(
+			select_fields=cls.TABLE_COLUMNS,
+			table=cls.TABLE,
+			conditions=tuple(conditions),
+			order_by=cls.ORDER_BY,
+			many=True
+		)
+
+		cur.execute(query, (*params, limit, offset,))
+		return [Order(**row) for row in cur.fetchall()]

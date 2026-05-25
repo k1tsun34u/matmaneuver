@@ -175,6 +175,37 @@ class SuppliesService(BaseService):
 				offset=offset
 			)
 		)
+	
+	@classmethod
+	@BaseService.transaction
+	def search(
+		cls,
+		cur: psycopg.Cursor,
+		status: SupplyStatus | None = None,
+		created_from: date | None = None,
+		created_to: date | None = None,
+		planned_delivery_from: date | None = None,
+		planned_delivery_to: date | None = None,
+		limit: int = 50,
+		offset: int = 0
+	) -> ServiceResult:
+		"""
+			Errors:
+			- UnhandledError
+		"""
+
+		return ServiceResult(
+			result=SuppliesRepository.search(
+				cur=cur,
+				status=status,
+				created_from=created_from,
+				created_to=created_to,
+				planned_delivery_from=planned_delivery_from,
+				planned_delivery_to=planned_delivery_to,
+				limit=limit,
+				offset=offset
+			)
+		)
 
 	@classmethod
 	@BaseService.transaction

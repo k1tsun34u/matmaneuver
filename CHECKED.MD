@@ -22,6 +22,9 @@
 		| Supply                    | +        |
 		| SupplyItem                | +        |
 		| SupplyStatusHistory       | +        |
+		| Order                     | +        |
+		| OrderItem                 | +        |
+		| OrderStatusHistory        | +        |
 +	##	Repositories
 	-	###	Base
 		*	####	Mixins
@@ -50,6 +53,9 @@
 		| SuppliesRepository                  | +        |
 		| SupplyItemsRepository               | +        |
 		| SupplyStatusHistoryRepository       | +        |
+		| OrdersRepository                    | +        |
+		| OrderItemsRepository                | +        |
+		| OrderStatusHistoryRepository        | +        |
 +	##	Services
 	|          Service          | Complete |
 	| :------------------------ | :------: |
@@ -64,3 +70,4 @@
 	| ProductImagesService      | +        |
 	| SuppliersService          | +        |
 	| SuppliesService           | +        |
+	| OrdersService             | +        |
