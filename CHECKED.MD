@@ -64,4 +64,3 @@
 	| ProductImagesService      | +        |
 	| SuppliersService          | +        |
 	| SuppliesService           | +        |
-	| SupplyItemsService        | +        |

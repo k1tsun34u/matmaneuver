@@ -2,6 +2,7 @@ import psycopg
 from typing import ClassVar
 from decimal import Decimal
 from app.models.public.product import Product
+from app.types.delete_result import DeleteResult
 from app.models.public.supply_item import SupplyItem
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
@@ -43,6 +44,22 @@ class SupplyItemsRepository(
 			},
 			returning=SupplyItem.COLUMN_ID
 		)[SupplyItem.COLUMN_ID]
+	
+	@classmethod
+	def delete(
+		cls,
+		cur: psycopg.Cursor,
+		supply_item_id: int
+	) -> DeleteResult:
+		rowcount = cls.execute_delete(
+			cur=cur,
+			table=cls.TABLE,
+			where={SupplyItem.COLUMN_ID: supply_item_id}
+		)
+
+		if rowcount != 0:
+			return DeleteResult.SUCCESS
+		return DeleteResult.FAIL_NOT_FOUND
 	
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, supply_item_id: int) -> SupplyItem | None:
