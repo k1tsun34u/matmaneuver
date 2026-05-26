@@ -66,6 +66,21 @@ class OrderItemsRepository(
 		return cls.select(cur, {OrderItem.COLUMN_ID: order_item_id})
 	
 	@classmethod
+	def get_by_order_id_product_id(
+		cls,
+		cur: psycopg.Cursor,
+		order_id: int,
+		product_id: int
+	) -> OrderItem | None:
+		return cls.select(
+			cur=cur,
+			equals={
+				OrderItem.COLUMN_ORDER_ID: order_id,
+				OrderItem.COLUMN_PRODUCT_ID: product_id,
+			}
+		)
+	
+	@classmethod
 	def get_many_by_order_id(
 		cls,
 		cur: psycopg.Cursor,

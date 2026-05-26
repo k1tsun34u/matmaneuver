@@ -1,7 +1,9 @@
 import psycopg
+from typing import ClassVar
 from decimal import Decimal
-from app.models.public.order_fulfillment_item import OrderFulfillmentItem
+from app.models.public.order_fulfillment import OrderFulfillment
 from app.repositories.base.base_repository import BaseRepository
+from app.models.public.order_fulfillment_item import OrderFulfillmentItem
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 
 
@@ -9,17 +11,17 @@ class OrderFulfillmentItemsRepository(
 	BaseRepository,
 	SelectableMixin[OrderFulfillmentItem]
 ):
-	TABLE = "order_fulfillment_items"
+	TABLE: ClassVar[str] = OrderFulfillmentItem.TABLE
 	MODEL = OrderFulfillmentItem
 	TABLE_COLUMNS = (
-		"id",
-		"order_fulfillment_id",
-		"product_id",
-		"quantity",
-		"price",
+		OrderFulfillmentItem.COLUMN_ID,
+		OrderFulfillmentItem.COLUMN_ORDER_FULFILLMENT_ID,
+		OrderFulfillmentItem.COLUMN_PRODUCT_ID,
+		OrderFulfillmentItem.COLUMN_QUANTITY,
+		OrderFulfillmentItem.COLUMN_PRICE,
 	)
 
-	ORDER_BY = (("id", "ASC",),)
+	ORDER_BY = ((OrderFulfillmentItem.COLUMN_ID, "ASC",),)
 
 	@classmethod
 	def create(
@@ -34,17 +36,20 @@ class OrderFulfillmentItemsRepository(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				"order_fulfillment_id": order_fulfillment_id,
-				"product_id": product_id,
-				"quantity": quantity,
-				"price": price
+				OrderFulfillmentItem.COLUMN_ORDER_FULFILLMENT_ID: order_fulfillment_id,
+				OrderFulfillmentItem.COLUMN_PRODUCT_ID: product_id,
+				OrderFulfillmentItem.COLUMN_QUANTITY: quantity,
+				OrderFulfillmentItem.COLUMN_PRICE: price
 			},
-			returning="id"
-		)["id"]
+			returning=OrderFulfillmentItem.COLUMN_ID
+		)[OrderFulfillmentItem.COLUMN_ID]
 	
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, order_fulfillment_item_id: int) -> OrderFulfillmentItem | None:
-		return cls.select(cur, {"id": order_fulfillment_item_id})
+		return cls.select(
+			cur=cur,
+			equals={OrderFulfillmentItem.COLUMN_ID: order_fulfillment_item_id}
+		)
 	
 	@classmethod
 	def get_many_by_order_fulfillment_id(
@@ -56,7 +61,7 @@ class OrderFulfillmentItemsRepository(
 	) -> list[OrderFulfillmentItem]:
 		return cls.select_many(
 			cur=cur,
-			equals={"order_fulfillment_id": order_fulfillment_id},
+			equals={OrderFulfillmentItem.COLUMN_ORDER_FULFILLMENT_ID: order_fulfillment_id},
 			limit=limit,
 			offset=offset
 		)
@@ -71,7 +76,31 @@ class OrderFulfillmentItemsRepository(
 	) -> list[OrderFulfillmentItem]:
 		return cls.select_many(
 			cur=cur,
-			equals={"product_id": product_id},
+			equals={OrderFulfillmentItem.COLUMN_PRODUCT_ID: product_id},
 			limit=limit,
 			offset=offset
 		)
+	
+	@classmethod
+	def get_total_fulfilled_quantity(
+		cls,
+		cur: psycopg.Cursor,
+		order_id: int,
+		product_id: int
+	) -> int:
+		query = f"""
+			SELECT COALESCE(
+				SUM(ofi.{OrderFulfillmentItem.COLUMN_QUANTITY}),
+					0
+			) AS total
+			FROM {OrderFulfillmentItem.TABLE} ofi
+			JOIN
+				{OrderFulfillment.TABLE} fulf
+				ON fulf.{OrderFulfillment.COLUMN_ID} = ofi.{OrderFulfillmentItem.COLUMN_ORDER_FULFILLMENT_ID}
+			WHERE
+				fulf.{OrderFulfillment.COLUMN_ORDER_ID} = %s
+				AND ofi.{OrderFulfillmentItem.COLUMN_PRODUCT_ID} = %s
+		"""
+		cur.execute(query, (order_id, product_id,))
+		row = cur.fetchone()
+		return row["total"]

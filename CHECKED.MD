@@ -27,6 +27,8 @@
 		| OrderStatusHistory        | +        |
 		| WriteOff                  | +        |
 		| WriteOffItem              | +        |
+		| OrderFulfillment          | +        |
+		| OrderFulfillmentItem      | +        |
 +	##	Repositories
 	-	###	Base
 		*	####	Mixins
@@ -60,6 +62,8 @@
 		| OrderStatusHistoryRepository        | +        |
 		| WriteOffsRepository                 | +        |
 		| WriteOffItemsRepository             | +        |
+		| OrderFulfillmentsRepository         | +        |
+		| OrderFulfillmentItemsRepository     | +        |
 +	##	Services
 	|          Service          | Complete |
 	| :------------------------ | :------: |
@@ -76,3 +80,4 @@
 	| SuppliesService           | +        |
 	| OrdersService             | +        |
 	| WriteOffsService          | +        |
+	| OrderFulfillmentsService  | +        |

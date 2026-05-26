@@ -1,4 +1,5 @@
 import psycopg
+from typing import ClassVar
 from app.models.public.order_fulfillment import OrderFulfillment
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
@@ -8,16 +9,16 @@ class OrderFulfillmentsRepository(
 	BaseRepository,
 	SelectableMixin[OrderFulfillment]
 ):
-	TABLE = "order_fulfillments"
+	TABLE: ClassVar[str] = OrderFulfillment.TABLE
 	MODEL = OrderFulfillment
 	TABLE_COLUMNS = (
-		"id",
-		"order_id",
-		"warehouse_id",
-		"created_at",
+		OrderFulfillment.COLUMN_ID,
+		OrderFulfillment.COLUMN_ORDER_ID,
+		OrderFulfillment.COLUMN_WAREHOUSE_ID,
+		OrderFulfillment.COLUMN_CREATED_AT,
 	)
 
-	ORDER_BY = (("created_at", "DESC",),)
+	ORDER_BY = ((OrderFulfillment.COLUMN_CREATED_AT, "DESC",),)
 
 	@classmethod
 	def create(
@@ -30,11 +31,11 @@ class OrderFulfillmentsRepository(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				"order_id": order_id,
-				"warehouse_id": warehouse_id
+				OrderFulfillment.COLUMN_ORDER_ID: order_id,
+				OrderFulfillment.COLUMN_WAREHOUSE_ID: warehouse_id
 			},
-			returning="id"
-		)["id"]
+			returning=OrderFulfillment.COLUMN_ID
+		)[OrderFulfillment.COLUMN_ID]
 	
 	@classmethod
 	def get_by_id(
@@ -42,7 +43,27 @@ class OrderFulfillmentsRepository(
 		cur: psycopg.Cursor,
 		order_fulfillment_id: int
 	) -> OrderFulfillment | None:
-		return cls.select(cur, {"id": order_fulfillment_id})
+		return cls.select(
+			cur=cur,
+			equals={OrderFulfillment.COLUMN_ID: order_fulfillment_id}
+		)
+	
+	@classmethod
+	def get_by_id_for_update(
+		cls,
+		cur: psycopg.Cursor,
+		order_fulfillment_id: int
+	) -> OrderFulfillment | None:
+		query = f"""
+			SELECT {", ".join(cls.TABLE_COLUMNS)}
+			FROM {cls.TABLE}
+			WHERE {OrderFulfillment.COLUMN_ID} = %s
+			FOR UPDATE
+			LIMIT 1
+		"""
+		cur.execute(query, (order_fulfillment_id,))
+		row = cur.fetchone()
+		return OrderFulfillment(**row) if row else None
 
 	@classmethod
 	def get_many_by_order_id(
@@ -54,7 +75,7 @@ class OrderFulfillmentsRepository(
 	) -> list[OrderFulfillment]:
 		return cls.select_many(
 			cur=cur,
-			equals={"order_id": order_id},
+			equals={OrderFulfillment.COLUMN_ORDER_ID: order_id},
 			limit=limit,
 			offset=offset
 		)
@@ -69,7 +90,7 @@ class OrderFulfillmentsRepository(
 	) -> list[OrderFulfillment]:
 		return cls.select_many(
 			cur=cur,
-			equals={"warehouse_id": warehouse_id},
+			equals={OrderFulfillment.COLUMN_WAREHOUSE_ID: warehouse_id},
 			limit=limit,
 			offset=offset
 		)
