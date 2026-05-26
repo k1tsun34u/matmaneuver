@@ -1,5 +1,7 @@
 import psycopg
+from typing import ClassVar
 from decimal import Decimal
+from app.models.public.order import Order
 from app.types.payment_method import PaymentMethod
 from app.models.public.order_payment import OrderPayment
 from app.repositories.base.base_repository import BaseRepository
@@ -10,17 +12,17 @@ class OrderPaymentsRepository(
 	BaseRepository,
 	SelectableMixin[OrderPayment]
 ):
-	TABLE = "order_payments"
+	TABLE: ClassVar[str] = OrderPayment.TABLE
 	MODEL = OrderPayment
 	TABLE_COLUMNS = (
-		"id",
-		"order_id",
-		"amount",
-		"payment_method",
-		"created_at",
+		OrderPayment.COLUMN_ID,
+		OrderPayment.COLUMN_ORDER_ID,
+		OrderPayment.COLUMN_AMOUNT,
+		OrderPayment.COLUMN_PAYMENT_METHOD,
+		OrderPayment.COLUMN_CREATED_AT,
 	)
 
-	ORDER_BY = (("created_at", "DESC",),)
+	ORDER_BY = ((OrderPayment.COLUMN_CREATED_AT, "DESC",),)
 
 	@classmethod
 	def create(
@@ -34,16 +36,16 @@ class OrderPaymentsRepository(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				"order_id": order_id,
-				"amount": amount,
-				"payment_method": payment_method
+				OrderPayment.COLUMN_ORDER_ID: order_id,
+				OrderPayment.COLUMN_AMOUNT: amount,
+				OrderPayment.COLUMN_PAYMENT_METHOD: payment_method
 			},
-			returning="id"
-		)["id"]
+			returning=OrderPayment.COLUMN_ID
+		)[OrderPayment.COLUMN_ID]
 	
 	@classmethod
 	def get_by_id(cls, cur: psycopg.Cursor, order_payment_id: int) -> OrderPayment | None:
-		return cls.select(cur, {"id": order_payment_id})
+		return cls.select(cur, {OrderPayment.COLUMN_ID: order_payment_id})
 
 	@classmethod
 	def get_many_by_order_id(
@@ -55,7 +57,25 @@ class OrderPaymentsRepository(
 	) -> list[OrderPayment]:
 		return cls.select_many(
 			cur=cur,
-			equals={"order_id": order_id},
+			equals={OrderPayment.COLUMN_ORDER_ID: order_id},
 			limit=limit,
 			offset=offset
 		)
+	
+	@classmethod
+	def get_total_paid_amount(
+		cls,
+		cur: psycopg.Cursor,
+		order_id: int
+	) -> Decimal:
+		query = f"""
+			SELECT COALESCE(
+				SUM(op.{OrderPayment.COLUMN_AMOUNT}),
+					0
+			) AS total
+			FROM {OrderPayment.TABLE} op
+			WHERE op.{OrderPayment.COLUMN_ORDER_ID} = %s
+		"""
+		cur.execute(query, (order_id,))
+		row = cur.fetchone()
+		return Decimal(row["total"])

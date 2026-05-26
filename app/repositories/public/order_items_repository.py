@@ -1,6 +1,7 @@
 import psycopg
 from decimal import Decimal
 from typing import ClassVar
+from app.models.public.order import Order
 from app.models.public.product import Product
 from app.types.delete_result import DeleteResult
 from app.models.public.order_item import OrderItem
@@ -109,3 +110,21 @@ class OrderItemsRepository(
 			limit=limit,
 			offset=offset
 		)
+	
+	@classmethod
+	def get_total_price(
+		cls,
+		cur: psycopg.Cursor,
+		order_id: int
+	) -> Decimal:
+		query = f"""
+			SELECT COALESCE(
+				SUM(oi.{OrderItem.COLUMN_PRICE} * oi.{OrderItem.COLUMN_QUANTITY}),
+					0
+			) AS total
+			FROM {OrderItem.TABLE} oi
+			WHERE oi.{OrderItem.COLUMN_ORDER_ID} = %s
+		"""
+		cur.execute(query, (order_id,))
+		row = cur.fetchone()
+		return Decimal(row["total"])

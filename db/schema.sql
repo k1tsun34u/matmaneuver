@@ -223,11 +223,11 @@ CREATE TABLE suppliers (
 );
 
 CREATE TYPE supply_status AS ENUM(
-	'created',
-	'confirmed',
-	'in_transit',
-	'delivered',
-	'cancelled'
+	'created',		-- создана заявка на поставку
+	'confirmed',	-- заявку на поставку подтвердили
+	'in_transit',	-- поставка уже в пути
+	'delivered',	-- поставка прибыла
+	'cancelled'		-- поставка отменена
 );
 
 -- Поставки
@@ -266,11 +266,11 @@ CREATE TABLE supply_status_history (
 -- ==========================
 
 CREATE TYPE order_status AS ENUM(
-	'created',
-	'confirmed',
-	'in_transit',
-	'delivered',
-	'cancelled'
+	'created',			-- заявка на заказ создана (пользователь нажал "Заказать", но ещё не оплатил!)
+	'confirmed',		-- заказ оплачен
+	'in_transit',		-- заказ в пути
+	'delivered',		-- заказ доставлен
+	'cancelled'			-- заказ отменён
 );
 
 CREATE TABLE orders (

@@ -29,6 +29,7 @@
 		| WriteOffItem              | +        |
 		| OrderFulfillment          | +        |
 		| OrderFulfillmentItem      | +        |
+		| OrderPayment              | +        |
 +	##	Repositories
 	-	###	Base
 		*	####	Mixins
@@ -64,6 +65,7 @@
 		| WriteOffItemsRepository             | +        |
 		| OrderFulfillmentsRepository         | +        |
 		| OrderFulfillmentItemsRepository     | +        |
+		| OrderPaymentsRepository             | +        |
 +	##	Services
 	|          Service          | Complete |
 	| :------------------------ | :------: |
@@ -81,3 +83,4 @@
 	| OrdersService             | +        |
 	| WriteOffsService          | +        |
 	| OrderFulfillmentsService  | +        |
+	| OrderPaymentsService      | +        |
