@@ -30,6 +30,8 @@
 		| OrderFulfillment          | +        |
 		| OrderFulfillmentItem      | +        |
 		| OrderPayment              | +        |
+		| Cart                      | +        |
+		| CartItem                  | +        |
 +	##	Repositories
 	-	###	Base
 		*	####	Mixins
@@ -66,6 +68,8 @@
 		| OrderFulfillmentsRepository         | +        |
 		| OrderFulfillmentItemsRepository     | +        |
 		| OrderPaymentsRepository             | +        |
+		| CartsRepository                     | +        |
+		| CartItemsRepository                 | +        |
 +	##	Services
 	|          Service          | Complete |
 	| :------------------------ | :------: |
@@ -84,3 +88,4 @@
 	| WriteOffsService          | +        |
 	| OrderFulfillmentsService  | +        |
 	| OrderPaymentsService      | +        |
+	| CartsService              | +        |
