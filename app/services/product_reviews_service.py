@@ -42,7 +42,7 @@ class ProductReviewsService(BaseService):
 			rating=rating,
 			comment=comment
 		)
-		
+
 		return ServiceResult()
 	
 	@classmethod
@@ -182,4 +182,20 @@ class ProductReviewsService(BaseService):
 				limit=limit,
 				offset=offset
 			)
+		)
+	
+	@classmethod
+	@BaseService.transaction
+	def get_average_product_rating(
+		cls,
+		cur: psycopg.Cursor,
+		product_id: int
+	) -> ServiceResult:
+		"""
+			Errors:
+			- UnhandledError
+		"""
+
+		return ServiceResult(
+			result=ProductReviewsRepository.get_average_product_rating(cur, product_id)
 		)

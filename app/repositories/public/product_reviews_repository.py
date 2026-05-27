@@ -1,4 +1,5 @@
 import psycopg
+from decimal import Decimal
 from typing import ClassVar
 from app.types.delete_result import DeleteResult
 from app.models.public.product_review import ProductReview
@@ -132,3 +133,21 @@ class ProductReviewsRepository(
 			limit=limit,
 			offset=offset
 		)
+	
+	@classmethod
+	def get_average_product_rating(
+		cls,
+		cur: psycopg.Cursor,
+		product_id: int
+	) -> Decimal:
+		query = f"""
+			SELECT COALESCE(
+				AVG(pr.{ProductReview.COLUMN_RATING}),
+				0
+			) AS avg_rating
+			FROM {cls.TABLE} pr
+			WHERE pr.{ProductReview.COLUMN_PRODUCT_ID} = %s
+		"""
+		cur.execute(query, (product_id,))
+		row = cur.fetchone()
+		return Decimal(str(row["avg_rating"]))
