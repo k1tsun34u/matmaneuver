@@ -1,11 +1,11 @@
 from app.config import Config
 from datetime import timedelta
 from app.types.token_payload import TokenPayload
-from app.errors.validation import InvalidTokenError, ExpiredTokenError
+from app.errors.invalid_value_error import InvalidValueError
 from itsdangerous import URLSafeTimedSerializer, BadData, SignatureExpired
 
 
-class TokenManager:
+class SessionManager:
 	SERIALIZER = URLSafeTimedSerializer(Config.SECRET_KEY, salt="auth-token")
 	EXPIRED_AFTER = timedelta(days=30)
 
@@ -24,15 +24,15 @@ class TokenManager:
 		try:
 			decomposed = cls.SERIALIZER.loads(token, max_age=int(cls.EXPIRED_AFTER.total_seconds()))
 			if not isinstance(decomposed, dict):
-				raise InvalidTokenError()
+				raise InvalidValueError("Session", "value")
 
 			user_id = decomposed.get(cls.KEY_UID)
 			token_ver = decomposed.get(cls.KEY_VER)
 			if not (isinstance(user_id, int) and isinstance(token_ver, int)):
-				raise InvalidTokenError()
+				raise InvalidValueError("Session", "value")
 			
 			return TokenPayload(user_id=user_id, token_ver=token_ver)
 		except SignatureExpired:
-			raise ExpiredTokenError(token)
+			raise InvalidValueError("Session", "expired")
 		except BadData:
-			raise InvalidTokenError()
+			raise InvalidValueError("Session", "format")

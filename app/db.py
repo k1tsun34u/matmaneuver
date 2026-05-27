@@ -1,14 +1,15 @@
 import logging
 from typing import Any
 from psycopg.rows import dict_row
+from contextlib import contextmanager
 from psycopg_pool import ConnectionPool
 from app.types.cart_type import CartType
 import psycopg.types.enum as psycopg_enum
 from app.types.order_status import OrderStatus
-from app.types.return_status import ReturnStatus
 from app.types.supply_status import SupplyStatus
 from app.types.payment_method import PaymentMethod
 from app.types.write_off_reason import WriteOffReason
+
 
 logger = logging.getLogger(__name__)
 
@@ -17,27 +18,29 @@ class Db:
 
 	@classmethod
 	def init(cls, host, port, db_name, user):
+		conninfo = (
+			f"dbname={db_name} "
+			f"user={user} "
+			f"host={host} "
+			f"port={port} "
+			f"connect_timeout=5"
+		)
+
 		cls.pool = ConnectionPool(
-			conninfo=(
-				f"dbname={db_name} "
-				f"user={user} "
-				f"host={host} "
-				f"port={port} "
-				f"connect_timeout=5"
-			),
-			min_size=1,
-			max_size=10,
+			conninfo=conninfo,
+			min_size=5,
+			max_size=20,
 			open=True,
-			configure=Db._on_connect,
 			kwargs={"row_factory": dict_row},
 		)
+
+		with cls.connection():
+			cls.register_enums()
 	
-	
-	@staticmethod
-	def _on_connect(_):
+	@classmethod
+	def register_enums(cls):
 		Db.register_enum("supply_status", SupplyStatus)
 		Db.register_enum("order_status", OrderStatus)
-		Db.register_enum("return_status", ReturnStatus)
 		Db.register_enum("write_off_reason", WriteOffReason)
 		Db.register_enum("payment_method", PaymentMethod)
 		Db.register_enum("cart_type", CartType)
@@ -51,48 +54,11 @@ class Db:
 		if not cls.pool: raise RuntimeError("Database pool is not initialized")
 		
 	@classmethod
+	@contextmanager
 	def connection(cls):
 		cls._ensure_pool()
-		return cls.pool.connection()
-
-	@classmethod
-	def fetchone(cls, query, params=None) -> dict[str, Any] | None:
-		cls._ensure_pool()
-
-		try:
-			with cls.pool.connection() as con:
-				with con.cursor() as cur:
-					cur.execute(query, params)
-					return cur.fetchone()
-		except Exception:
-			logger.exception("Database error")
-			raise
-
-	@classmethod
-	def fetchall(cls, query, params=None) -> list[dict[str, Any]]:
-		cls._ensure_pool()
-
-		try:
-			with cls.pool.connection() as con:
-				with con.cursor() as cur:
-					cur.execute(query, params)
-					return cur.fetchall()
-		except Exception:
-			logger.exception("Database error")
-			raise
-
-	@classmethod
-	def execute(cls, query, params=None) -> int:
-		cls._ensure_pool()
-
-		try:
-			with cls.pool.connection() as con:
-				with con.cursor() as cur:
-					cur.execute(query, params)
-					return cur.rowcount
-		except Exception:
-			logger.exception("Database error")
-			raise
+		with cls.pool.connection() as conn:
+			yield conn
 	
 	@classmethod
 	def register_enum(

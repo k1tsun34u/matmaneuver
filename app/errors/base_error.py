@@ -1,4 +1,4 @@
 
 
-class BaseError:
+class BaseError(Exception):
 	pass

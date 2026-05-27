@@ -314,7 +314,6 @@ class UsersService(BaseService):
 			return ServiceResult(error=NotFoundError(DbUser.ENTITY, DbUser.COLUMN_PHONE))
 		return ServiceResult(result=user)
 
-
 	@classmethod
 	@BaseService.transaction
 	def get_by_email(
