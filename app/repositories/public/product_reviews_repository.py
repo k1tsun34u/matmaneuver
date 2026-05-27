@@ -117,3 +117,18 @@ class ProductReviewsRepository(
 			limit=limit,
 			offset=offset
 		)
+	
+	@classmethod
+	def get_many_by_user_id(
+		cls,
+		cur: psycopg.Cursor,
+		user_id: int,
+		limit: int = 50,
+		offset: int = 0
+	) -> list[ProductReview]:
+		return cls.select_many(
+			cur=cur,
+			equals={ProductReview.COLUMN_USER_ID: user_id},
+			limit=limit,
+			offset=offset
+		)

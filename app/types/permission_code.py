@@ -55,4 +55,6 @@ class PermissionCode(StrEnum):
 
 	CREATE_WRITE_OFF_ITEM = "create_write_off_item"
 	DELETE_WRITE_OFF_ITEM = "delete_write_off_item"
+
+	DELETE_PRODUCT_REVIEW = "delete_product_review"
 	

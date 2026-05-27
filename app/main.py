@@ -1,5 +1,6 @@
-from flask import Flask, render_template
 from app.db import Db
+from flask import Flask, render_template
+
 
 Db.init("localhost", 5432, "matmaneuver", "postgres")
 

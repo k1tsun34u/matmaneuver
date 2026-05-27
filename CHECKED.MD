@@ -32,6 +32,7 @@
 		| OrderPayment              | +        |
 		| Cart                      | +        |
 		| CartItem                  | +        |
+		| ProductReview             | +        |
 +	##	Repositories
 	-	###	Base
 		*	####	Mixins
@@ -70,6 +71,7 @@
 		| OrderPaymentsRepository             | +        |
 		| CartsRepository                     | +        |
 		| CartItemsRepository                 | +        |
+		| ProductReviewsRepository            | +        |
 +	##	Services
 	|          Service          | Complete |
 	| :------------------------ | :------: |
@@ -89,3 +91,4 @@
 	| OrderFulfillmentsService  | +        |
 	| OrderPaymentsService      | +        |
 	| CartsService              | +        |
+	| ProductReviewsService     | +        |
