@@ -1,9 +1,8 @@
-from decimal import Decimal
-
 import psycopg
+from decimal import Decimal
 from typing import ClassVar
-from app.models.public.cart_item import CartItem
 from app.models.public.product import Product
+from app.models.public.cart_item import CartItem
 from app.types.delete_result import DeleteResult
 from app.types.update_result import UpdateResult
 from app.repositories.base.base_repository import BaseRepository

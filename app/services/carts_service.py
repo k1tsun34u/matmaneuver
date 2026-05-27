@@ -2,15 +2,14 @@ import psycopg
 from app.models.public.cart import Cart
 from app.types.cart_type import CartType
 from app.models.public.cart_item import CartItem
-from app.services.base_service import BaseService
+from app.types.update_result import UpdateResult
 from app.types.delete_result import DeleteResult
+from app.services.base_service import BaseService
 from app.types.service_result import ServiceResult
 from app.errors.not_found_error import NotFoundError
 from app.types.transaction_helper import TransactionHelper
-from app.errors.invalid_value_error import InvalidValueError
 from app.repositories.public.carts_repository import CartsRepository
 from app.repositories.public.cart_items_repository import CartItemsRepository
-from app.types.update_result import UpdateResult
 
 
 class CartsService(BaseService):
@@ -118,7 +117,6 @@ class CartsService(BaseService):
 	) -> ServiceResult:
 		"""
 			Errors:
-			- InvalidValueError
 			- NotFoundError
 			- UnhandledError
 		"""
