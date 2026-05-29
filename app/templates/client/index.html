@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Главная{% endblock %}
+
+{% block tbmcont %}
+	<input id="tb-search" name="tb-search" type="text" placeholder="Название товара, ...">
+{% endblock %}
+{% block tbrcont %}
+	<button id="tb-cart" class="img-btn">
+		<img src="{{ url_for('static', filename='img/cart.svg') }}" alt="Корзина">
+	</button>
+	<button id="tb-profile" class="img-btn">
+		<img src="{{ url_for('static', filename='img/profile.svg') }}" alt="Профиль">
+	</button>
+{% endblock %}
+
+{% block content %}
+	<div id="main-grid" class="products-grid">
+		<div class="product-card">
+			<img class="product-image" src="{{ url_for('static', filename='img/question.svg') }}" alt="Изображение товара">
+			<h3 class="product-title">Название товара</h3>
+			<p class="product-description">
+				Короткое описание товара.
+			</p>
+			<div class="product-price">Цена товара ₽</div>
+			<button class="btn-add-to-cart cart-actions-btn">В корзину</button>
+			<div class="cart-controls hidden">
+				<div class="cart-quantity-row">
+					<span>Количество:</span>
+					<input type="number" min="1" value="1" class="quantity-input">
+					<button class="btn-increase-qty cart-actions-btn">+</button>
+					<button class="btn-decrease-qty cart-actions-btn">−</button>
+				</div>
+				<div class="cart-stock-row">
+					<span>Из 12 на складе</span>
+					<button class="btn-remove-from-cart cart-actions-btn">Убрать из корзины</button>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block drawers %}
+	<div id="cart-drawer" class="drawer">
+		<div class="drawer-header">
+			<h2>Корзина</h2>
+			<button class="drawer-close">x</button>
+		</div>
+		<div class="drawer-body">
+			<p>Ваша корзина пока пуста</p>
+		</div>
+	</div>
+
+	<div id="profile-drawer" class="drawer">
+		<div class="drawer-header">
+			<h2>Профиль</h2>
+			<button class="drawer-close">x</button>
+		</div>
+		<div class="drawer-body">
+			<p>Имя пользователя</p>
+			<p>email@example.com</p>
+			<br>
+			<a href="/client/profile">Перейти в профиль</a>
+		</div>
+	</div>
+{% endblock %}

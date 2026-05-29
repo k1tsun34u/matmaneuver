@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<head>
+	{% block head %}
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+	<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+	<title>МАТМАНЁВР - {% block title %}{% endblock %}</title>
+	{% endblock %}
+</head>
+<body>
+	<topbar>
+		<lcont>
+			<a href="/">
+				<h1>МАТМАНЁВР</h1>
+			</a>
+		</lcont>
+		<mcont>{% block tbmcont %}{% endblock %}</mcont>
+		<rcont>{% block tbrcont %}{% endblock %}</rcont>
+	</topbar>
+	<content>{% block content %}{% endblock %}</content>
+
+	<div id="drawer-overlay"></div>
+	{% block drawers %}{% endblock %}
+</body>

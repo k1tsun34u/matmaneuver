@@ -11,5 +11,4 @@ app.register_blueprint(client_auth_bp)
 
 @app.route("/")
 def main():
-	return render_template("index.html")
-
+	return render_template("client/index.html")

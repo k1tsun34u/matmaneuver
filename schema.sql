@@ -460,3 +460,39 @@ CREATE INDEX idx_cart_items_product_id ON cart_items(product_id);
 
 CREATE INDEX idx_order_status_history_order_id ON order_status_history(order_id);
 CREATE INDEX idx_supply_status_history_supply_id ON supply_status_history(supply_id);
+
+-- //////////////////////////
+-- Дополнительные индексы
+-- (по фактическим паттернам
+-- запросов из repositories)
+-- //////////////////////////
+
+CREATE INDEX IF NOT EXISTS idx_employee_roles_role_id
+ON employee_roles(role_id);
+
+CREATE INDEX IF NOT EXISTS idx_role_permissions_permission_id
+ON role_permissions(permission_id);
+
+CREATE INDEX IF NOT EXISTS idx_product_categories_category_id
+ON product_categories(category_id);
+
+CREATE INDEX IF NOT EXISTS idx_order_fulfillments_order_id
+ON order_fulfillments(order_id);
+
+CREATE INDEX IF NOT EXISTS idx_order_fulfillments_warehouse_id
+ON order_fulfillments(warehouse_id);
+
+CREATE INDEX IF NOT EXISTS idx_order_fulfillment_items_product_id
+ON order_fulfillment_items(product_id);
+
+CREATE INDEX IF NOT EXISTS idx_write_off_items_product_id
+ON write_off_items(product_id);
+
+CREATE INDEX IF NOT EXISTS idx_product_images_created_by
+ON product_images(created_by);
+
+CREATE INDEX IF NOT EXISTS idx_order_status_history_order_id_changed_at_id
+ON order_status_history(order_id, changed_at DESC, id DESC);
+
+CREATE INDEX IF NOT EXISTS idx_supply_status_history_supply_id_changed_at_id
+ON supply_status_history(supply_id, changed_at DESC, id DESC);

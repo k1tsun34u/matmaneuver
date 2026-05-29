@@ -6,7 +6,6 @@ from app.types.delete_result import DeleteResult
 from app.types.update_result import UpdateResult
 from app.models.public.warehouse_product import WarehouseProduct
 from app.repositories.base.base_repository import BaseRepository
-from app.repositories.base.mixins.deletable_mixin import DeletableMixin
 from app.repositories.base.mixins.updatable_mixin import UpdatableMixin
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 
@@ -16,7 +15,6 @@ T = TypeVar("T")
 class WarehouseProductsRepository(
 	BaseRepository,
 	UpdatableMixin,
-	DeletableMixin,
 	SelectableMixin[WarehouseProduct]
 ):
 	TABLE: ClassVar[str] = WarehouseProduct.TABLE

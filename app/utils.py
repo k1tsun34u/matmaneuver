@@ -1,3 +1,4 @@
+from decimal import Decimal
 import re
 import psycopg
 from app.unset import Unset
@@ -190,3 +191,59 @@ class Utils:
 		if not cur.fetchone():
 			return result_type.FAIL_NOT_FOUND
 		return result_type.FAIL_CONDITION
+	
+	@staticmethod
+	def parse_str_from_dict(data: dict[str, Any], key: str) -> str | None:
+		if not isinstance(data, dict):
+			return None
+		
+		value = data.get(key)
+		if not isinstance(value, str):
+			return None
+		
+		return value
+	
+	@staticmethod
+	def parse_int_from_dict(data: dict[str, Any], key: str) -> int | None:
+		if not isinstance(data, dict):
+			return None
+		
+		try:
+			return int(data.get(key))
+		except Exception:
+			return None
+	
+	@staticmethod
+	def parse_decimal_from_dict(data: dict[str, Any], key: str) -> Decimal | None:
+		if not isinstance(data, dict):
+			return None
+		
+		try:
+			return Decimal(str(data.get(key)))
+		except Exception:
+			return None
+	
+	@staticmethod
+	def parse_bool_from_dict(data: dict[str, Any], key: str) -> bool | None:
+		if not isinstance(data, dict):
+			return None
+		
+		value = data.get(key)
+		if isinstance(value, bool):
+			return value
+		
+		if isinstance(value, str):
+			value = value.lower()
+			if value in ("true", "1", "yes"):
+				return True
+			if value in ("false", "0", "no"):
+				return False
+		
+		if isinstance(value, int):
+			match value.lower():
+				case '0':
+					return False
+				case '1':
+					return True
+		
+		return None

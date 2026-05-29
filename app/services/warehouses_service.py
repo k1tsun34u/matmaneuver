@@ -1,5 +1,4 @@
 import psycopg
-from collections.abc import Sequence
 from app.types.delete_result import DeleteResult
 from app.types.update_result import UpdateResult
 from app.models.public.warehouse import Warehouse

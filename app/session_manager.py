@@ -1,6 +1,10 @@
+from flask import request
+from functools import wraps
 from app.config import Config
 from datetime import timedelta
+from app.errors.mapper import Mapper
 from app.types.token_payload import TokenPayload
+from app.services.users_service import UsersService
 from app.errors.invalid_value_error import InvalidValueError
 from itsdangerous import URLSafeTimedSerializer, BadData, SignatureExpired
 
@@ -36,3 +40,30 @@ class SessionManager:
 			raise InvalidValueError("Session", "expired")
 		except BadData:
 			raise InvalidValueError("Session", "format")
+
+
+def require_session(func):
+	@wraps(func)
+	def wrapper(*args, **kwargs):
+		auth_header = request.headers.get('Authorization')
+		if auth_header is not None and auth_header.startswith('Bearer '):
+			parts = auth_header.split(" ", 1)
+			if len(parts) != 2:
+				return Mapper.router_error("Недействительная сессия!", 401)
+			
+			session = auth_header.split(' ')[1]
+			try:
+				token = SessionManager.decompose_token(session)
+				tmp = UsersService.get_by_id(token.user_id)
+				if tmp.error:
+					return Mapper.error(tmp.error)
+				
+				user = tmp.result
+				if user.token_ver != token.token_ver:
+					return Mapper.router_error("Сессия устарела! Выполните повторный вход", 401)
+				
+				return func(user, token, *args, **kwargs)
+			except InvalidValueError:
+				return Mapper.router_error("Недействительная сессия!", 401)
+		return Mapper.router_error("Требуется авторизация!", 401)
+	return wrapper
