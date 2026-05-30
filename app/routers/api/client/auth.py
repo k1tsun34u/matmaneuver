@@ -1,4 +1,3 @@
-from app.dtos.api.client.response_user import ResponseUser
 from app.unset import UNSET
 from app.utils import Utils
 from dataclasses import asdict
@@ -6,6 +5,7 @@ from app.errors.mapper import Mapper
 from flask import Blueprint, request, jsonify
 from app.password_manager import PasswordManager
 from app.services.users_service import UsersService
+from app.dtos.api.client.response_user import ResponseUser
 from app.session_manager import SessionManager, require_session
 
 

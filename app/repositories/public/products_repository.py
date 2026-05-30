@@ -122,7 +122,7 @@ class ProductsRepository(
 		exclude_deleted: bool = True,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[Product]:
+	) -> tuple[list[Product], int]:
 		limit, offset = Utils.normalize_pagination(limit, offset)
 		conditions = []
 		params = []
@@ -139,13 +139,22 @@ class ProductsRepository(
 			conditions.append(f"{Product.COLUMN_PRICE} <= %s")
 			params.append(max_price)
 
+		where = Utils.build_where(tuple(conditions))
 		query = f"""
 			SELECT {", ".join(cls.TABLE_COLUMNS)}
 			FROM {cls.TABLE}
-			{Utils.build_where(tuple(conditions))}
+			{where}
 			{Utils.build_order_by(cls.ORDER_BY)}
 			LIMIT %s
 			OFFSET %s
 		"""
 		cur.execute(query, (*params, limit, offset))
-		return [cls.MODEL(**row) for row in cur.fetchall()]
+		models = [cls.MODEL(**row) for row in cur.fetchall()]
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			{where}
+		"""
+		cur.execute(query, (*params,))
+		return (models, cur.fetchone()['total'],)

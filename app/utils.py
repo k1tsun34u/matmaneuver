@@ -10,12 +10,6 @@ T = TypeVar("T")
 
 class Utils:
 	@staticmethod
-	def normalize_pagination(limit: int, offset: int) -> tuple[int, int]:
-		limit = max(1, min(limit, 100))
-		offset = max(0, offset)
-		return limit, offset
-
-	@staticmethod
 	def filter_unset(fields: dict[str, object]) -> dict[str, object]:
 		return {k: v for k, v in fields.items() if not isinstance(v, Unset)}
 
@@ -81,6 +75,16 @@ class Utils:
 		
 		return query
 	
+	@staticmethod
+	def page_to_limit_offset(page: int) -> tuple[int, int]:
+		return (50, page * 50,)
+	
+	@staticmethod
+	def normalize_pagination(limit: int, offset: int) -> tuple[int, int]:
+		limit = max(1, min(limit, 100))
+		offset = max(0, offset)
+		return limit, offset
+
 	@staticmethod
 	def normalize_phone(phone: str) -> str:
 		phone = re.sub(r'\D', '', phone)

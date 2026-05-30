@@ -1,10 +1,10 @@
 import psycopg
 from collections.abc import Sequence
-from app.errors.not_allowed_error import NotAllowedError
 from app.services.base_service import BaseService
-from app.types.permission_code import PermissionCode
 from app.types.service_result import ServiceResult
 from app.errors.not_found_error import NotFoundError
+from app.types.permission_code import PermissionCode
+from app.errors.not_allowed_error import NotAllowedError
 from app.types.transaction_helper import TransactionHelper
 from app.models.public.product_category import ProductCategory
 from app.repositories.public.product_categories_repository import ProductCategoriesRepository
