@@ -143,17 +143,28 @@ class ProductCategoriesRepository(
 		category_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[Product]:
-		query = f"""
-			SELECT DISTINCT p.*
+	) -> tuple[list[Product], int]:
+		query_part = f"""
 			FROM {Product.TABLE} p
-			JOIN product_categories pc ON pc.{ProductCategory.COLUMN_PRODUCT_ID} = p.{Product.COLUMN_ID}
+			JOIN {ProductCategory.TABLE} pc ON pc.{ProductCategory.COLUMN_PRODUCT_ID} = p.{Product.COLUMN_ID}
 			WHERE
 				pc.{ProductCategory.COLUMN_CATEGORY_ID} = %s
 				AND p.{Product.COLUMN_DELETED_AT} IS NULL
+		"""
+
+		query = f"""
+			SELECT DISTINCT p.*
+			{query_part}
 			{Utils.build_order_by(((Product.COLUMN_CREATED_AT, "DESC",),))}
 			LIMIT %s
 			OFFSET %s
 		"""
 		cur.execute(query, (category_id, limit, offset,))
-		return [Product(**row) for row in cur.fetchall()]
+		products = [Product(**row) for row in cur.fetchall()]
+
+		query = f"""
+			SELECT COUNT(DISTINCT p.{Product.COLUMN_ID}) AS total
+			{query_part}
+		"""
+		cur.execute(query, (category_id,))
+		return (products, cur.fetchone()['total'],)

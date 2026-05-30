@@ -3,43 +3,38 @@ from app.utils import Utils
 from dataclasses import asdict
 from app.errors.mapper import Mapper
 from flask import Blueprint, request, jsonify
-from app.services.products_service import ProductsService
 from app.dtos.api.client.response_product import ResponseProduct
+from app.dtos.api.client.response_category import ResponseCategory
+from app.services.product_categories_service import ProductCategoriesService
 
 
-client_products_bp = Blueprint(
-	"api_client_products",
+client_product_categories_bp = Blueprint(
+	"api_client_product_categories",
 	__name__,
-	url_prefix="/api/client/products"
+	url_prefix="/api/client/product_categories"
 )
 
-@client_products_bp.get('/<int:product_id>')
-def get(product_id: int):
-	tmp = ProductsService.get_by_id(product_id)
+@client_product_categories_bp.get('/by-product/<int:product_id>')
+def by_product(product_id: int):
+	tmp = ProductCategoriesService.get_categories_by_product_id(product_id)
 	if tmp.error:
 		return Mapper.error(tmp.error)
 	
 	return jsonify({
 		"success": True,
-		"product": asdict(ResponseProduct(tmp.result))
+		"categories": [asdict(ResponseCategory(c)) for c in tmp.result]
 	}), 200
 
-@client_products_bp.get('/')
-def search():
+@client_product_categories_bp.get('/by-category/<int:category_id>')
+def by_category(category_id: int):
 	data = request.args.to_dict()
-	search = Utils.parse_str_from_dict(data, 'search')
-	min_price = Utils.parse_decimal_from_dict(data, 'min_price')
-	max_price = Utils.parse_decimal_from_dict(data, 'max_price')
 	page = Utils.parse_int_from_dict(data, 'page')
 	if page is None or page < 0:
 		page = 0
 	
 	limit, offset = Utils.page_to_limit_offset(page)
-	tmp = ProductsService.search(
-		search=search,
-		min_price=min_price,
-		max_price=max_price,
-		exclude_deleted=True,
+	tmp = ProductCategoriesService.get_products_by_category_id(
+		category_id=category_id,
 		limit=limit,
 		offset=offset
 	)
