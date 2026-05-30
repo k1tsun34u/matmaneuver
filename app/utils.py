@@ -1,6 +1,6 @@
-from decimal import Decimal
 import re
 import psycopg
+from decimal import Decimal
 from app.unset import Unset
 from os.path import normpath
 from typing import Any, Literal, TypeVar
