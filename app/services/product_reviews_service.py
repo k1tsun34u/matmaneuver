@@ -117,7 +117,6 @@ class ProductReviewsService(BaseService):
 		if ProductReviewsRepository.delete_many_by_user_id(cur, user_id) == DeleteResult.FAIL_NOT_FOUND:
 			return ServiceResult(error=NotFoundError(ProductReview.ENTITY, ProductReview.COLUMN_USER_ID))
 		return ServiceResult()
-
 	
 	@classmethod
 	@BaseService.transaction

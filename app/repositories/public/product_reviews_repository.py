@@ -111,13 +111,21 @@ class ProductReviewsRepository(
 		product_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[ProductReview]:
-		return cls.select_many(
+	) -> tuple[list[ProductReview], int]:
+		reviews = cls.select_many(
 			cur=cur,
 			equals={ProductReview.COLUMN_PRODUCT_ID: product_id},
 			limit=limit,
 			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			WHERE {ProductReview.COLUMN_PRODUCT_ID} = %s
+		"""
+		cur.execute(query, (product_id,))
+		return (reviews, cur.fetchone()['total'],)
 	
 	@classmethod
 	def get_many_by_user_id(
@@ -126,13 +134,21 @@ class ProductReviewsRepository(
 		user_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[ProductReview]:
-		return cls.select_many(
+	) -> tuple[list[ProductReview], int]:
+		reviews = cls.select_many(
 			cur=cur,
 			equals={ProductReview.COLUMN_USER_ID: user_id},
 			limit=limit,
 			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			WHERE {ProductReview.COLUMN_USER_ID} = %s
+		"""
+		cur.execute(query, (user_id,))
+		return (reviews, cur.fetchone()['total'],)
 	
 	@classmethod
 	def get_average_product_rating(
