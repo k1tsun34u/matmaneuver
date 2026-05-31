@@ -2,10 +2,13 @@ from app.unset import UNSET
 from app.utils import Utils
 from dataclasses import asdict
 from app.errors.mapper import Mapper
+from app.types.cart_type import CartType
 from flask import Blueprint, request, jsonify
 from app.password_manager import PasswordManager
 from app.services.users_service import UsersService
+from app.services.carts_service import CartsService
 from app.dtos.api.client.response_user import ResponseUser
+from app.errors.already_exists_error import AlreadyExistsError
 from app.session_manager import SessionManager, require_session
 
 
@@ -71,9 +74,25 @@ def register():
 		if res.error:
 			return Mapper.error(res.error)
 		
+		user_id = res.result
+		tmp = CartsService.create(
+			user_id=user_id,
+			type=CartType.ACTIVE
+		)
+		if tmp.error and not isinstance(tmp.error, AlreadyExistsError):
+			return Mapper.error(tmp.error)
+		
+		tmp = CartsService.create(
+			user_id=user_id,
+			type=CartType.WISHLIST
+		)
+		if tmp.error and not isinstance(tmp.error, AlreadyExistsError):
+			return Mapper.error(tmp.error)
+		
+		session = SessionManager.compose_token(user_id, 1)
 		return jsonify({
 			"success": True,
-			"session": SessionManager.compose_token(res.result, 1)
+			"session": session
 		}), 201
 	return Mapper.router_error("Неверный запрос", 400)
 

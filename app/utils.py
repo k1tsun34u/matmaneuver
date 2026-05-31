@@ -1,3 +1,4 @@
+from enum import StrEnum
 import re
 import psycopg
 from decimal import Decimal
@@ -251,3 +252,17 @@ class Utils:
 					return True
 		
 		return None
+	
+	@staticmethod
+	def parse_str_enum_from_dict(data: dict[str, Any], key: str, result_type: type[T]) -> T | None:
+		try:
+			return result_type(Utils.parse_str_from_dict(data, key))
+		except:
+			return None
+	
+	@staticmethod
+	def parse_enum_from_str(value: str, result_type: type[T]) -> T | None:
+		try:
+			return result_type(value)
+		except:
+			return None
