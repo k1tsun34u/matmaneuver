@@ -82,7 +82,7 @@ def by_product(product_id: int):
 			"offset": offset,
 			"limit": limit,
 			"page": page,
-			"total_reviews":  total_reviews,
+			"total_reviews":	total_reviews,
 			"total_pages": ceil(total_reviews / limit) if limit > 0 else 0
 		},
 		"reviews": [asdict(ResponseProductReview(r)) for r in reviews]
@@ -112,7 +112,7 @@ def by_user(user_id: int):
 			"offset": offset,
 			"limit": limit,
 			"page": page,
-			"total_reviews":  total_reviews,
+			"total_reviews":	total_reviews,
 			"total_pages": ceil(total_reviews / limit) if limit > 0 else 0
 		},
 		"reviews": [asdict(ResponseProductReview(r)) for r in reviews]

@@ -1,5 +1,7 @@
 from enum import StrEnum
+import random
 import re
+import string
 import psycopg
 from decimal import Decimal
 from app.unset import Unset
@@ -254,6 +256,17 @@ class Utils:
 		return None
 	
 	@staticmethod
+	def parse_list_from_dict(data: dict[str, Any], key: str) -> list | None:
+		if not isinstance(data, dict):
+			return None
+		
+		value = data.get(key)
+		if isinstance(value, list):
+			return value
+		
+		return None
+	
+	@staticmethod
 	def parse_str_enum_from_dict(data: dict[str, Any], key: str, result_type: type[T]) -> T | None:
 		try:
 			return result_type(Utils.parse_str_from_dict(data, key))
@@ -266,3 +279,7 @@ class Utils:
 			return result_type(value)
 		except:
 			return None
+		
+	@staticmethod
+	def gen_str(length: int, chars=string.ascii_uppercase + string.digits):
+		return ''.join(random.choices(chars, k=length))

@@ -88,13 +88,21 @@ class OrderItemsRepository(
 		order_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[OrderItem]:
-		return cls.select_many(
+	) -> tuple[list[OrderItem], int]:
+		items = cls.select_many(
 			cur=cur,
 			equals={OrderItem.COLUMN_ORDER_ID: order_id},
 			limit=limit,
 			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			WHERE {OrderItem.COLUMN_ORDER_ID} = %s
+		"""
+		cur.execute(query, (order_id,))
+		return (items, cur.fetchone()['total'],)
 	
 	@classmethod
 	def get_many_by_product_id(

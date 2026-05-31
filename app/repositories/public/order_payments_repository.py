@@ -54,13 +54,21 @@ class OrderPaymentsRepository(
 		order_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[OrderPayment]:
-		return cls.select_many(
+	) -> tuple[list[OrderPayment], int]:
+		payments = cls.select_many(
 			cur=cur,
 			equals={OrderPayment.COLUMN_ORDER_ID: order_id},
 			limit=limit,
 			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			WHERE {OrderPayment.COLUMN_ORDER_ID} = %s
+		"""
+		cur.execute(query, (order_id,))
+		return (payments, cur.fetchone()['total'],)
 	
 	@classmethod
 	def get_total_paid_amount(

@@ -161,6 +161,24 @@ class OrdersService(BaseService):
 	
 	@classmethod
 	@BaseService.transaction
+	def get_many_by_user_id(
+		cls,
+		cur: psycopg.Cursor,
+		user_id: int,
+		limit: int = 50,
+		offset: int = 0
+	) -> ServiceResult:
+		return ServiceResult(
+			result=OrdersRepository.get_many_by_user_id(
+				cur=cur,
+				user_id=user_id,
+				limit=limit,
+				offset=offset
+			)
+		)
+	
+	@classmethod
+	@BaseService.transaction
 	def search(
 		cls,
 		cur: psycopg.Cursor,
@@ -316,6 +334,20 @@ class OrdersService(BaseService):
 				product_id=product_id,
 				limit=limit,
 				offset=offset
+			)
+		)
+	
+	@classmethod
+	@BaseService.transaction
+	def get_total_price(
+		cls,
+		cur: psycopg.Cursor,
+		order_id: int
+	) -> ServiceResult:
+		return ServiceResult(
+			result=OrderItemsRepository.get_total_price(
+				cur=cur,
+				order_id=order_id
 			)
 		)
 	

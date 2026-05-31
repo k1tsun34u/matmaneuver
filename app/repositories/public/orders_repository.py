@@ -88,6 +88,29 @@ class OrdersRepository(
 		return cls.select(cur, {Order.COLUMN_TRACK_NUMBER: track_number})
 	
 	@classmethod
+	def get_many_by_user_id(
+		cls,
+		cur: psycopg.Cursor,
+		user_id: int,
+		limit: int = 50,
+		offset: int = 0
+	) -> tuple[list[Order], int]:
+		orders = cls.select_many(
+			cur=cur,
+			equals={Order.COLUMN_CREATED_BY: user_id},
+			limit=limit,
+			offset=offset
+		)
+	
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			WHERE {Order.COLUMN_CREATED_BY} = %s
+		"""
+		cur.execute(query, (user_id,))
+		return (orders, cur.fetchone()['total'],)
+	
+	@classmethod
 	def search(
 		cls,
 		cur: psycopg.Cursor,

@@ -42,7 +42,7 @@ class BaseService:
 	@staticmethod
 	def transaction(
 		func: Callable[Concatenate[type, psycopg.Cursor, P], R]
-    ) -> Callable[Concatenate[type, P], R]:
+	) -> Callable[Concatenate[type, P], R]:
 		"""
 			Requires class vars:
 			- KEY_HELPERS: ClassVar[tuple[TransactionHelper, ...]]

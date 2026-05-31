@@ -54,7 +54,7 @@ def search():
 			"offset": offset,
 			"limit": limit,
 			"page": page,
-			"total_products":  total_products,
+			"total_products":	total_products,
 			"total_pages": ceil(total_products / limit) if limit > 0 else 0
 		},
 		"products": [asdict(ResponseProduct(p)) for p in products]
