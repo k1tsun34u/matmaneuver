@@ -113,7 +113,11 @@ def set_password(_, token):
 
 	if res.error:
 		return Mapper.error(res.error)
-	return jsonify({"success": True}), 200
+	
+	return jsonify({
+		"success": True,
+		"session": res.result
+	}), 200
 
 @client_auth_bp.post("/me")
 @require_session

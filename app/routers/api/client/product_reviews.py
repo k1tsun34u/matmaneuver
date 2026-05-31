@@ -88,35 +88,35 @@ def by_product(product_id: int):
 		"reviews": [asdict(ResponseProductReview(r)) for r in reviews]
 	}), 200
 
-# @client_product_reviews_bp.get('/by-user/<int:user_id>')
-# def by_user(user_id: int):
-# 	data = request.args.to_dict()
-# 	page = Utils.parse_int_from_dict(data, 'page')
-# 	if page is None or page < 0:
-# 		page = 0
+@client_product_reviews_bp.get('/by-user/<int:user_id>')
+def by_user(user_id: int):
+	data = request.args.to_dict()
+	page = Utils.parse_int_from_dict(data, 'page')
+	if page is None or page < 0:
+		page = 0
 
-# 	limit, offset = Utils.page_to_limit_offset(page)
-# 	tmp = ProductReviewsService.get_many_by_user_id(
-# 		user_id=user_id,
-# 		limit=limit,
-# 		offset=offset
-# 	)
+	limit, offset = Utils.page_to_limit_offset(page)
+	tmp = ProductReviewsService.get_many_by_user_id(
+		user_id=user_id,
+		limit=limit,
+		offset=offset
+	)
 
-# 	if tmp.error:
-# 		return Mapper.error(tmp.error)
+	if tmp.error:
+		return Mapper.error(tmp.error)
 	
-# 	reviews, total_reviews = tmp.result
-# 	return jsonify({
-# 		"success": True,
-# 		"pagination": {
-# 			"offset": offset,
-# 			"limit": limit,
-# 			"page": page,
-# 			"total_reviews":  total_reviews,
-# 			"total_pages": ceil(total_reviews / limit) if limit > 0 else 0
-# 		},
-# 		"reviews": [asdict(ResponseProductReview(r)) for r in reviews]
-# 	}), 200
+	reviews, total_reviews = tmp.result
+	return jsonify({
+		"success": True,
+		"pagination": {
+			"offset": offset,
+			"limit": limit,
+			"page": page,
+			"total_reviews":  total_reviews,
+			"total_pages": ceil(total_reviews / limit) if limit > 0 else 0
+		},
+		"reviews": [asdict(ResponseProductReview(r)) for r in reviews]
+	}), 200
 
 @client_product_reviews_bp.get('/rating/<int:product_id>')
 def get_rating(product_id: int):

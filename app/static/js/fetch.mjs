@@ -16,11 +16,30 @@ export default class Fetch {
 		return fetch(url, init);
 	}
 
-	static Post(url, body, session) {
-		return Fetch.MakeRequest("POST", url, body, session);
+	static async Json(method, url, body, session=null) {
+		const response = await Fetch.MakeRequest(method, url, body, session);
+		let data = null;
+
+		try {data = await response.json();}
+		catch {}
+		if (!response.ok) throw new Error(data?.error ?? "Неизвестная ошибка");
+		return data;
 	}
 
-	static Get(url, session) {
-		return Fetch.MakeRequest("GET", url, null, session);
+	static GetJson(url, args, session=null) {
+		if (args) {
+			args = Object.fromEntries(Object.entries(args).filter(([_, v]) => v !== null && v !== undefined));
+			if (Object.keys(args).length > 0) url += `?${new URLSearchParams(args)}`;
+		}
+
+		return Fetch.Json("GET", url, null, session);
+	}
+
+	static PostJson(url, body, session=null) {
+		return Fetch.Json("POST", url, body, session);
+	}
+
+	static DeleteJson(url, body, session=null) {
+		return Fetch.Json("DELETE", url, body, session);
 	}
 }
