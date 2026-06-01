@@ -103,14 +103,29 @@ class ProductsRepository(
 		exclude_deleted: bool = True,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[Product]:
-		return cls.select_many(
+	) -> tuple[list[Product], int]:
+		equals = {Product.COLUMN_CREATED_BY: employee_id}
+		is_null = (Product.COLUMN_DELETED_AT,) if exclude_deleted else None
+		products = cls.select_many(
 			cur=cur,
-			equals={Product.COLUMN_CREATED_BY: employee_id},
-			is_null=(Product.COLUMN_DELETED_AT,) if exclude_deleted else None,
+			equals=equals,
+			is_null=is_null,
 			limit=limit,
 			offset=offset
 		)
+		
+		conditions, params = Utils.build_conditions_params(
+			equals=equals,
+			is_null=is_null
+		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			{Utils.build_where(conditions)}
+		"""
+		cur.execute(query, params)
+		return (products, cur.fetchone()['total'],)
 	
 	@classmethod
 	def search(
@@ -149,7 +164,7 @@ class ProductsRepository(
 			OFFSET %s
 		"""
 		cur.execute(query, (*params, limit, offset))
-		models = [cls.MODEL(**row) for row in cur.fetchall()]
+		products = [Product(**row) for row in cur.fetchall()]
 
 		query = f"""
 			SELECT COUNT(*) AS total
@@ -157,4 +172,4 @@ class ProductsRepository(
 			{where}
 		"""
 		cur.execute(query, (*params,))
-		return (models, cur.fetchone()['total'],)
+		return (products, cur.fetchone()['total'],)
