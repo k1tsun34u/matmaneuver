@@ -92,12 +92,27 @@ class RolesRepository(
 		exclude_deactivated: bool = True,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[Role]:
+	) -> tuple[list[Role], int]:
 		norm_search = Utils.normalize_code(search)
-		return cls.select_many(
+		is_null = (Role.COLUMN_DEACTIVATED_AT,) if exclude_deactivated else None
+		ilike = ((Role.COLUMN_CODE,), f"%{norm_search}%",) if norm_search else None
+		roles =  cls.select_many(
 			cur=cur,
-			is_null=(Role.COLUMN_DEACTIVATED_AT,) if exclude_deactivated else None,
-			ilike=((Role.COLUMN_CODE,), f"%{norm_search}%",) if norm_search else None,
+			is_null=is_null,
+			ilike=ilike,
 			limit=limit,
 			offset=offset
 		)
+
+		conditions, params = Utils.build_conditions_params(
+			is_null=is_null,
+			ilike=ilike
+		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			{Utils.build_where(conditions)}
+		"""
+		cur.execute(query, params)
+		return (roles, cur.fetchone()['total'],)
