@@ -10,6 +10,7 @@ from app.routers.api.client.carts import client_carts_bp
 from app.routers.api.client.order_payments import client_order_payments_bp
 from app.routers.api.employee.employees import employee_employees_bp
 from app.routers.api.employee.users import employee_users_bp
+from app.routers.api.employee.categories import employee_categories_bp
 
 
 Db.init("localhost", 5432, "matmaneuver", "postgres")
@@ -26,6 +27,7 @@ app.register_blueprint(client_order_payments_bp)
 app.register_blueprint(client_carts_bp)
 app.register_blueprint(employee_employees_bp)
 app.register_blueprint(employee_users_bp)
+app.register_blueprint(employee_categories_bp)
 
 @app.route("/")
 def main():

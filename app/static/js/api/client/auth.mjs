@@ -36,18 +36,18 @@ export default class Auth {
 		if (email !== undefined && email.length > 0) body.email = email;
 		if (full_name !== undefined && full_name.length > 0) body.full_name = full_name;
 		
-		return Fetch.PostJson(`${Auth.URL_PREFIX}/update`, body, Cookies.Get("session"));
+		return Fetch.PostJson(`${Auth.URL_PREFIX}/update`, body, Cookies.Get('session'));
 	}
 
 	static async SetPassword(password) {
 		let body = {password: password};
 		
-		const data = await Fetch.PostJson(`${Auth.URL_PREFIX}/set-password`, body, Cookies.Get("session"));
+		const data = await Fetch.PostJson(`${Auth.URL_PREFIX}/set-password`, body, Cookies.Get('session'));
 		Cookies.Set('session', data.session);
 		return data;
 	}
 
 	static Me() {
-		return Fetch.GetJson(`${Auth.URL_PREFIX}/me`, null, Cookies.Get("session"));
+		return Fetch.GetJson(`${Auth.URL_PREFIX}/me`, null, Cookies.Get('session'));
 	}
 }

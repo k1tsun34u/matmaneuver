@@ -8,35 +8,35 @@ export default class Carts {
 	static Add(cart_type, product_id) {
 		return Fetch.PostJson(
 			`${Carts.URL_PREFIX}/add-item`,
-			{cart_type, product_id}, Cookies.Get("session")
+			{cart_type, product_id}, Cookies.Get('session')
 		);
 	}
 
 	static Dec(cart_type, product_id) {
 		return Fetch.PostJson(
 			`${Carts.URL_PREFIX}/dec-item`,
-			{cart_type, product_id}, Cookies.Get("session")
+			{cart_type, product_id}, Cookies.Get('session')
 		);
 	}
 
 	static RemoveItem(cart_type, product_id) {
 		return Fetch.DeleteJson(
 			`${Carts.URL_PREFIX}/remove-item`,
-			{cart_type, product_id}, Cookies.Get("session")
+			{cart_type, product_id}, Cookies.Get('session')
 		);
 	}
 
 	static RemoveItems(cart_type) {
 		return Fetch.DeleteJson(
 			`${Carts.URL_PREFIX}/remove-items`,
-			{cart_type}, Cookies.Get("session")
+			{cart_type}, Cookies.Get('session')
 		);
 	}
 
 	static GetItems(cart_type) {
 		return Fetch.GetJson(
 			Carts.URL_PREFIX,
-			{cart_type}, Cookies.Get("session")
+			{cart_type}, Cookies.Get('session')
 		);
 	}
 }

@@ -8,21 +8,21 @@ export default class Orders {
 	static Create(deliveryAddress) {
 		return Fetch.PostJson(
 			`${Orders.URL_PREFIX}/create`,
-			{delivery_address: deliveryAddress}, Cookies.Get("session")
+			{delivery_address: deliveryAddress}, Cookies.Get('session')
 		);
 	}
 
 	static Pay(orderId) {
 		return Fetch.PostJson(
 			`${Orders.URL_PREFIX}/pay/${orderId}`,
-			null, Cookies.Get("session")
+			null, Cookies.Get('session')
 		);
 	}
 
 	static Cancel(orderId) {
 		return Fetch.PostJson(
 			`${Orders.URL_PREFIX}/cancel/${orderId}`,
-			null, Cookies.Get("session")
+			null, Cookies.Get('session')
 		);
 	}
 
@@ -36,14 +36,14 @@ export default class Orders {
 	static Get(orderId) {
 		return Fetch.GetJson(
 			`${Orders.URL_PREFIX}/${orderId}`,
-			null, Cookies.Get("session")
+			null, Cookies.Get('session')
 		);
 	}
 
 	static My(page=0) {
 		return Fetch.GetJson(
 			`${Orders.URL_PREFIX}/my`,
-			{page}, Cookies.Get("session")
+			{page}, Cookies.Get('session')
 		);
 	}
 }

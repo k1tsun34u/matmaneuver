@@ -7,6 +7,7 @@ from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.updatable_mixin import UpdatableMixin
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
+from app.utils import Utils
 
 
 class PermissionsRepository(
@@ -109,11 +110,26 @@ class PermissionsRepository(
 		exclude_deactivated: bool = True,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[Permission]:
-		return cls.select_many(
+	) -> tuple[list[Permission], int]:
+		is_null=(Permission.COLUMN_DEACTIVATED_AT,) if exclude_deactivated else None
+		ilike=((Permission.COLUMN_CODE, Permission.COLUMN_DESCRIPTION,), f"%{search}%",) if search else None
+		permissions = cls.select_many(
 			cur=cur,
-			is_null=(Permission.COLUMN_DEACTIVATED_AT,) if exclude_deactivated else None,
-			ilike=((Permission.COLUMN_CODE, Permission.COLUMN_DESCRIPTION,), f"%{search}%",) if search else None,
+			is_null=is_null,
+			ilike=ilike,
 			limit=limit,
 			offset=offset
 		)
+
+		conditions, params = Utils.build_conditions_params(
+			is_null=is_null,
+			ilike=ilike
+		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			{Utils.build_where(conditions)}
+		"""
+		cur.execute(query, params)
+		return (permissions, cur.fetchone()['total'],)

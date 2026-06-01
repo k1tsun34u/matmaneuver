@@ -8,14 +8,14 @@ export default class OrderPayments {
 	static Create(orderId, amount, paymentMethod=null) {
 		return Fetch.PostJson(
 			`${OrderPayments.URL_PREFIX}/create/${orderId}`,
-			{amount, payment_method: paymentMethod}, Cookies.Get("session")
+			{amount, payment_method: paymentMethod}, Cookies.Get('session')
 		);
 	}
 
 	static ByOrder(orderId, page=0) {
 		return Fetch.GetJson(
 			`${OrderPayments.URL_PREFIX}/by-order/${orderId}`,
-			{page}, Cookies.Get("session")
+			{page}, Cookies.Get('session')
 		);
 	}
 }
