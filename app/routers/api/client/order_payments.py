@@ -1,17 +1,12 @@
 from math import ceil
-from app.services.order_payments_service import OrderPaymentsService
-from app.types.payment_method import PaymentMethod
 from app.utils import Utils
-from datetime import datetime
 from dataclasses import asdict
 from app.errors.mapper import Mapper
-from app.types.cart_type import CartType
 from flask import Blueprint, jsonify, request
-from app.types.order_status import OrderStatus
 from app.session_manager import require_session
-from app.services.carts_service import CartsService
+from app.types.payment_method import PaymentMethod
 from app.services.orders_service import OrdersService
-from app.dtos.api.client.response_order import ResponseOrder
+from app.services.order_payments_service import OrderPaymentsService
 
 
 client_order_payments_bp = Blueprint(

@@ -13,7 +13,7 @@ export default class Auth {
 
 		const data = await Fetch.PostJson(`${Auth.URL_PREFIX}/login`, body, null);
 		Cookies.Set('session', data.session);
-		window.location.href = '/client/profile';
+		return data;
 	}
 
 	static async Register(phone, email, full_name, password) {
@@ -27,17 +27,16 @@ export default class Auth {
 
 		const data = await Fetch.PostJson(`${Auth.URL_PREFIX}/register`, body, null);
 		Cookies.Set('session', data.session);
-		window.location.href = '/client/profile';
+		return data;
 	}
 
-	static async Update(phone, email, full_name) {
+	static Update(phone, email, full_name) {
 		let body = {};
 		if (phone !== undefined && phone.length > 0) body.phone = phone;
 		if (email !== undefined && email.length > 0) body.email = email;
 		if (full_name !== undefined && full_name.length > 0) body.full_name = full_name;
 		
-		await Fetch.PostJson(`${Auth.URL_PREFIX}/update`, body, Cookies.Get("session"));
-		window.location.href = '/client/profile';
+		return Fetch.PostJson(`${Auth.URL_PREFIX}/update`, body, Cookies.Get("session"));
 	}
 
 	static async SetPassword(password) {
@@ -45,7 +44,7 @@ export default class Auth {
 		
 		const data = await Fetch.PostJson(`${Auth.URL_PREFIX}/set-password`, body, Cookies.Get("session"));
 		Cookies.Set('session', data.session);
-		window.location.href = '/client/profile';
+		return data;
 	}
 
 	static Me() {

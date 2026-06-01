@@ -1,15 +1,25 @@
-from enum import StrEnum
-import random
+from datetime import date
 import re
+import random
 import string
 import psycopg
+import marshmallow
+from enum import StrEnum
 from decimal import Decimal
 from app.unset import Unset
 from os.path import normpath
+from marshmallow import Schema, fields
 from typing import Any, Literal, TypeVar
 
 
 T = TypeVar("T")
+
+class MarshmallowEventSchema(marshmallow.Schema):
+	event_date = marshmallow.fields.DateTime(required=True)
+
+
+marshmallow_event_schema = MarshmallowEventSchema()
+
 
 class Utils:
 	@staticmethod
@@ -279,7 +289,18 @@ class Utils:
 			return result_type(value)
 		except:
 			return None
-		
+	
+	@staticmethod
+	def parse_date_from_dict(data: dict[str, Any], key: str) -> date | None:
+		try:
+			s = Utils.parse_str_from_dict(data, key)
+			if s is None:
+				return None
+			
+			return marshmallow_event_schema.loads(s)
+		except Exception:
+			return None
+	
 	@staticmethod
 	def gen_str(length: int, chars=string.ascii_uppercase + string.digits):
 		return ''.join(random.choices(chars, k=length))

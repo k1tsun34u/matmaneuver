@@ -201,6 +201,26 @@ class EmployeesService(BaseService):
 	
 	@classmethod
 	@BaseService.transaction
+	def search(
+		cls,
+		cur: psycopg.Cursor,
+		search: str | None = None,
+		exclude_fired: bool = True,
+		limit: int = 50,
+		offset: int = 0,
+	) -> ServiceResult:
+		return ServiceResult(
+			result=EmployeesRepository.search(
+				cur=cur,
+				search=search,
+				exclude_fired=exclude_fired,
+				limit=limit,
+				offset=offset
+			)
+		)
+	
+	@classmethod
+	@BaseService.transaction
 	def get_roles(
 		cls,
 		cur: psycopg.Cursor,

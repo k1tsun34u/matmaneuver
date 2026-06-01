@@ -1,11 +1,14 @@
 import psycopg
 from datetime import date
+from app.utils import Utils
 from typing import ClassVar
+from app.models.db.db_user import DbUser
 from app.models.public.employee import Employee
 from app.types.update_result import UpdateResult
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
+from app.dtos.api.employee.response_employee_user import ResponseEmployeeUser
 
 
 class EmployeesRepository(
@@ -71,16 +74,49 @@ class EmployeesRepository(
 		return cls.select(cur=cur, equals={Employee.COLUMN_USER_ID: user_id})
 	
 	@classmethod
-	def get_many(
+	def search(
 		cls,
 		cur: psycopg.Cursor,
+		search: str | None = None,
 		exclude_fired: bool = True,
 		limit: int = 50,
 		offset: int = 0,
-	) -> list[Employee]:
-		return cls.select_many(
-			cur=cur,
-			is_null=(Employee.COLUMN_FIRED_AT,) if exclude_fired else None,
-			limit=limit,
-			offset=offset
+	) -> tuple[list[ResponseEmployeeUser], int]:
+		conditions, params = Utils.build_conditions_params(
+			is_null=(f"e.{Employee.COLUMN_FIRED_AT}",) if exclude_fired else None,
+			ilike=(
+				(
+					f"u.{DbUser.COLUMN_PHONE}",
+					f"u.{DbUser.COLUMN_EMAIL}",
+					f"u.{DbUser.COLUMN_FULL_NAME}",
+				), f"%{search}%",
+			) if search else None
 		)
+
+		query_part = f"""
+			FROM {Employee.TABLE} e
+			JOIN {DbUser.TABLE} u ON u.{DbUser.COLUMN_ID} = e.{Employee.COLUMN_USER_ID}
+			{Utils.build_where(conditions)}
+		"""
+
+		query = f"""
+			SELECT
+				e.*,
+				u.{DbUser.COLUMN_PHONE},
+				u.{DbUser.COLUMN_EMAIL},
+				u.{DbUser.COLUMN_FULL_NAME}
+			{query_part}
+			{Utils.build_order_by(cls.ORDER_BY)}
+			LIMIT %s
+			OFFSET %s
+		"""
+		cur.execute(query, params + (limit, offset,))
+		employee_users = [ResponseEmployeeUser(**row) for row in cur.fetchall()]
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			{query_part}
+		"""
+		cur.execute(query, params)
+		return (employee_users, cur.fetchone()['total'],)
+
