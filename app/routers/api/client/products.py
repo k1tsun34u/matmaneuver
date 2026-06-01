@@ -30,16 +30,19 @@ def search():
 	search = Utils.parse_str_from_dict(data, 'search')
 	min_price = Utils.parse_decimal_from_dict(data, 'min_price')
 	max_price = Utils.parse_decimal_from_dict(data, 'max_price')
+	exclude_deleted = Utils.parse_bool_from_dict(data, 'exclude_deleted')
 	page = Utils.parse_int_from_dict(data, 'page')
 	if page is None or page < 0:
 		page = 0
+	if exclude_deleted is None:
+		exclude_deleted = True
 	
 	limit, offset = Utils.page_to_limit_offset(page)
 	tmp = ProductsService.search(
 		search=search,
 		min_price=min_price,
 		max_price=max_price,
-		exclude_deleted=True,
+		exclude_deleted=exclude_deleted,
 		limit=limit,
 		offset=offset
 	)

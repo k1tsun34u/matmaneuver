@@ -141,16 +141,30 @@ class UsersRepository(
 		exclude_blocked: bool = True,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[DbUser]:
+	) -> tuple[list[DbUser], int]:
 		is_null = tuple()
 		if exclude_deleted:
 			is_null = is_null + (DbUser.COLUMN_DELETED_AT,)
 		if exclude_blocked:
 			is_null = is_null + (DbUser.COLUMN_BLOCKED_AT,)
-		return cls.select_many(
+		ilike = ((DbUser.COLUMN_PHONE, DbUser.COLUMN_EMAIL, DbUser.COLUMN_FULL_NAME,), f"%{search}%",) if search else None
+		users = cls.select_many(
 			cur=cur,
 			is_null=is_null,
-			ilike=((DbUser.COLUMN_PHONE, DbUser.COLUMN_EMAIL, DbUser.COLUMN_FULL_NAME,), f"%{search}%",) if search else None,
+			ilike=ilike,
 			limit=limit,
 			offset=offset
 		)
+
+		conditions, params = Utils.build_conditions_params(
+			is_null=is_null,
+			ilike=ilike
+		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			{Utils.build_where(conditions)}
+		"""
+		cur.execute(query, params)
+		return (users, cur.fetchone()['total'],)

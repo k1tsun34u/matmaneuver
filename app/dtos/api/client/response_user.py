@@ -9,8 +9,8 @@ class ResponseUser:
 	phone: str
 	email: str
 	full_name: str
-	blocked_at: datetime
-	deleted_at: datetime
+	blocked_at: datetime | None
+	deleted_at: datetime | None
 
 	def __init__(self, db_user: DbUser):
 		self.id = db_user.id

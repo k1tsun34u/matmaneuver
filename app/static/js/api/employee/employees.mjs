@@ -54,10 +54,14 @@ export default class Employees {
 		return Fetch.GetJson(`${Employees.URL_PREFIX}/by-user/${userId}`, null, Cookies.Get('session'));
 	}
 
-	static Search(search, page=0) {
+	static Search(search, page=0, excludeFired=true) {
 		return Fetch.GetJson(
 			`${Employees.URL_PREFIX}/search`,
-			{search, page}, Cookies.Get('session')
+			{
+				search, page,
+				exclude_fired: excludeFired
+			},
+			Cookies.Get('session')
 		);
 	}
 

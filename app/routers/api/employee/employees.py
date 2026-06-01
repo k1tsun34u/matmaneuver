@@ -1,5 +1,4 @@
 from math import ceil
-from app.dtos.api.employee.response_employee_user import ResponseEmployeeUser
 from app.utils import Utils
 from dataclasses import asdict
 from app.errors.mapper import Mapper
@@ -10,6 +9,7 @@ from app.services.employees_service import EmployeesService
 from app.dtos.api.employee.response_role import ResponseRole
 from app.dtos.api.employee.response_employee import ResponseEmployee
 from app.dtos.api.employee.response_permission import ResponsePermission
+from app.dtos.api.employee.response_employee_user import ResponseEmployeeUser
 
 
 employee_employees_bp = Blueprint(
@@ -146,14 +146,17 @@ def by_user(_, __, ___, user_id: int):
 def search(_, __, ___):
 	data = request.args.to_dict()
 	search_str = Utils.parse_str_from_dict(data, 'search')
+	exclude_fired = Utils.parse_bool_from_dict(data, 'exclude_fired')
 	page = Utils.parse_int_from_dict(data, 'page')
 	if page is None or page < 0:
 		page = 0
+	if exclude_fired is None:
+		exclude_fired = True
 	
 	limit, offset = Utils.page_to_limit_offset(page)
 	tmp = EmployeesService.search(
 		search=search_str,
-		exclude_fired=False,
+		exclude_fired=exclude_fired,
 		limit=limit,
 		offset=offset
 	)

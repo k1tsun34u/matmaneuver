@@ -8,13 +8,14 @@ export default class Products {
 		return Fetch.Json("GET", `${Products.URL_PREFIX}/${product_id}`, null, null);
 	}
 
-	static Search(search, minPrice, maxPrice, page=0) {
+	static Search(search, minPrice, maxPrice, page=0, excludeDeleted=true) {
 		return Fetch.GetJson(
 			Products.URL_PREFIX,
 			{
 				search,
 				min_price: minPrice,
 				max_price: maxPrice,
+				exclude_deleted: excludeDeleted,
 				page
 			},
 			null
