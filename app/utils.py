@@ -157,6 +157,15 @@ class Utils:
 		)
 	
 	@staticmethod
+	def is_valid_name(normalized_name: str) -> bool:
+		pattern = r"^[\w\d ]+$"
+		return (
+			normalized_name
+			and len(normalized_name) < 128
+			and bool(re.fullmatch(pattern, normalized_name))
+		)
+	
+	@staticmethod
 	def is_valid_code(normalized_code: str) -> bool:
 		pattern = r"^[a-z]+(?:_[a-z]+)*$"
 		return (

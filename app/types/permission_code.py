@@ -22,6 +22,10 @@ class PermissionCode(StrEnum):
 	ASSIGN_ROLE = "assign_role"
 	UNASSIGN_ROLE = "unassign_role"
 
+	CREATE_CATEGORY = "create_category"
+	DEACTIVATE_CATEGORY = "deactivate_category"
+	SET_CATEGORY_PARENT = "set_category_parent"
+
 	CREATE_WAREHOUSE = "create_warehouse"
 	DELETE_WAREHOUSE = "delete_warehouse"
 	SET_WAREHOUSE_DESCRIPTION = "set_warehouse_description"
