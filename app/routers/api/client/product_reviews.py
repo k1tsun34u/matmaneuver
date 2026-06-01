@@ -126,5 +126,5 @@ def get_rating(product_id: int):
 	
 	return jsonify({
 		"success": True,
-		"rating": round(float(tmp.result), 2)
+		"rating": round(float(tmp.result or 0), 2)
 	}), 200
