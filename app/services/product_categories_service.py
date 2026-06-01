@@ -111,6 +111,7 @@ class ProductCategoriesService(BaseService):
 			result=ProductCategoriesRepository.get_categories_by_product_id(cur, product_id)
 		)
 	
+	# warning: unused
 	@classmethod
 	@BaseService.transaction
 	def get_products_by_category_id(
