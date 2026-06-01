@@ -42,4 +42,12 @@ export default class Fetch {
 	static DeleteJson(url, body, session=null) {
 		return Fetch.Json("DELETE", url, body, session);
 	}
+
+	static PostFormData(url, formData, session=null) {
+		return fetch(url, {
+			method: "POST",
+			body: formData,
+			headers: session ? {"Authorization": `Bearer ${session}`} : undefined
+		}).then(r => r.json());
+	}
 }

@@ -89,10 +89,18 @@ class ProductImagesRepository(
 		employee_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[ProductImage]:
-		return cls.select_many(
+	) -> tuple[list[ProductImage], int]:
+		product_images = cls.select_many(
 			cur=cur,
 			equals={ProductImage.COLUMN_CREATED_BY: employee_id},
 			limit=limit,
 			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			WHERE {ProductImage.COLUMN_CREATED_BY} = %s
+		"""
+		cur.execute(query, (employee_id,))
+		return (product_images, cur.fetchone()['total'],)
