@@ -160,12 +160,6 @@ def by_employee(_, __, ___, employee_id: int):
 	product_images, total_images = tmp.result
 	return jsonify({
 		"success": True,
-		"pagination": {
-			"offset": offset,
-			"limit": limit,
-			"page": page,
-			"total_images": total_images,
-			"total_pages": ceil(total_images / limit) if limit > 0 else 0
-		},
+		'pagination': Utils.build_pagination_dict(offset, limit, page, 'images', total_images),
 		"images": [asdict(ResponseProductImage(product_image)) for product_image in product_images]
 	}), 200

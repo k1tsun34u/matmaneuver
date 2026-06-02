@@ -1,14 +1,13 @@
-from datetime import date
 import re
 import random
 import string
 import psycopg
 import marshmallow
-from enum import StrEnum
+from math import ceil
+from datetime import date
 from decimal import Decimal
 from app.unset import Unset
 from os.path import normpath
-from marshmallow import Schema, fields
 from typing import Any, Literal, TypeVar
 
 
@@ -87,6 +86,22 @@ class Utils:
 			"""
 		
 		return query
+	
+	@staticmethod
+	def build_pagination_dict(
+		offset: int,
+		limit: int,
+		page: int,
+		items_name: str,
+		total_items: int
+	) -> str:
+		return {
+			'offset': offset,
+			'limit': limit,
+			'page': page,
+			f'total_{items_name}': total_items,
+			'total_pages': ceil(total_items / limit) if limit > 0 else 0
+		}
 	
 	@staticmethod
 	def page_to_limit_offset(page: int) -> tuple[int, int]:

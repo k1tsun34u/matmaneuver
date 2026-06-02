@@ -120,7 +120,7 @@ class OrdersRepository(
 		created_to: date | None = None,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[Order]:
+	) -> tuple[list[Order], int]:
 		limit, offset = Utils.normalize_pagination(limit, offset)
 		conditions = []
 		params = []
@@ -147,4 +147,12 @@ class OrdersRepository(
 		)
 
 		cur.execute(query, (*params, limit, offset,))
-		return [Order(**row) for row in cur.fetchall()]
+		orders = [Order(**row) for row in cur.fetchall()]
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			{Utils.build_where(conditions)}
+		"""
+		cur.execute(query, params)
+		return (orders, cur.fetchone()['total'],)

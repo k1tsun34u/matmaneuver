@@ -76,12 +76,6 @@ def by_order(_, token, order_id: int):
 	payments, total_payments = tmp.result
 	return jsonify({
 		"success": True,
-		"pagination": {
-			"offset": offset,
-			"limit": limit,
-			"page": page,
-			"total_payments": total_payments,
-			"total_pages": ceil(total_payments / limit) if limit > 0 else 0
-		},
+		'pagination': Utils.build_pagination_dict(offset, limit, page, 'payments', total_payments),
 		"payments": [asdict(payment) for payment in payments]
 	}), 200

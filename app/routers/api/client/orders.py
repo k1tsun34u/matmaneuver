@@ -181,13 +181,7 @@ def by_track_number(track_number: str):
 	order["items"] = [asdict(order_item) for order_item in items]
 	return jsonify({
 		"success": True,
-		"pagination": {
-			"offset": offset,
-			"limit": limit,
-			"page": page,
-			"total_items": total_items,
-			"total_pages": ceil(total_items / limit) if limit > 0 else 0
-		},
+		'pagination': Utils.build_pagination_dict(offset, limit, page, 'items', total_items),
 		"order": order,
 		"total_price": total_price
 	}), 200
@@ -230,13 +224,7 @@ def get(_, token, order_id: int):
 	order["items"] = [asdict(order_item) for order_item in items]
 	return jsonify({
 		"success": True,
-		"pagination": {
-			"offset": offset,
-			"limit": limit,
-			"page": page,
-			"total_items": total_items,
-			"total_pages": ceil(total_items / limit) if limit > 0 else 0
-		},
+		'pagination': Utils.build_pagination_dict(offset, limit, page, 'items', total_items),
 		"order": order,
 		"total_price": total_price
 	}), 200
@@ -262,12 +250,6 @@ def my(_, token):
 	orders, total_orders = tmp.result
 	return jsonify({
 		"success": True,
-		"pagination": {
-			"offset": offset,
-			"limit": limit,
-			"page": page,
-			"total_orders": total_orders,
-			"total_pages": ceil(total_orders / limit) if limit > 0 else 0
-		},
+		'pagination': Utils.build_pagination_dict(offset, limit, page, 'orders', total_orders),
 		"orders": [asdict(ResponseOrder(order)) for order in orders]
 	}), 200

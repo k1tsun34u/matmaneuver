@@ -153,12 +153,6 @@ def search(_, __, ___):
 	roles, total_roles = tmp.result
 	return jsonify({
 		"success": True,
-		"pagination": {
-			"offset": offset,
-			"limit": limit,
-			"page": page,
-			"total_roles": total_roles,
-			"total_pages": ceil(total_roles / limit) if limit > 0 else 0
-		},
+		'pagination': Utils.build_pagination_dict(offset, limit, page, 'roles', total_roles),
 		"roles": [asdict(ResponseRole(role)) for role in roles]
 	}), 200

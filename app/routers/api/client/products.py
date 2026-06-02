@@ -53,12 +53,6 @@ def search():
 	products, total_products = tmp.result
 	return jsonify({
 		"success": True,
-		"pagination": {
-			"offset": offset,
-			"limit": limit,
-			"page": page,
-			"total_products":	total_products,
-			"total_pages": ceil(total_products / limit) if limit > 0 else 0
-		},
+		'pagination': Utils.build_pagination_dict(offset, limit, page, 'products', total_products),
 		"products": [asdict(ResponseProduct(p)) for p in products]
 	}), 200

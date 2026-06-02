@@ -130,12 +130,6 @@ def search(_, __, ___):
 	categories, total_categories = tmp.result
 	return jsonify({
 		"success": True,
-		"pagination": {
-			"offset": offset,
-			"limit": limit,
-			"page": page,
-			"total_categories": total_categories,
-			"total_pages": ceil(total_categories / limit) if limit > 0 else 0
-		},
+		'pagination': Utils.build_pagination_dict(offset, limit, page, 'categories', total_categories),
 		"categories": [asdict(ResponseCategory(category)) for category in categories]
 	}), 200

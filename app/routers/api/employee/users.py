@@ -132,12 +132,6 @@ def search(_, __, ___):
 	users, total_users = tmp.result
 	return jsonify({
 		"success": True,
-		"pagination": {
-			"offset": offset,
-			"limit": limit,
-			"page": page,
-			"total_users": total_users,
-			"total_pages": ceil(total_users / limit) if limit > 0 else 0
-		},
+		'pagination': Utils.build_pagination_dict(offset, limit, page, 'users', total_users),
 		"users": [asdict(ResponseUser(user)) for user in users]
 	}), 200

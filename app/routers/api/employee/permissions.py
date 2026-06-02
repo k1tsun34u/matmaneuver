@@ -134,12 +134,6 @@ def search(_, __, ___):
 	permissions, total_permissions = tmp.result
 	return jsonify({
 		"success": True,
-		"pagination": {
-			"offset": offset,
-			"limit": limit,
-			"page": page,
-			"total_permissions": total_permissions,
-			"total_pages": ceil(total_permissions / limit) if limit > 0 else 0
-		},
+		'pagination': Utils.build_pagination_dict(offset, limit, page, 'permissions', total_permissions),
 		"permissions": [asdict(ResponsePermission(permission)) for permission in permissions]
 	}), 200

@@ -75,13 +75,7 @@ def by_product(_, __, ___, product_id: int):
 	product_reviews, total_reviews = tmp.result
 	return jsonify({
 		"success": True,
-		"pagination": {
-			"offset": offset,
-			"limit": limit,
-			"page": page,
-			"total_reviews": total_reviews,
-			"total_pages": ceil(total_reviews / limit) if limit > 0 else 0
-		},
+		'pagination': Utils.build_pagination_dict(offset, limit, page, 'reviews', total_reviews),
 		"reviews": [asdict(ResponseProductReview(product_review)) for product_review in product_reviews]
 	}), 200
 
@@ -106,13 +100,7 @@ def by_user(_, __, ___, user_id: int):
 	product_reviews, total_reviews = tmp.result
 	return jsonify({
 		"success": True,
-		"pagination": {
-			"offset": offset,
-			"limit": limit,
-			"page": page,
-			"total_reviews": total_reviews,
-			"total_pages": ceil(total_reviews / limit) if limit > 0 else 0
-		},
+		'pagination': Utils.build_pagination_dict(offset, limit, page, 'reviews', total_reviews),
 		"reviews": [asdict(ResponseProductReview(product_review)) for product_review in product_reviews]
 	}), 200
 
