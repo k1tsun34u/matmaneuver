@@ -1,4 +1,3 @@
-from math import ceil
 from app.utils import Utils
 from dataclasses import asdict
 from app.errors.mapper import Mapper
