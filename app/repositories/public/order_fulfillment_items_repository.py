@@ -58,13 +58,21 @@ class OrderFulfillmentItemsRepository(
 		order_fulfillment_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[OrderFulfillmentItem]:
-		return cls.select_many(
+	) -> tuple[list[OrderFulfillmentItem], int]:
+		items = cls.select_many(
 			cur=cur,
 			equals={OrderFulfillmentItem.COLUMN_ORDER_FULFILLMENT_ID: order_fulfillment_id},
 			limit=limit,
 			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			WHERE {OrderFulfillmentItem.COLUMN_ORDER_FULFILLMENT_ID} = %s
+		"""
+		cur.execute(query, (order_fulfillment_id,))
+		return (items, cur.fetchone()['total'],)
 	
 	@classmethod
 	def get_many_by_product_id(
@@ -73,13 +81,21 @@ class OrderFulfillmentItemsRepository(
 		product_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[OrderFulfillmentItem]:
-		return cls.select_many(
+	) -> tuple[list[OrderFulfillmentItem], int]:
+		items = cls.select_many(
 			cur=cur,
 			equals={OrderFulfillmentItem.COLUMN_PRODUCT_ID: product_id},
 			limit=limit,
 			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			WHERE {OrderFulfillmentItem.COLUMN_PRODUCT_ID} = %s
+		"""
+		cur.execute(query, (product_id,))
+		return (items, cur.fetchone()['total'],)
 	
 	@classmethod
 	def get_total_fulfilled_quantity(

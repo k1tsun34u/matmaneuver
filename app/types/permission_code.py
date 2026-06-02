@@ -26,6 +26,9 @@ class PermissionCode(StrEnum):
 	DEACTIVATE_CATEGORY = "deactivate_category"
 	SET_CATEGORY_PARENT = "set_category_parent"
 
+	CREATE_ORDER_FULFILLMENT = "create_order_fulfillment"
+	CREATE_ORDER_FULFILLMENT_ITEM = "create_order_fulfillment_item"
+
 	CREATE_WAREHOUSE = "create_warehouse"
 	DELETE_WAREHOUSE = "delete_warehouse"
 	SET_WAREHOUSE_DESCRIPTION = "set_warehouse_description"

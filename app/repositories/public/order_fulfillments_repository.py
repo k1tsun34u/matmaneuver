@@ -72,13 +72,21 @@ class OrderFulfillmentsRepository(
 		order_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[OrderFulfillment]:
-		return cls.select_many(
+	) -> tuple[list[OrderFulfillment], int]:
+		fulfillments = cls.select_many(
 			cur=cur,
 			equals={OrderFulfillment.COLUMN_ORDER_ID: order_id},
 			limit=limit,
 			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			WHERE {OrderFulfillment.COLUMN_ORDER_ID} = %s
+		"""
+		cur.execute(query, (order_id,))
+		return (fulfillments, cur.fetchone()['total'],)
 	
 	@classmethod
 	def get_many_by_warehouse_id(
@@ -87,10 +95,18 @@ class OrderFulfillmentsRepository(
 		warehouse_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[OrderFulfillment]:
-		return cls.select_many(
+	) -> tuple[list[OrderFulfillment], int]:
+		fulfillments = cls.select_many(
 			cur=cur,
 			equals={OrderFulfillment.COLUMN_WAREHOUSE_ID: warehouse_id},
 			limit=limit,
 			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			WHERE {OrderFulfillment.COLUMN_WAREHOUSE_ID} = %s
+		"""
+		cur.execute(query, (warehouse_id,))
+		return (fulfillments, cur.fetchone()['total'],)

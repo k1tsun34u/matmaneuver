@@ -1,7 +1,9 @@
 import psycopg
+from app.errors.not_allowed_error import NotAllowedError
 from app.models.public.order import Order
 from app.services.base_service import BaseService
 from app.types.order_status import OrderStatus
+from app.types.permission_code import PermissionCode
 from app.types.service_result import ServiceResult
 from app.errors.not_found_error import NotFoundError
 from app.types.transaction_helper import TransactionHelper
@@ -11,6 +13,7 @@ from app.repositories.public.orders_repository import OrdersRepository
 from app.models.public.order_fulfillment_item import OrderFulfillmentItem
 from app.repositories.public.order_items_repository import OrderItemsRepository
 from app.repositories.public.order_fulfillments_repository import OrderFulfillmentsRepository as OFR
+from app.repositories.public.employee_permissions_repository import EmployeePermissionsRepository as EPR
 from app.repositories.public.order_fulfillment_items_repository import OrderFulfillmentItemsRepository as OFIR
 
 
@@ -35,14 +38,19 @@ class OrderFulfillmentsService(BaseService):
 		cls,
 		cur: psycopg.Cursor,
 		order_id: int,
-		warehouse_id: int
+		warehouse_id: int,
+		created_by: int | None
 	) -> ServiceResult:
 		"""
 			Errors:
+			- NotAllowedError
 			- NotFoundError
 			- InvalidValueError
 			- UnhandledError
 		"""
+
+		if created_by is not None and not EPR.has_permission(cur, created_by, PermissionCode.CREATE_ORDER_FULFILLMENT):
+			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_ORDER_FULFILLMENT))
 
 		order = OrdersRepository.get_by_id_for_update(cur, order_id)
 		if order is None:
@@ -130,14 +138,19 @@ class OrderFulfillmentsService(BaseService):
 		cur: psycopg.Cursor,
 		order_fulfillment_id: int,
 		product_id: int,
-		quantity: int
+		quantity: int,
+		created_by: int | None
 	) -> ServiceResult:
 		"""
 			Errors:
+			- NotAllowedError
 			- AlreadyExistsError
 			- NotFoundError
 			- UnhandledError
 		"""
+
+		if created_by is not None and not EPR.has_permission(cur, created_by, PermissionCode.CREATE_ORDER_FULFILLMENT_ITEM):
+			return ServiceResult(error=NotAllowedError(PermissionCode.CREATE_ORDER_FULFILLMENT_ITEM))
 		
 		order_fulfillment = OFR.get_by_id_for_update(cur, order_fulfillment_id)
 		if order_fulfillment is None:
@@ -242,5 +255,26 @@ class OrderFulfillmentsService(BaseService):
 				product_id=product_id,
 				limit=limit,
 				offset=offset
+			)
+		)
+	
+	@classmethod
+	@BaseService.transaction
+	def get_total_fulfilled_quantity(
+		cls,
+		cur: psycopg.Cursor,
+		order_id: int,
+		product_id: int
+	) -> ServiceResult:
+		"""
+			Errors:
+			- UnhandledError
+		"""
+
+		return ServiceResult(
+			result=OFIR.get_total_fulfilled_quantity(
+				cur=cur,
+				order_id=order_id,
+				product_id=product_id
 			)
 		)
