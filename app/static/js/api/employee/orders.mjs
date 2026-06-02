@@ -17,6 +17,7 @@ export default class Orders {
 	}
 
 	static ByTrackNumber(trackNumber) {
+		trackNumber = encodeURIComponent(trackNumber);
 		return Fetch.GetJson(`${Orders.URL_PREFIX}/by-track-number/${trackNumber}`, null, Cookies.Get('session'));
 	}
 

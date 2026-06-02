@@ -7,6 +7,7 @@ from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.updatable_mixin import UpdatableMixin
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
+from app.utils import Utils
 
 
 class WarehousesRepository(
@@ -86,11 +87,26 @@ class WarehousesRepository(
 		exclude_deleted: bool = True,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[Warehouse]:
-		return cls.select_many(
+	) -> tuple[list[Warehouse], int]:
+		is_null = (Warehouse.COLUMN_DELETED_AT,) if exclude_deleted else None
+		ilike = ((Warehouse.COLUMN_ADDRESS, Warehouse.COLUMN_DESCRIPTION,), f"%{search}%",) if search else None
+		warehouses = cls.select_many(
 			cur=cur,
-			is_null=(Warehouse.COLUMN_DELETED_AT,) if exclude_deleted else None,
-			ilike=((Warehouse.COLUMN_ADDRESS, Warehouse.COLUMN_DESCRIPTION,), f"%{search}%",) if search else None,
+			is_null=is_null,
+			ilike=ilike,
 			limit=limit,
 			offset=offset
 		)
+
+		conditions, params = Utils.build_conditions_params(
+			is_null=is_null,
+			ilike=ilike
+		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			{Utils.build_where(conditions)}
+		"""
+		cur.execute(query, params)
+		return (warehouses, cur.fetchone()['total'],)

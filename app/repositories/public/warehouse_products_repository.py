@@ -1,4 +1,6 @@
 import psycopg
+from app.dtos.api.employee.response_complete_warehouse_product import ResponseCompleteWarehouseProduct
+from app.models.public.warehouse import Warehouse
 from app.utils import Utils
 from typing import ClassVar
 from typing import TypeVar
@@ -284,15 +286,86 @@ class WarehouseProductsRepository(
 		)
 	
 	@classmethod
-	def get_many_by_product_id(cls, cur: psycopg.Cursor, product_id: int) -> list[WarehouseProduct]:
-		return cls.select_many(
+	def get_many_by_product_id(
+		cls,
+		cur: psycopg.Cursor,
+		product_id: int,
+		limit: int = 50,
+		offset: int = 0
+	) -> tuple[list[WarehouseProduct], int]:
+		products = cls.select_many(
 			cur=cur,
-			equals={WarehouseProduct.COLUMN_PRODUCT_ID: product_id}
+			equals={WarehouseProduct.COLUMN_PRODUCT_ID: product_id},
+			limit=limit,
+			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			WHERE {WarehouseProduct.COLUMN_PRODUCT_ID} = %s
+		"""
+		cur.execute(query, (product_id,))
+		return (products, cur.fetchone()['total'],)
 	
 	@classmethod
-	def get_many_by_warehouse_id(cls, cur: psycopg.Cursor, warehouse_id: int) -> list[WarehouseProduct]:
-		return cls.select_many(
+	def get_many_by_warehouse_id(
+		cls,
+		cur: psycopg.Cursor,
+		warehouse_id: int,
+		limit: int = 50,
+		offset: int = 0
+	) -> tuple[list[WarehouseProduct], int]:
+		products = cls.select_many(
 			cur=cur,
-			equals={WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id}
+			equals={WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id},
+			limit=limit,
+			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			WHERE {WarehouseProduct.COLUMN_WAREHOUSE_ID} = %s
+		"""
+		cur.execute(query, (warehouse_id,))
+		return (products, cur.fetchone()['total'],)
+	
+	@classmethod
+	def get_complete_warehouse_products_by_product_id(
+		cls,
+		cur: psycopg.Cursor,
+		product_id: int,
+		exclude_deleted: bool = True,
+		limit: int = 50,
+		offset: int = 0
+	) -> tuple[list[ResponseCompleteWarehouseProduct], int]:
+		conditions, params = Utils.build_conditions_params(
+			equals={f"wp.{WarehouseProduct.COLUMN_PRODUCT_ID}": product_id},
+			is_null=(f"w.{Warehouse.COLUMN_DELETED_AT}",) if exclude_deleted else None
+		)
+
+		query_part = f"""
+			FROM {Warehouse.TABLE} w
+			JOIN {WarehouseProduct.TABLE} wp ON w.{Warehouse.COLUMN_ID} = wp.{WarehouseProduct.COLUMN_WAREHOUSE_ID}
+			{Utils.build_where(conditions)}
+		"""
+
+		query = f"""
+			SELECT
+				w*,
+				wp*
+			{query_part}
+			{Utils.build_order_by(cls.ORDER_BY)}
+			LIMIT %s
+			OFFSET %s
+		"""
+		cur.execute(query, params + (limit, offset,))
+		complete_warehouse_products = [ResponseCompleteWarehouseProduct(**row) for row in cur.fetchall()]
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			{query_part}
+		"""
+		cur.execute(query, params)
+		return (complete_warehouse_products, cur.fetchone()['total'],)

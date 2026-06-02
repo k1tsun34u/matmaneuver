@@ -43,6 +43,7 @@ export default class Roles {
 	}
 
 	static ByCode(code) {
+		code = encodeURIComponent(code);
 		return Fetch.GetJson(`${Roles.URL_PREFIX}/by-code/${code}`, null, Cookies.Get('session'));
 	}
 

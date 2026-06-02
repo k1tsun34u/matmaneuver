@@ -34,6 +34,7 @@ export default class Categories {
 	}
 
 	static ByName(name) {
+		name = encodeURIComponent(name);
 		return Fetch.GetJson(`${Categories.URL_PREFIX}/by-name/${name}`, null, Cookies.Get('session'));
 	}
 

@@ -36,6 +36,7 @@ export default class Permissions {
 	}
 
 	static ByCode(code) {
+		code = encodeURIComponent(code);
 		return Fetch.GetJson(`${Permissions.URL_PREFIX}/by-code/${code}`, null, Cookies.Get('session'));
 	}
 

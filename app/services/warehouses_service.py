@@ -377,13 +377,15 @@ class WarehousesService(BaseService):
 			case UpdateResult.FAIL_NOT_FOUND:
 				return ServiceResult(error=NotFoundError(WarehouseProduct.ENTITY))
 		return ServiceResult()
-
+	
 	@classmethod
 	@BaseService.transaction
-	def get_products(
+	def get_products_by_product_id(
 		cls,
 		cur: psycopg.Cursor,
-		warehouse_id: int
+		product_id: int,
+		limit: int = 50,
+		offset: int = 0
 	) -> ServiceResult:
 		"""
 			Errors:
@@ -391,4 +393,62 @@ class WarehousesService(BaseService):
 			- UnhandledError
 		"""
 
-		return ServiceResult(result=WPR.get_many_by_warehouse_id(cur, warehouse_id))
+		return ServiceResult(
+			result=WPR.get_many_by_product_id(
+				cur=cur,
+				product_id=product_id,
+				limit=limit,
+				offset=offset
+			)
+		)
+
+	@classmethod
+	@BaseService.transaction
+	def get_products_by_warehouse_id(
+		cls,
+		cur: psycopg.Cursor,
+		warehouse_id: int,
+		limit: int = 50,
+		offset: int = 50
+	) -> ServiceResult:
+		"""
+			Errors:
+			- NotFoundError
+			- UnhandledError
+		"""
+
+		return ServiceResult(
+			result=WPR.get_many_by_warehouse_id(
+				cur=cur,
+				warehouse_id=warehouse_id,
+				limit=limit,
+				offset=offset
+			)
+		)
+	
+	@classmethod
+	@BaseService.transaction
+	def get_complete_warehouse_products_by_product_id(
+		cls,
+		cur: psycopg.Cursor,
+		product_id: int,
+		exclude_deleted: bool = True,
+		limit: int = 50,
+		offset: int = 0
+	) -> ServiceResult:
+		"""
+			Errors:
+			- NotFoundError
+			- UnhandledError
+		"""
+
+		return ServiceResult(
+			result=WPR.get_complete_warehouse_products_by_product_id(
+				cur=cur,
+				product_id=product_id,
+				exclude_deleted=exclude_deleted,
+				limit=limit,
+				offset=offset
+			)
+		)
+

@@ -26,10 +26,12 @@ export default class Users {
 	}
 
 	static ByPhone(phone) {
+		phone = encodeURIComponent(phone);
 		return Fetch.GetJson(`${this.URL_PREFIX}/by-phone/${phone}`, null, Cookies.Get('session'));
 	}
 
 	static ByEmail(email) {
+		email = encodeURIComponent(email);
 		return Fetch.GetJson(`${this.URL_PREFIX}/by-email/${email}`, null, Cookies.Get('session'));
 	}
 

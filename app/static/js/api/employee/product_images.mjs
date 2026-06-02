@@ -27,6 +27,7 @@ export default class ProductImages {
 	}
 
 	static ByStorageKey(storageKey) {
+		storageKey = encodeURIComponent(storageKey);
 		return Fetch.GetJson(`${ProductImages.URL_PREFIX}/by-storage-key/${storageKey}`, null, Cookies.Get('session'));
 	}
 
