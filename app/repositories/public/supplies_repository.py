@@ -97,13 +97,21 @@ class SuppliesRepository(
 		supplier_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[Supply]:
-		return cls.select_many(
+	) -> tuple[list[Supply], int]:
+		supplies = cls.select_many(
 			cur=cur,
 			equals={Supply.COLUMN_SUPPLIER_ID: supplier_id},
 			limit=limit,
 			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) as total
+			FROM {cls.TABLE}
+			WHERE {Supply.COLUMN_SUPPLIER_ID} = %s
+		"""
+		cur.execute(query, (supplier_id,))
+		return (supplies, cur.fetchone()['total'],)
 	
 	@classmethod
 	def get_many_by_warehouse_id(
@@ -112,13 +120,21 @@ class SuppliesRepository(
 		warehouse_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[Supply]:
-		return cls.select_many(
+	) -> tuple[list[Supply], int]:
+		supplies = cls.select_many(
 			cur=cur,
 			equals={Supply.COLUMN_WAREHOUSE_ID: warehouse_id},
 			limit=limit,
 			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) as total
+			FROM {cls.TABLE}
+			WHERE {Supply.COLUMN_WAREHOUSE_ID} = %s
+		"""
+		cur.execute(query, (warehouse_id,))
+		return (supplies, cur.fetchone()['total'],)
 
 	@classmethod
 	def search(
@@ -131,7 +147,7 @@ class SuppliesRepository(
 		planned_delivery_to: date | None = None,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[Supply]:
+	) -> tuple[list[Supply], int]:
 		limit, offset = Utils.normalize_pagination(limit, offset)
 		conditions = []
 		params = []
@@ -160,4 +176,12 @@ class SuppliesRepository(
 		)
 
 		cur.execute(query, (*params, limit, offset,))
-		return [Supply(**row) for row in cur.fetchall()]
+		supplies = [Supply(**row) for row in cur.fetchall()]
+
+		query = f"""
+			SELECT COUNT(*) as total
+			FROM {cls.TABLE}
+			{Utils.build_where(conditions)}
+		"""
+		cur.execute(query, (*params,))
+		return (supplies, cur.fetchone()['total'],)

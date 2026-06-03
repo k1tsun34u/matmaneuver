@@ -361,6 +361,25 @@ class SuppliesService(BaseService):
 	
 	@classmethod
 	@BaseService.transaction
+	def get_total_price(
+		cls,
+		cur: psycopg.Cursor,
+		supply_id: int
+	) -> ServiceResult:
+		"""
+			Errors:
+			- UnhandledError
+		"""
+
+		return ServiceResult(
+			result=SupplyItemsRepository.get_total_price(
+				cur=cur,
+				supply_id=supply_id
+			)
+		)
+	
+	@classmethod
+	@BaseService.transaction
 	def get_status_history(
 		cls,
 		cur: psycopg.Cursor,

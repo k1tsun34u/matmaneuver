@@ -315,15 +315,16 @@ class Utils:
 			return None
 	
 	@staticmethod
-	def parse_date_from_dict(data: dict[str, Any], key: str) -> date | None:
+	def str_to_date(s: str) -> date | None:
 		try:
-			s = Utils.parse_str_from_dict(data, key)
-			if s is None:
-				return None
-			
 			return marshmallow_event_schema.loads(s)
 		except Exception:
 			return None
+	
+	@staticmethod
+	def parse_date_from_dict(data: dict[str, Any], key: str) -> date | None:
+		s = Utils.parse_str_from_dict(data, key)
+		return Utils.str_to_date(s) if s is not None else None
 	
 	@staticmethod
 	def gen_str(length: int, chars=string.ascii_uppercase + string.digits):

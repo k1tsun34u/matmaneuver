@@ -72,13 +72,21 @@ class SupplyItemsRepository(
 		supply_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[SupplyItem]:
-		return cls.select_many(
+	) -> tuple[list[SupplyItem], int]:
+		items = cls.select_many(
 			cur=cur,
 			equals={SupplyItem.COLUMN_SUPPLY_ID: supply_id},
 			limit=limit,
 			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) as total
+			FROM {cls.TABLE}
+			WHERE {SupplyItem.COLUMN_SUPPLY_ID} = %s
+		"""
+		cur.execute(query, (supply_id,))
+		return (items, cur.fetchone()['total'],)
 	
 	@classmethod
 	def get_many_by_product_id(
@@ -87,10 +95,36 @@ class SupplyItemsRepository(
 		product_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[SupplyItem]:
-		return cls.select_many(
+	) -> tuple[list[SupplyItem], int]:
+		items = cls.select_many(
 			cur=cur,
 			equals={SupplyItem.COLUMN_PRODUCT_ID: product_id},
 			limit=limit,
 			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) as total
+			FROM {cls.TABLE}
+			WHERE {SupplyItem.COLUMN_PRODUCT_ID} = %s
+		"""
+		cur.execute(query, (product_id,))
+		return (items, cur.fetchone()['total'],)
+	
+	@classmethod
+	def get_total_price(
+		cls,
+		cur: psycopg.Cursor,
+		supply_id: int
+	) -> Decimal:
+		query = f"""
+			SELECT COALESCE(
+				SUM(si.{SupplyItem.COLUMN_PRICE} * si.{SupplyItem.COLUMN_QUANTITY}),
+					0
+			) AS total
+			FROM {SupplyItem.TABLE} si
+			WHERE si.{SupplyItem.COLUMN_SUPPLY_ID} = %s
+		"""
+		cur.execute(query, (supply_id,))
+		row = cur.fetchone()
+		return Decimal(row["total"])
