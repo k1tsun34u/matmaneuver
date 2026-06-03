@@ -1,4 +1,3 @@
-from app.unset import UNSET
 from app.utils import Utils
 from dataclasses import asdict
 from app.errors.mapper import Mapper
@@ -107,9 +106,9 @@ def update(_, token):
 	if any((phone, email, full_name,)):
 		res = UsersService.update(
 			token=token,
-			phone=phone if phone is not None else UNSET,
-			email=email if email is not None else UNSET,
-			full_name=full_name if full_name is not None else UNSET
+			phone=Utils.value_for_update(phone),
+			email=Utils.value_for_update(email),
+			full_name=Utils.value_for_update(full_name)
 		)
 
 		if res.error:
