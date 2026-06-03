@@ -60,13 +60,21 @@ class WriteOffsRepository(
 		warehouse_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[WriteOff]:
-		return cls.select_many(
+	) -> tuple[list[WriteOff], int]:
+		write_offs = cls.select_many(
 			cur=cur,
 			equals={WriteOff.COLUMN_WAREHOUSE_ID: warehouse_id},
 			limit=limit,
 			offset=offset
 		)
+		
+		query = f"""
+			SELECT COUNT(*) as total
+			FROM {cls.TABLE}
+			WHERE {WriteOff.COLUMN_WAREHOUSE_ID} = %s
+		"""
+		cur.execute(query, (warehouse_id,))
+		return (write_offs, cur.fetchone()['total'],)
 	
 	@classmethod
 	def search(
@@ -108,4 +116,13 @@ class WriteOffsRepository(
 		)
 
 		cur.execute(query, (*params, limit, offset,))
-		return [WriteOff(**row) for row in cur.fetchall()]
+		write_offs = [WriteOff(**row) for row in cur.fetchall()]
+		
+		
+		query = f"""
+			SELECT COUNT(*) as total
+			FROM {cls.TABLE}
+			{Utils.build_where(conditions)}
+		"""
+		cur.execute(query, (*params,))
+		return (write_offs, cur.fetchone()['total'],)
