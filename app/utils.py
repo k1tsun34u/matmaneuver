@@ -6,7 +6,7 @@ import marshmallow
 from math import ceil
 from datetime import date
 from decimal import Decimal
-from app.unset import Unset
+from app.unset import UNSET, Unset
 from os.path import normpath
 from typing import Any, Literal, TypeVar
 
@@ -320,6 +320,14 @@ class Utils:
 			return marshmallow_event_schema.loads(s)
 		except Exception:
 			return None
+	
+	@staticmethod
+	def value_for_update(value: Any) -> Any:
+		if value == "__NONE__":
+			return None
+		if value is None:
+			return UNSET
+		return value
 	
 	@staticmethod
 	def parse_date_from_dict(data: dict[str, Any], key: str) -> date | None:

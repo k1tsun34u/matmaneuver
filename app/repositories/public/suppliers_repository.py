@@ -104,18 +104,32 @@ class SuppliersRepository(
 		search: str | None = None,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[Supplier]:
-		return cls.select_many(
+	) -> tuple[list[Supplier], int]:
+		ilike = (
+			(
+				Supplier.COLUMN_FULL_NAME,
+				Supplier.COLUMN_PHONE,
+				Supplier.COLUMN_EMAIL,
+				Supplier.COLUMN_ADDRESS,
+			),
+			f"%{search}%",
+		) if search else None
+
+		suppliers = cls.select_many(
 			cur=cur,
-			ilike=(
-				(
-					Supplier.COLUMN_FULL_NAME,
-					Supplier.COLUMN_PHONE,
-					Supplier.COLUMN_EMAIL,
-					Supplier.COLUMN_ADDRESS,
-				),
-				f"%{search}%",
-			) if search else None,
+			ilike=ilike,
 			limit=limit,
 			offset=offset
 		)
+
+		conditions, _ = Utils.build_conditions_params(
+			ilike=ilike
+		)
+
+		query = f"""
+			SELECT COUNT(*) as total
+			FROM {cls.TABLE}
+			{Utils.build_where(conditions)}
+		"""
+		cur.execute(query)
+		return (suppliers, cur.fetchone()['total'],)
