@@ -18,5 +18,8 @@ elCreate.addEventListener('click', e => {
 			Products.Delete(response['product_id']);
 			Status.ShowError(error);
 		});
-	}).catch(error => Status.ShowError(error));
+	}).catch(error => {
+		Status.ShowError(error);
+		window.location.href = '/login';
+	});
 });

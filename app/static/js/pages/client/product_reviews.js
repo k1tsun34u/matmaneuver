@@ -15,4 +15,7 @@ Auth.Me().then(response => {
 			// TODO:
 		});
 	}).catch(error => Status.ShowError(error));
-}).catch(error => Status.ShowError(error));
+}).catch(error => {
+	Status.ShowError(error);
+	window.location.href = '/login';
+});

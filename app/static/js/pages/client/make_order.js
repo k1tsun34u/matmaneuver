@@ -33,7 +33,10 @@ Carts.GetItems('ACTIVE').then(response => {
 	});
 
 	elProducts.innerHTML = `Товаров: ${quantity}`;
-}).catch(error => Status.ShowError(error));
+}).catch(error => {
+	Status.ShowError(error);
+	window.location.href = '/login';
+});
 
 elMakeOrder.addEventListener('click', e => {
 	Orders.Create(elDst.value).then(result => {

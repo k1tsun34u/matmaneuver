@@ -28,4 +28,7 @@ Carts.GetItems('ACTIVE').then(result => {
 			window.location.href = '/client/make-order';
 		});
 	}
-}).catch(error => Status.ShowError(error));
+}).catch(error => {
+	Status.ShowError(error);
+	window.location.href = '/login';
+});

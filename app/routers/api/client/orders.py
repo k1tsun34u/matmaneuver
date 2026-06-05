@@ -44,8 +44,8 @@ def create(_, token):
 	
 	if tmp.error:
 		return Mapper.error(tmp.error)
-
-	cart_items = tmp.result
+	
+	cart_items, _ = tmp.result
 	if len(cart_items) == 0:
 		return Mapper.router_error('Корзина пуста', 400)
 
@@ -67,6 +67,7 @@ def create(_, token):
 	order_id, _ = tmp.result
 	added_order_item_ids = []
 	for cart_item in cart_items:
+		print(f"CI: {cart_item}/{cart_items}")
 		tmp = OrdersService.create_item(
 			order_id=order_id,
 			product_id=cart_item.product_id,

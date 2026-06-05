@@ -1,4 +1,4 @@
-from flask import redirect, request
+from flask import redirect, request, url_for
 from functools import wraps
 from app.config import Config
 from datetime import timedelta
@@ -50,8 +50,7 @@ def require_session(func):
 		if auth_header is not None and auth_header.startswith('Bearer '):
 			parts = auth_header.split(" ", 1)
 			if len(parts) != 2:
-				return redirect('/login')
-				# return Mapper.router_error("Недействительная сессия!", 401)
+				return Mapper.router_error("Недействительная сессия!", 401)
 			
 			session = auth_header.split(' ')[1]
 			try:
@@ -62,15 +61,12 @@ def require_session(func):
 				
 				user = tmp.result
 				if user.token_ver != token.token_ver:
-					return redirect('/login')
-					# return Mapper.router_error("Сессия устарела! Выполните повторный вход", 401)
+					return Mapper.router_error("Сессия устарела! Выполните повторный вход", 401)
 				
 				return func(user, token, *args, **kwargs)
 			except InvalidValueError:
-				return redirect('/login')
-				# return Mapper.router_error("Недействительная сессия!", 401)
-		return redirect('/login')
-		# return Mapper.router_error("Требуется авторизация!", 401)
+				return Mapper.router_error("Недействительная сессия!", 401)
+		return Mapper.router_error("Требуется авторизация!", 401)
 	return wrapper
 
 def require_employee_session(func):
@@ -80,21 +76,18 @@ def require_employee_session(func):
 		if auth_header is not None and auth_header.startswith('Bearer '):
 			parts = auth_header.split(" ", 1)
 			if len(parts) != 2:
-				return redirect('/login')
-				#return Mapper.router_error("Недействительная сессия!", 401)
+				return Mapper.router_error("Недействительная сессия!", 401)
 			
 			session = auth_header.split(' ')[1]
 			try:
 				token = SessionManager.decompose_token(session)
 				tmp = UsersService.get_by_id(token.user_id)
 				if tmp.error:
-					return redirect('/login')
-					#return Mapper.error(tmp.error)
+					return Mapper.error(tmp.error)
 				
 				user = tmp.result
 				if user.token_ver != token.token_ver:
-					return redirect('/login')
-					# return Mapper.router_error("Сессия устарела! Выполните повторный вход", 401)
+					return Mapper.router_error("Сессия устарела! Выполните повторный вход", 401)
 				
 				tmp = EmployeesService.get_by_user_id(user_id=user.id)
 				if tmp.error:
@@ -103,8 +96,6 @@ def require_employee_session(func):
 				employee_id = tmp.result.id
 				return func(user, token, employee_id, *args, **kwargs)
 			except InvalidValueError:
-				return redirect('/login')
-				# return Mapper.router_error("Недействительная сессия!", 401)
-		return redirect('/login')
-		# return Mapper.router_error("Требуется авторизация!", 401)
+				return Mapper.router_error("Недействительная сессия!", 401)
+		return Mapper.router_error("Требуется авторизация!", 401)
 	return wrapper

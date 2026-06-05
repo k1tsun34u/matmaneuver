@@ -17,7 +17,10 @@ Auth.Me().then(result => {
 	elPhone.value = user['phone'];
 	elEmail.value = user['email'];
 	elPassword.value = '';
-}).catch(error => Status.ShowError(error));
+}).catch(error => {
+	Status.ShowError(error);
+	window.location.href = '/login';
+});
 
 elUpdate.addEventListener('click', e => {
 	Auth.Update(

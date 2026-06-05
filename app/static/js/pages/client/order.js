@@ -73,5 +73,8 @@ if (sepPos != -1) {
 			elAmount.innerHTML = '<span class="red-bg">Общая стоимость: не удалось получить :(</span>';
 			Status.ShowError(error);
 		});
-	}).catch(error => Status.ShowError(error));
+	}).catch(error => {
+		Status.ShowError(error);
+		window.location.href = '/login';
+	});
 }

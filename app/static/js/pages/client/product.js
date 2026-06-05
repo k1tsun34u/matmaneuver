@@ -57,5 +57,8 @@ if (sepPos != -1) {
 
 			elActions.appendChild(elActionBtn);
 		}).catch(error => Status.ShowError(error));
-	}).catch(error => Status.ShowError(error));
+	}).catch(error => {
+		Status.ShowError(error);
+		window.location.href = '/login';
+	});
 }

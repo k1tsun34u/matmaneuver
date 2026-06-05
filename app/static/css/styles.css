@@ -334,7 +334,8 @@ align-items: center;
 .products-grid {
 	display: grid;
 	grid-auto-flow: row;
-	grid-template-columns: auto;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 16px;
 }
 
 .cart-item-bar {
@@ -359,7 +360,6 @@ align-items: center;
 .cart-product-card,
 .client-product-card,
 .complete-product-card {
-	display: flex;
 	padding: 10px 10px;
 	max-width: 275px;
 	border-radius: 8px;

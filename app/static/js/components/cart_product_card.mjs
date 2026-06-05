@@ -1,8 +1,8 @@
 import Status from '../status.mjs';
 import Carts from '../api/client/carts.mjs';
-import Products from '../api/employee/products.mjs';
-import ProductImages from '../api/employee/product_images.mjs';
-import ProductCategories from '../api/employee/product_categories.mjs';
+import Products from '../api/client/products.mjs';
+import ProductImages from '../api/client/product_images.mjs';
+import ProductCategories from '../api/client/product_categories.mjs';
 import ProductQuantitySelector from './product_quantity_selector.mjs';
 
 
