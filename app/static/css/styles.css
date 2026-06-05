@@ -320,9 +320,9 @@ option:not(option:last-of-type) { border-bottom: none; }
 }
 
 .ccont {
-display: flex;
-justify-content: center;
-align-items: center;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
 .align-text-center {
@@ -334,7 +334,7 @@ align-items: center;
 .products-grid {
 	display: grid;
 	grid-auto-flow: row;
-	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 	gap: 16px;
 }
 
@@ -360,6 +360,7 @@ align-items: center;
 .cart-product-card,
 .client-product-card,
 .complete-product-card {
+	justify-self: start;
 	padding: 10px 10px;
 	max-width: 275px;
 	border-radius: 8px;
