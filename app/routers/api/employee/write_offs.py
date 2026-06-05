@@ -89,7 +89,7 @@ def get(_, __, ___, write_off_id: int):
 	
 	return jsonify({
 		"success": True,
-		"write_off": asdict(ResponseWriteOff(tmp.result))
+		"write_off": asdict(tmp.result)
 	}), 200
 
 @employee_write_offs_bp.get('/by-warehouse/<int:warehouse_id>')
@@ -114,7 +114,7 @@ def by_warehouse(_, __, ___, warehouse_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "write_offs", total_write_offs),
-		"write_offs": [asdict(ResponseWriteOff(write_off)) for write_off in write_offs]
+		"write_offs": [asdict(write_off) for write_off in write_offs]
 	}), 200
 
 @employee_write_offs_bp.get('/search')
@@ -148,7 +148,7 @@ def search(_, __, ___):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "write_offs", total_write_offs),
-		"write_offs": [asdict(ResponseWriteOff(write_off)) for write_off in write_offs]
+		"write_offs": [asdict(write_off) for write_off in write_offs]
 	}), 200
 
 @employee_write_offs_bp.get('/item/<int:write_off_item_id>')
@@ -160,7 +160,7 @@ def get_item(_, __, ___, write_off_item_id: int):
 	
 	return jsonify({
 		"success": True,
-		"item": asdict(ResponseWriteOffItem(tmp.result))
+		"item": asdict(tmp.result)
 	}), 200
 
 @employee_write_offs_bp.get('/items/by-write-off/<int:write_off_id>')
@@ -185,7 +185,7 @@ def get_items_by_write_off(_, __, ___, write_off_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "items", total_items),
-		"items": [asdict(ResponseWriteOffItem(item)) for item in write_off_items]
+		"items": [asdict(item) for item in write_off_items]
 	}), 200
 
 @employee_write_offs_bp.get('/items/by-product/<int:product_id>')
@@ -210,5 +210,5 @@ def get_items_by_product(_, __, ___, product_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "items", total_items),
-		"items": [asdict(ResponseWriteOffItem(item)) for item in write_off_items]
+		"items": [asdict(item) for item in write_off_items]
 	}), 200

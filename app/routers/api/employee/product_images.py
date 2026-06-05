@@ -19,10 +19,12 @@ employee_product_images_bp = Blueprint(
 @employee_product_images_bp.post('/create-many/<int:product_id>')
 @require_employee_session
 def create_many(_, __, cur_emp_id: int, product_id: int):
-	file_keys = sorted(
-		[key for key in request.files if key.startswith('img-')],
-		key=lambda x: int(x.split('-')[1])
-	)
+	# file_keys = sorted(
+	# 	[key for key in request.files],
+	# 	key=lambda x: int(x.split('-')[1])
+	# )
+
+	file_keys = [key for key in request.files]
 
 	if not file_keys:
 		return Mapper.router_error('Неверный запрос!', 400)
@@ -111,7 +113,7 @@ def get(_, __, ___, product_image_id: int):
 	
 	return jsonify({
 		"success": True,
-		"image": asdict(ResponseProductImage(tmp.result))
+		"image": asdict(tmp.result)
 	}), 200
 
 @employee_product_images_bp.get('/by-storage-key/<string:storage_key>')
@@ -123,7 +125,7 @@ def by_storage_key(_, __, ___, storage_key: str):
 	
 	return jsonify({
 		"success": True,
-		"image": asdict(ResponseProductImage(tmp.result))
+		"image": asdict(tmp.result)
 	}), 200
 
 @employee_product_images_bp.get('/by-product/<int:product_id>')
@@ -135,7 +137,7 @@ def by_product(_, __, ___, product_id: int):
 	
 	return jsonify({
 		"success": True,
-		"images": [asdict(ResponseProductImage(product_image)) for product_image in tmp.result]
+		"images": [asdict(product_image) for product_image in tmp.result]
 	}), 200
 
 @employee_product_images_bp.get('/by-employee/<int:employee_id>')
@@ -160,5 +162,5 @@ def by_employee(_, __, ___, employee_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, 'images', total_images),
-		"images": [asdict(ResponseProductImage(product_image)) for product_image in product_images]
+		"images": [asdict(product_image) for product_image in product_images]
 	}), 200

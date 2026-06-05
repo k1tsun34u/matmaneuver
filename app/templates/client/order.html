@@ -1,0 +1,24 @@
+{% extends "base-client.html" %}
+
+{% block title %}Заказ{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/client/order.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<h1 id="order_name">Заказ ?</h1>
+	<p style="display: none;">ID: {{ order_id }}</p>
+	<p id="status">Статус: ?</p>
+	<p id="created_at">Создан: ?</p>
+	<p id="address">Адрес доставки: ?</p>
+	<p id="amount">Общая стоимость: ?</p>
+	<span id="actions" class="vcont"></span>
+
+	<h2>Содержимое заказа:</h2>
+	<hr/>
+
+	<div id="tgt">
+		<p>Пусто...</p>
+	</div>
+	<hr/>
+{% endblock %}

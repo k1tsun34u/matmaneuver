@@ -23,42 +23,45 @@ class Mapper:
 	
 	@classmethod
 	def invalid_value_error(cls, error: InvalidValueError) -> tuple[Response, str]:
-		match error.entity:
-			case DbUser.ENTITY:
-				match error.column:
-					case DbUser.COLUMN_PHONE:
-						return Mapper.router_error("Неверный номер телефона!", 400)
-					case DbUser.COLUMN_EMAIL:
-						return Mapper.router_error("Неверная почта!", 400)
-					case DbUser.COLUMN_FULL_NAME:
-						return Mapper.router_error("Неверное полное имя!", 400)
-					case DbUser.COLUMN_PASSWORD_HASH:
-						return Mapper.router_error("Неверный пароль!", 400)
-		return cls.internal_server_error()
+		return Mapper.router_error('Неверное значение!', 400)
+		# match error.entity:
+		# 	case DbUser.ENTITY:
+		# 		match error.column:
+		# 			case DbUser.COLUMN_PHONE:
+		# 				return Mapper.router_error("Неверный номер телефона!", 400)
+		# 			case DbUser.COLUMN_EMAIL:
+		# 				return Mapper.router_error("Неверная почта!", 400)
+		# 			case DbUser.COLUMN_FULL_NAME:
+		# 				return Mapper.router_error("Неверное полное имя!", 400)
+		# 			case DbUser.COLUMN_PASSWORD_HASH:
+		# 				return Mapper.router_error("Неверный пароль!", 400)
+		# return cls.internal_server_error()
 	
 	@classmethod
 	def not_found_error(cls, error: NotFoundError) -> tuple[Response, str]:
-		match error.entity:
-			case DbUser.ENTITY:
-				match error.column:
-					case DbUser.COLUMN_ID:
-						return Mapper.router_error("Пользователь не найден!", 401)
-					case DbUser.COLUMN_PHONE:
-						return Mapper.router_error("Пользователь с таким номером не найден!", 401)
-					case DbUser.COLUMN_EMAIL:
-						return Mapper.router_error("Пользователь с такой почтой не найден!", 401)
-		return cls.internal_server_error()
+		return Mapper.router_error('Не найдено!', 401)
+		# match error.entity:
+		# 	case DbUser.ENTITY:
+		# 		match error.column:
+		# 			case DbUser.COLUMN_ID:
+		# 				return Mapper.router_error("Пользователь не найден!", 401)
+		# 			case DbUser.COLUMN_PHONE:
+		# 				return Mapper.router_error("Пользователь с таким номером не найден!", 401)
+		# 			case DbUser.COLUMN_EMAIL:
+		# 				return Mapper.router_error("Пользователь с такой почтой не найден!", 401)
+		# return cls.internal_server_error()
 	
 	@classmethod
 	def already_exists_error(cls, error: AlreadyExistsError) -> tuple[Response, str]:
-		match error.entity:
-			case DbUser.ENTITY:
-				match error.column:
-					case DbUser.COLUMN_PHONE:
-						return Mapper.router_error("Пользователь с таким номером уже существует!", 409)
-					case DbUser.COLUMN_EMAIL:
-						return Mapper.router_error("Пользователь с такой почтой уже существует!", 409)
-		return cls.internal_server_error()
+		return Mapper.router_error('Уже существует!', 409)
+		# match error.entity:
+		# 	case DbUser.ENTITY:
+		# 		match error.column:
+		# 			case DbUser.COLUMN_PHONE:
+		# 				return Mapper.router_error("Пользователь с таким номером уже существует!", 409)
+		# 			case DbUser.COLUMN_EMAIL:
+		# 				return Mapper.router_error("Пользователь с такой почтой уже существует!", 409)
+		# return cls.internal_server_error()
 
 	@staticmethod
 	def router_error(message: str, code: int) -> tuple[Response, str]:

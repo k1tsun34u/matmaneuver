@@ -1,0 +1,33 @@
+{% extends "base-client.html" %}
+
+{% block title %}Просмотр товара{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/client/product.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<h1>Просмотр товара</h1>
+	<div class="hcont">
+		<img id="product_img" src="/image/question.svg"/>
+		<div class="vcont">
+			<p id="product_name">Название: ?</p>
+			<p id="product_description">Описание: ?</p>
+			<p id="product_price">Цена: ?</p>
+			<span id="product_actions"></span>
+		</div>
+	</div>
+
+	<h2>Отзывы:</h2>
+	<hr/>
+
+	<div id="tgt" class="vcont">
+		<p>Пусто...</p>
+	</div>
+	
+	<hr/>
+	<div class="hcont">
+		<button id="prev_pg">&lt;</button>
+		<p id="page_number" style="min-width: 80%;">Страница: 1</p>
+		<button id="next_pg">&gt;</button>
+	</div>
+{% endblock %}

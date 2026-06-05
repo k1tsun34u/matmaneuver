@@ -2,11 +2,11 @@ from enum import StrEnum
 
 
 class PaymentMethod(StrEnum):
-	CASH = "cash"
+	CASH = "CASH"
 	"""Наличные"""
 
-	CARD = "card"
+	CARD = "CARD"
 	"""Банковская карта"""
 
-	SBP = "sbp"
+	SBP = "SBP"
 	"""Система Быстрых Платежей"""

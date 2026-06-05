@@ -42,7 +42,7 @@ class WriteOffsRepository(
 			table=cls.TABLE,
 			fields={
 				WriteOff.COLUMN_WAREHOUSE_ID: warehouse_id,
-				WriteOff.COLUMN_REASON: reason,
+				WriteOff.COLUMN_REASON: reason.value,
 				WriteOff.COLUMN_COMMENT: comment,
 				WriteOff.COLUMN_CREATED_BY: created_by
 			},
@@ -99,7 +99,7 @@ class WriteOffsRepository(
 			params.append(warehouse_id)
 		if reason is not None:
 			conditions.append(f"{WriteOff.COLUMN_REASON} = %s")
-			params.append(reason)
+			params.append(reason.value)
 		if created_from is not None:
 			conditions.append(f"{WriteOff.COLUMN_CREATED_AT} >= %s")
 			params.append(datetime.combine(created_from, time.min))

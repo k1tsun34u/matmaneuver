@@ -1,5 +1,7 @@
+import mimetypes
+from app.config import Config
 from app.db import Db
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, send_from_directory
 from app.routers.api.client.auth import client_auth_bp
 from app.routers.api.client.products import client_products_bp
 from app.routers.api.client.product_categories import client_product_categories_bp
@@ -28,6 +30,9 @@ from app.routers.api.employee.supplies import employee_supplies_bp
 
 Db.init("localhost", 5432, "matmaneuver", "postgres")
 
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('application/javascript', '.mjs')
+mimetypes.add_type('text/css', '.css')
 app = Flask(__name__)
 app.json.ensure_ascii = False
 app.register_blueprint(client_auth_bp)
@@ -55,6 +60,74 @@ app.register_blueprint(employee_products_bp)
 app.register_blueprint(employee_suppliers_bp)
 app.register_blueprint(employee_supplies_bp)
 
-@app.route("/")
-def main():
+@app.route("/client")
+def client():
 	return render_template("client/index.html")
+
+@app.route("/")
+def default():
+	return redirect('/client')
+
+@app.route("/client/index")
+def client_index():
+	return redirect('/client')
+
+@app.route("/login")
+def login():
+	return render_template("login.html")
+
+@app.route("/client/register")
+def client_register():
+	return render_template("client/register.html")
+
+@app.route("/client/profile")
+def client_profile():
+	return render_template("client/profile.html")
+
+@app.route("/client/cart")
+def client_cart():
+	return render_template("client/cart.html")
+
+@app.route("/client/wishlist")
+def client_wishlist():
+	return render_template("client/wishlist.html")
+
+@app.route("/client/orders")
+def client_orders():
+	return render_template("client/orders.html")
+
+@app.route("/client/order_payments")
+def client_order_payments():
+	return render_template("client/order_payments.html")
+
+@app.route("/client/product_reviews")
+def client_product_reviews():
+	return render_template("client/product_reviews.html")
+
+@app.route("/employee")
+def employee():
+	return render_template("employee/index.html")
+
+@app.route("/employee/products")
+def employee_products():
+	return render_template("employee/products.html")
+
+@app.route("/employee/create-product")
+def employee_create_product():
+	return render_template("employee/create_product.html")
+
+@app.route('/client/make-order')
+def client_make_order():
+	return render_template("client/make_order.html")
+
+@app.route('/client/order/<int:order_id>')
+def client_order(order_id: int):
+	return render_template("client/order.html", order_id=order_id)
+
+@app.route('/client/product/<int:product_id>')
+def client_product(product_id: int):
+	return render_template("client/product.html", product_id=product_id)
+
+@app.route('/image/<path:filename>')
+def get_image(filename):
+	return send_from_directory(Config.PATH_IMAGES, filename)

@@ -101,7 +101,7 @@ def get(_, __, ___, order_fulfillment_id: int):
 	
 	return jsonify({
 		"success": True,
-		"fulfillment": asdict(ResponseOrderFulfillment(tmp.result))
+		"fulfillment": asdict(tmp.result)
 	}), 200
 	
 @employee_order_fulfillments_bp.get('/by-order/<int:order_id>')
@@ -126,7 +126,7 @@ def by_order(_, __, ___, order_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "fulfillments", total_fulfillments),
-		"fulfillments": [asdict(ResponseOrderFulfillment(fulfillment)) for fulfillment in order_fulfillments]
+		"fulfillments": [asdict(fulfillment) for fulfillment in order_fulfillments]
 	}), 200
 	
 @employee_order_fulfillments_bp.get('/by-warehouse/<int:warehouse_id>')
@@ -151,7 +151,7 @@ def by_warehouse(_, __, ___, warehouse_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "fulfillments", total_fulfillments),
-		"fulfillments": [asdict(ResponseOrderFulfillment(fulfillment)) for fulfillment in order_fulfillments]
+		"fulfillments": [asdict(fulfillment) for fulfillment in order_fulfillments]
 	}), 200
 
 @employee_order_fulfillments_bp.get('/item/<int:order_fulfillment_item_id>')
@@ -163,7 +163,7 @@ def get_item(_, __, ___, order_fulfillment_item_id: int):
 	
 	return jsonify({
 		"success": True,
-		"item": asdict(ResponseOrderFulfillmentItem(tmp.result))
+		"item": asdict(tmp.result)
 	}), 200
 
 @employee_order_fulfillments_bp.get('/items/by-order-fulfillment/<int:order_fulfillment_id>')
@@ -188,7 +188,7 @@ def get_items_by_order_fulfillment(_, __, ___, order_fulfillment_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "items", total_items),
-		"items": [asdict(ResponseOrderFulfillmentItem(item)) for item in fulfillment_items]
+		"items": [asdict(item) for item in fulfillment_items]
 	}), 200
 
 @employee_order_fulfillments_bp.get('/items/by-product/<int:product_id>')
@@ -213,7 +213,7 @@ def get_items_by_product(_, __, ___, product_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "items", total_items),
-		"items": [asdict(ResponseOrderFulfillmentItem(item)) for item in fulfillment_items]
+		"items": [asdict(item) for item in fulfillment_items]
 	}), 200
 
 @employee_order_fulfillments_bp.get('/fulfilled-quantity/<int:order_id>/<int:product_id>')

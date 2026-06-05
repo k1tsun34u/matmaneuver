@@ -1,0 +1,26 @@
+{% extends "base-client.html" %}
+
+{% block title %}Вход{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/login.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<div class="ccont">
+		<div class="vcont">
+			<h1>Вход</h1>
+			<div class="hcont">
+				<label for="phone_or_email">Телефон:</label>
+				<input id="phone_or_email" name="phone_or_email" type="text" placeholder="+71234567890" required>
+			</div>
+			<div class="hcont">
+				<label for="password">Пароль:</label>
+				<input id="password" name="password" type="password" placeholder="..." required>
+			</div>
+			<button id="login" class="green-bg">Войти</button>
+			<a class="btn" href="/client/register">Зарегистрироваться</a>
+			<hr/>
+			<button id="login_employee">Войти как сотрудник</button>
+		</div>
+	</div>
+{% endblock %}

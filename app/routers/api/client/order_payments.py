@@ -78,3 +78,28 @@ def by_order(_, token, order_id: int):
 		'pagination': Utils.build_pagination_dict(offset, limit, page, 'payments', total_payments),
 		"payments": [asdict(payment) for payment in payments]
 	}), 200
+
+@client_order_payments_bp.get('/my')
+@require_session
+def my(_, token):
+	data = request.args.to_dict()
+	page = Utils.parse_int_from_dict(data, 'page')
+	if page is None or page < 0:
+		page = 0
+	
+	limit, offset = Utils.page_to_limit_offset(page)
+	tmp = OrderPaymentsService.get_many_by_user_id(
+		user_id=token.user_id,
+		limit=limit,
+		offset=offset
+	)
+
+	if tmp.error:
+		return Mapper.error(tmp.error)
+	
+	payments, total_payments = tmp.result
+	return jsonify({
+		"success": True,
+		'pagination': Utils.build_pagination_dict(offset, limit, page, 'payments', total_payments),
+		"payments": [asdict(payment) for payment in payments]
+	}), 200

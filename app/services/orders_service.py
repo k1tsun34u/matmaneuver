@@ -183,6 +183,7 @@ class OrdersService(BaseService):
 		cls,
 		cur: psycopg.Cursor,
 		search: str | None = None,
+		user_id: int | None = None,
 		status: OrderStatus | None = None,
 		created_from: date | None = None,
 		created_to: date | None = None,
@@ -198,6 +199,7 @@ class OrdersService(BaseService):
 			result=OrdersRepository.search(
 				cur=cur,
 				search=search,
+				user_id=user_id,
 				status=status,
 				created_from=created_from,
 				created_to=created_to,
@@ -297,7 +299,7 @@ class OrdersService(BaseService):
 		cls,
 		cur: psycopg.Cursor,
 		order_id: int,
-		limit: int = 50,
+		limit: int | None = 50,
 		offset: int = 0
 	) -> ServiceResult:
 		"""

@@ -22,7 +22,7 @@ def get(_, __, ___, order_payment_id: int):
 	
 	return jsonify({
 		"success": True,
-		"payment": asdict(ResponseOrderPayment(tmp.result))
+		"payment": asdict(tmp.result)
 	}), 200
 
 @employee_order_payments_bp.get('/by-order/<int:order_id>')
@@ -47,7 +47,7 @@ def by_order(_, __, ___, order_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "payments", total_payments),
-		"payments": [asdict(ResponseOrderPayment(payment)) for payment in order_payments]
+		"payments": [asdict(payment) for payment in order_payments]
 	}), 200
 
 @employee_order_payments_bp.get('/is-fully-paid/<int:order_id>')

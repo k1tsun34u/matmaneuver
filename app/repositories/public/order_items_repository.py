@@ -86,7 +86,7 @@ class OrderItemsRepository(
 		cls,
 		cur: psycopg.Cursor,
 		order_id: int,
-		limit: int = 50,
+		limit: int | None = 50,
 		offset: int = 0
 	) -> tuple[list[OrderItem], int]:
 		items = cls.select_many(

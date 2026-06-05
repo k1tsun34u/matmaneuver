@@ -20,23 +20,23 @@ export default class Carts {
 	}
 
 	static RemoveItem(cart_type, product_id) {
-		return Fetch.DeleteJson(
+		return Fetch.PostJson(
 			`${Carts.URL_PREFIX}/remove-item`,
 			{cart_type, product_id}, Cookies.Get('session')
 		);
 	}
 
 	static RemoveItems(cart_type) {
-		return Fetch.DeleteJson(
+		return Fetch.PostJson(
 			`${Carts.URL_PREFIX}/remove-items`,
 			{cart_type}, Cookies.Get('session')
 		);
 	}
 
-	static GetItems(cart_type) {
+	static GetItems(cart_type, page=null, allItems=true) {
 		return Fetch.GetJson(
-			Carts.URL_PREFIX,
-			{cart_type}, Cookies.Get('session')
+			`${Carts.URL_PREFIX}/${cart_type}`,
+			{page, all_items: allItems}, Cookies.Get('session')
 		);
 	}
 }

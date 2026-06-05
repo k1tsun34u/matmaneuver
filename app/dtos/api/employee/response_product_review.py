@@ -1,11 +1,4 @@
-from datetime import datetime
-from dataclasses import dataclass
+from app.models.public.product_review import ProductReview
 
 
-@dataclass
-class ResponseProductReview:
-	product_id: int
-	user_id: int
-	rating: int
-	comment: str | None
-	created_at: datetime
+ResponseProductReview = ProductReview

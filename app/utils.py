@@ -95,12 +95,16 @@ class Utils:
 		items_name: str,
 		total_items: int
 	) -> str:
+		total_pages = 1
+		if limit is not None:
+			total_pages = ceil(total_items / limit) if limit > 0 else 0
+		
 		return {
 			'offset': offset,
 			'limit': limit,
 			'page': page,
 			f'total_{items_name}': total_items,
-			'total_pages': ceil(total_items / limit) if limit > 0 else 0
+			'total_pages': total_pages
 		}
 	
 	@staticmethod
@@ -197,7 +201,7 @@ class Utils:
 	
 	@staticmethod
 	def is_valid_storage_key(norm_storage_key: str) -> bool:
-		pattern = r"^[a-zA-Z0-9_-]+"
+		pattern = r"^[a-zA-Z0-9_\.-]+"
 		return (
 			norm_storage_key
 			and bool(re.fullmatch(pattern, norm_storage_key))
@@ -205,7 +209,7 @@ class Utils:
 	
 	@staticmethod
 	def is_valid_track_number(norm_track_number: str) -> bool:
-		pattern = r"^\w+(?:-\w)*$"
+		pattern = r"^TRK\d+\-[A-Z\d]+$"
 		return (
 			norm_track_number
 			and bool(re.fullmatch(pattern, norm_track_number))
@@ -239,7 +243,7 @@ class Utils:
 			return None
 		
 		value = data.get(key)
-		if not isinstance(value, str):
+		if not isinstance(value, str) or not len(value):
 			return None
 		
 		return value
@@ -317,8 +321,10 @@ class Utils:
 	@staticmethod
 	def str_to_date(s: str) -> date | None:
 		try:
-			return marshmallow_event_schema.loads(s)
-		except Exception:
+			tmp = {'event_date': s}
+			tmp = marshmallow_event_schema.load(tmp)
+			return tmp['event_date']
+		except Exception as e:
 			return None
 	
 	@staticmethod
@@ -332,7 +338,10 @@ class Utils:
 	@staticmethod
 	def parse_date_from_dict(data: dict[str, Any], key: str) -> date | None:
 		s = Utils.parse_str_from_dict(data, key)
-		return Utils.str_to_date(s) if s is not None else None
+		if s is not None:
+			res = Utils.str_to_date(s)
+			return res
+		return None
 	
 	@staticmethod
 	def gen_str(length: int, chars=string.ascii_uppercase + string.digits):

@@ -77,10 +77,10 @@ def dec(_, token):
 	
 	return jsonify({"success": True}), 200
 
-@client_carts_bp.delete('/remove-item')
+@client_carts_bp.post('/remove-item')
 @require_session
 def remove_item(_, token):
-	data = request.args.to_dict()
+	data = request.get_json()
 	cart_type = Utils.parse_str_enum_from_dict(data, 'cart_type', CartType)
 	product_id = Utils.parse_int_from_dict(data, 'product_id')
 	if cart_type is None or product_id is None:
@@ -100,10 +100,10 @@ def remove_item(_, token):
 	
 	return jsonify({"success": True}), 200
 
-@client_carts_bp.delete('/remove-items')
+@client_carts_bp.post('/remove-items')
 @require_session
 def remove_items(_, token):
-	data = request.args.to_dict()
+	data = request.get_json()
 	cart_type = Utils.parse_str_enum_from_dict(data, 'cart_type', CartType)
 	if cart_type is None:
 		return Mapper.router_error('Неверный запрос!', 400)
@@ -121,15 +121,32 @@ def remove_items(_, token):
 @client_carts_bp.get('/<string:cart_type>')
 @require_session
 def get_items(_, token, cart_type: str):
+	data = request.args.to_dict()
+	all_items = Utils.parse_bool_from_dict(data, 'all_items')
+	page = Utils.parse_int_from_dict(data, 'page')
+	if all_items is None:
+		all_items = False
+	
+	if all_items:
+		page = None
+	
 	cart, error = _get_cart(token.user_id, Utils.parse_enum_from_str(cart_type, CartType))
 	if error:
 		return error
-	
-	tmp = CartsService.get_items_by_cart_id(cart_id=cart.id)
+
+	limit, offset = Utils.page_to_limit_offset(page) if page is not None else (None, 0,)
+	tmp = CartsService.get_items_by_cart_id(
+		cart_id=cart.id,
+		limit=limit,
+		offset=offset
+	)
+
 	if tmp.error:
 		return Mapper.error(tmp.error)
 	
+	cart_items, total_items = tmp.result
 	return jsonify({
 		"success": True,
-		"items": [asdict(ResponseCartItem(item)) for item in tmp.result]
+		'pagination': Utils.build_pagination_dict(offset, limit, page, 'items', total_items),
+		"items": [asdict(item) for item in cart_items]
 	}), 200

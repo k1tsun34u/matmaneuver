@@ -130,7 +130,7 @@ def get(_, __, ___, supply_id: int):
 	
 	return jsonify({
 		"success": True,
-		"supply": asdict(ResponseSupply(tmp.result))
+		"supply": asdict(tmp.result)
 	}), 200
 
 @employee_supplies_bp.get('/by-supplier/<int:supplier_id>')
@@ -155,7 +155,7 @@ def by_supplier(_, __, ___, supplier_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "supplies", total_supplies),
-		"supplies": [asdict(ResponseSupply(supply)) for supply in supplies]
+		"supplies": [asdict(supply) for supply in supplies]
 	}), 200
 
 @employee_supplies_bp.get('/by-warehouse/<int:warehouse_id>')
@@ -180,7 +180,7 @@ def by_warehouse(_, __, ___, warehouse_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "supplies", total_supplies),
-		"supplies": [asdict(ResponseSupply(supply)) for supply in supplies]
+		"supplies": [asdict(supply) for supply in supplies]
 	}), 200
 
 @employee_supplies_bp.get('/search')
@@ -214,7 +214,7 @@ def search(_, __, ___):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "supplies", total_supplies),
-		"supplies": [asdict(ResponseSupply(supply)) for supply in supplies]
+		"supplies": [asdict(supply) for supply in supplies]
 	}), 200
 
 @employee_supplies_bp.get('/item/<int:supply_item_id>')
@@ -226,7 +226,7 @@ def get_item(_, __, ___, supply_item_id: int):
 	
 	return jsonify({
 		"success": True,
-		"item": asdict(ResponseSupplyItem(tmp.result))
+		"item": asdict(tmp.result)
 	}), 200
 
 @employee_supplies_bp.get('/items/by-supply/<int:supply_id>')
@@ -251,7 +251,7 @@ def get_items_by_supply_id(_, __, ___, supply_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "items", total_items),
-		"items": [asdict(ResponseSupplyItem(item)) for item in supply_items]
+		"items": [asdict(item) for item in supply_items]
 	}), 200
 
 @employee_supplies_bp.get('/items/by-product/<int:product_id>')
@@ -276,7 +276,7 @@ def get_items_by_product_id(_, __, ___, product_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "items", total_items),
-		"items": [asdict(ResponseSupplyItem(item)) for item in supply_items]
+		"items": [asdict(item) for item in supply_items]
 	}), 200
 
 @employee_supplies_bp.get('/total-price/<int:supply_id>')

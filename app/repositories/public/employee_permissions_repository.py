@@ -45,4 +45,4 @@ class EmployeePermissionsRepository(BaseRepository):
 			)
 		"""
 		cur.execute(query, (employee_id, code,))
-		return bool(cur.fetchone()[0])
+		return bool(cur.fetchone()['exists'])

@@ -36,7 +36,12 @@ def create(_, token):
 		return Mapper.error(tmp.error)
 
 	cart = tmp.result
-	tmp = CartsService.get_items_by_cart_id(cart_id=cart.id)
+	tmp = CartsService.get_items_by_cart_id(
+		cart_id=cart.id,
+		limit=None,
+		offset=0
+	)
+	
 	if tmp.error:
 		return Mapper.error(tmp.error)
 
@@ -90,6 +95,11 @@ def create(_, token):
 @client_orders_bp.post('/pay/<int:order_id>')
 @require_session
 def pay(_, token, order_id: int):
+	data = request.get_json()
+	amount = Utils.parse_decimal_from_dict(data, 'amount')
+	if amount is None:
+		return Mapper.router_error('Неверный запрос!', 400)
+	
 	tmp = OrdersService.get_by_id(order_id=order_id)
 	if tmp.error:
 		return Mapper.error(tmp.error)
@@ -97,15 +107,10 @@ def pay(_, token, order_id: int):
 	order = tmp.result
 	if order.created_by != token.user_id:
 		return Mapper.router_error("Это не ваш заказ!", 403)
-	
-	tmp = OrdersService.get_total_price(order_id=order.id)
-	if tmp.error:
-		return Mapper.error(tmp.error)
 
-	# warning: TODO: stub
 	tmp = OrderPaymentsService.create(
 		order_id=order_id,
-		amount=tmp.result,
+		amount=amount,
 		payment_method=PaymentMethod.CARD
 	)
 
@@ -174,7 +179,7 @@ def by_track_number(track_number: str):
 	if tmp.error:
 		return Mapper.error(tmp.error)
 
-	order = asdict(ResponseOrder(order))
+	order = asdict(order)
 	
 	items, total_items = tmp.result
 	order["items"] = [asdict(order_item) for order_item in items]
@@ -202,43 +207,43 @@ def get(_, token, order_id: int):
 	
 	total_price = tmp.result
 
-	data = request.args.to_dict()
-	page = Utils.parse_int_from_dict(data, 'page')
-	if page is None or page < 0:
-		page = 0
-
-	limit, offset = Utils.page_to_limit_offset(page)
 	tmp = OrdersService.get_items_by_order_id(
 		order_id=order.id,
-		limit=limit,
-		offset=offset
+		limit=None
 	)
 
 	if tmp.error:
 		return Mapper.error(tmp.error)
 
-	order = asdict(ResponseOrder(order))
+	order = asdict(order)
 	
-	items, total_items = tmp.result
+	items, _ = tmp.result
 	order["items"] = [asdict(order_item) for order_item in items]
 	return jsonify({
 		"success": True,
-		'pagination': Utils.build_pagination_dict(offset, limit, page, 'items', total_items),
 		"order": order,
 		"total_price": total_price
 	}), 200
 
-@client_orders_bp.get('/my')
+@client_orders_bp.get('search')
 @require_session
-def my(_, token):
+def search(_, token):
 	data = request.args.to_dict()
+	search_str = Utils.parse_str_from_dict(data, 'search')
+	status = Utils.parse_str_enum_from_dict(data, 'status', OrderStatus)
+	created_from = Utils.parse_date_from_dict(data, 'created_from')
+	created_to = Utils.parse_date_from_dict(data, 'created_to')
 	page = Utils.parse_int_from_dict(data, 'page')
 	if page is None or page < 0:
 		page = 0
 	
 	limit, offset = Utils.page_to_limit_offset(page)
-	tmp = OrdersService.get_many_by_user_id(
+	tmp = OrdersService.search(
+		search=search_str,
 		user_id=token.user_id,
+		status=status,
+		created_from=created_from,
+		created_to=created_to,
 		limit=limit,
 		offset=offset
 	)
@@ -250,5 +255,25 @@ def my(_, token):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, 'orders', total_orders),
-		"orders": [asdict(ResponseOrder(order)) for order in orders]
+		"orders": [asdict(order) for order in orders]
+	}), 200
+
+@client_orders_bp.get('/total-price/<int:order_id>')
+@require_session
+def get_total_price(_, token, order_id: int):
+	tmp = OrdersService.get_by_id(order_id=order_id)
+	if tmp.error:
+		return Mapper.error(tmp.error)
+	
+	order = tmp.result
+	if order.created_by != token.user_id:
+		return Mapper.router_error('Это не ваш заказ!', 403)
+
+	tmp = OrdersService.get_total_price(order_id=order_id)
+	if tmp.error:
+		return Mapper.error(tmp.error)
+
+	return jsonify({
+		"success": True,
+		"total_price": tmp.result
 	}), 200

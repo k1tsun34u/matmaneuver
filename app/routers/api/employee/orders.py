@@ -43,7 +43,7 @@ def get(_, __, ___, order_id: int):
 	
 	return jsonify({
 		"success": True,
-		"order": asdict(ResponseOrder(tmp.result))
+		"order": asdict(tmp.result)
 	}), 200
 
 @employee_orders_bp.get('/by-track-number/<string:track_number>')
@@ -55,7 +55,7 @@ def by_track_number(_, __, ___, track_number: str):
 	
 	return jsonify({
 		"success": True,
-		"order": asdict(ResponseOrder(tmp.result))
+		"order": asdict(tmp.result)
 	}), 200
 
 @employee_orders_bp.get('/by-user/<int:user_id>')
@@ -80,7 +80,7 @@ def by_user(_, __, ___, user_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, 'orders', total_orders),
-		"orders": [asdict(ResponseOrder(order)) for order in orders]
+		"orders": [asdict(order) for order in orders]
 	}), 200
 
 @employee_orders_bp.get('/search')
@@ -112,7 +112,7 @@ def search(_, __, ___):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, 'orders', total_orders),
-		"orders": [asdict(ResponseOrder(order)) for order in orders]
+		"orders": [asdict(order) for order in orders]
 	}), 200
 
 @employee_orders_bp.get('/total-price/<int:order_id>')
@@ -151,5 +151,5 @@ def get_status_history(_, __, ___, order_id: int):
 	statuses = tmp.result
 	return jsonify({
 		"success": True,
-		"statuses": [asdict(ResponseOrderStatusHistory(status)) for status in statuses]
+		"statuses": [asdict(status) for status in statuses]
 	}), 200

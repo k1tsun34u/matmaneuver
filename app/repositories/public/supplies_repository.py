@@ -44,7 +44,7 @@ class SuppliesRepository(
 			fields={
 				Supply.COLUMN_SUPPLIER_ID: supplier_id,
 				Supply.COLUMN_WAREHOUSE_ID: warehouse_id,
-				Supply.COLUMN_CURRENT_STATUS: SupplyStatus.CREATED,
+				Supply.COLUMN_CURRENT_STATUS: SupplyStatus.CREATED.value,
 				Supply.COLUMN_PLANNED_DELIVERY_DATE: planned_delivery_date,
 				Supply.COLUMN_CREATED_BY: created_by
 			},
@@ -62,7 +62,7 @@ class SuppliesRepository(
 			cur=cur,
 			identity_where={Supply.COLUMN_ID: supply_id},
 			condition_where={},
-			fields={Supply.COLUMN_CURRENT_STATUS: status}
+			fields={Supply.COLUMN_CURRENT_STATUS: status.value}
 		)
 	
 	@classmethod
@@ -153,7 +153,7 @@ class SuppliesRepository(
 		params = []
 		if status is not None:
 			conditions.append(f"{Supply.COLUMN_CURRENT_STATUS} = %s")
-			params.append(status)
+			params.append(status.value)
 		if created_from is not None:
 			conditions.append(f"{Supply.COLUMN_CREATED_AT} >= %s")
 			params.append(datetime.combine(created_from, time.min))

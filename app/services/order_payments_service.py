@@ -104,6 +104,29 @@ class OrderPaymentsService(BaseService):
 	
 	@classmethod
 	@BaseService.transaction
+	def get_many_by_user_id(
+		cls,
+		cur: psycopg.Cursor,
+		user_id: int,
+		limit: int = 50,
+		offset: int = 0
+	) -> ServiceResult:
+		"""
+			Errors:
+			- UnhandledError
+		"""
+
+		return ServiceResult(
+			result=OrderPaymentsRepository.get_many_by_user_id(
+				cur=cur,
+				user_id=user_id,
+				limit=limit,
+				offset=offset
+			)
+		)
+	
+	@classmethod
+	@BaseService.transaction
 	def is_fully_paid(
 		cls,
 		cur: psycopg.Cursor,

@@ -88,7 +88,7 @@ def get(_, __, ___, category_id: int):
 	
 	return jsonify({
 		"success": True,
-		"category": asdict(ResponseCategory(tmp.result))
+		"category": asdict(tmp.result)
 	}), 200
 
 @employee_categories_bp.get('/by-name/<string:name>')
@@ -100,7 +100,7 @@ def by_name(_, __, ___, name: str):
 	
 	return jsonify({
 		"success": True,
-		"category": asdict(ResponseCategory(tmp.result))
+		"category": asdict(tmp.result)
 	}), 200
 
 @employee_categories_bp.get('/search')
@@ -130,5 +130,5 @@ def search(_, __, ___):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, 'categories', total_categories),
-		"categories": [asdict(ResponseCategory(category)) for category in categories]
+		"categories": [asdict(category) for category in categories]
 	}), 200

@@ -1,0 +1,37 @@
+{% extends "base-client.html" %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+	<h1>Это h1</h1>
+	<h2>Это h2</h2>
+	<p>Это p</p>
+	<div class="hcont">
+		<input type="text" placeholder="Это input[type=text]"/>
+		<input type="email" placeholder="Это input email" />
+		<input type="file" />
+	</div>
+	<div class="vcont">
+		<p>1</p>
+		<hr/>
+		<p>2</p>
+	</div>
+		<input type="number" />
+	<label class="cb-lbl">Это checkbox
+		<input type="checkbox" />
+		<span class="cb-mark"></span>
+	</label>
+	<textarea rows="4" cols="80">Это textarea</textarea>
+	<a class="btn" href="#">Это ссылка</a>
+	<button>Это кнопка</button>
+
+	<label for="sel1">Это выбор:</label>
+	<select>
+		<button>
+			<selectedcontent></selectedcontent>
+		</button>
+
+		<option value="1">1</option>
+		<option value="2">2</option>
+	</select>
+{% endblock %}

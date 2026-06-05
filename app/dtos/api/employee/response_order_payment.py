@@ -1,12 +1,4 @@
-from decimal import Decimal
-from datetime import datetime
-from dataclasses import dataclass
-from app.types.payment_method import PaymentMethod
+from app.models.public.order_payment import OrderPayment
 
-@dataclass
-class ResponseOrderPayment:
-	id: int
-	order_id: int
-	amount: Decimal
-	payment_method: PaymentMethod
-	created_at: datetime
+
+ResponseOrderPayment = OrderPayment

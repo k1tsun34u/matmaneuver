@@ -20,7 +20,7 @@ def get(product_id: int):
 	
 	return jsonify({
 		"success": True,
-		"product": asdict(ResponseProduct(tmp.result))
+		"product": asdict(tmp.result)
 	}), 200
 
 @client_products_bp.get('/')
@@ -53,5 +53,5 @@ def search():
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, 'products', total_products),
-		"products": [asdict(ResponseProduct(p)) for p in products]
+		"products": [asdict(p) for p in products]
 	}), 200

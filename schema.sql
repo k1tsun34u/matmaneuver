@@ -223,11 +223,11 @@ CREATE TABLE suppliers (
 );
 
 CREATE TYPE supply_status AS ENUM(
-	'created',		-- создана заявка на поставку
-	'confirmed',	-- заявку на поставку подтвердили
-	'in_transit',	-- поставка уже в пути
-	'delivered',	-- поставка прибыла
-	'cancelled'		-- поставка отменена
+	'CREATED',		-- создана заявка на поставку
+	'CONFIRMED',	-- заявку на поставку подтвердили
+	'IN_TRANSIT',	-- поставка уже в пути
+	'DELIVERED',	-- поставка прибыла
+	'CANCELLED'		-- поставка отменена
 );
 
 -- Поставки
@@ -235,7 +235,7 @@ CREATE TABLE supplies (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	supplier_id BIGINT NOT NULL REFERENCES suppliers(id),
 	warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),
-	current_status supply_status NOT NULL DEFAULT 'created',
+	current_status supply_status NOT NULL DEFAULT 'CREATED',
 	planned_delivery_date DATE NOT NULL,
 
 	created_by BIGINT REFERENCES employees(id),
@@ -266,16 +266,16 @@ CREATE TABLE supply_status_history (
 -- ==========================
 
 CREATE TYPE order_status AS ENUM(
-	'created',			-- заявка на заказ создана (пользователь нажал "Заказать", но ещё не оплатил!)
-	'confirmed',		-- заказ оплачен
-	'in_transit',		-- заказ в пути
-	'delivered',		-- заказ доставлен
-	'cancelled'			-- заказ отменён
+	'CREATED',			-- заявка на заказ создана (пользователь нажал "Заказать", но ещё не оплатил!)
+	'CONFIRMED',		-- заказ оплачен
+	'IN_TRANSIT',		-- заказ в пути
+	'DELIVERED',		-- заказ доставлен
+	'CANCELLED'			-- заказ отменён
 );
 
 CREATE TABLE orders (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	current_status order_status NOT NULL DEFAULT 'created',
+	current_status order_status NOT NULL DEFAULT 'CREATED',
 	track_number TEXT UNIQUE NOT NULL,
 	delivery_address TEXT NOT NULL,
 
@@ -306,18 +306,18 @@ CREATE TABLE order_status_history (
 -- ==========================
 
 CREATE TYPE write_off_reason AS ENUM(
-	'expired',
-	'damaged',
-	'lost',
-	'stolen',
-	'inventory_mismatch',
-	'other'
+	'EXPIRED',
+	'DAMAGED',
+	'LOST',
+	'STOLEN',
+	'INVENTORY_MISMATCH',
+	'OTHER'
 );
 
 CREATE TABLE write_offs (
 	id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),
-	reason write_off_reason NOT NULL DEFAULT 'other',
+	reason write_off_reason NOT NULL DEFAULT 'OTHER',
 	comment TEXT,
 
 	created_by BIGINT REFERENCES employees(id),
@@ -358,9 +358,9 @@ CREATE TABLE order_fulfillment_items(
 -- ==========================
 
 CREATE TYPE payment_method AS ENUM (
-	'cash',
-	'card',
-	'sbp'				-- СБП
+	'CASH',
+	'CARD',
+	'SBP'				-- СБП
 );
 
 CREATE TABLE order_payments (
@@ -377,8 +377,8 @@ CREATE TABLE order_payments (
 -- ==========================
 
 CREATE TYPE cart_type AS ENUM (
-	'active',
-	'wishlist'
+	'ACTIVE',
+	'WISHLIST'
 );
 
 CREATE TABLE carts (

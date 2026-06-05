@@ -1,4 +1,4 @@
-from flask import request
+from flask import redirect, request
 from functools import wraps
 from app.config import Config
 from datetime import timedelta
@@ -50,7 +50,8 @@ def require_session(func):
 		if auth_header is not None and auth_header.startswith('Bearer '):
 			parts = auth_header.split(" ", 1)
 			if len(parts) != 2:
-				return Mapper.router_error("Недействительная сессия!", 401)
+				return redirect('/login')
+				# return Mapper.router_error("Недействительная сессия!", 401)
 			
 			session = auth_header.split(' ')[1]
 			try:
@@ -61,12 +62,15 @@ def require_session(func):
 				
 				user = tmp.result
 				if user.token_ver != token.token_ver:
-					return Mapper.router_error("Сессия устарела! Выполните повторный вход", 401)
+					return redirect('/login')
+					# return Mapper.router_error("Сессия устарела! Выполните повторный вход", 401)
 				
 				return func(user, token, *args, **kwargs)
 			except InvalidValueError:
-				return Mapper.router_error("Недействительная сессия!", 401)
-		return Mapper.router_error("Требуется авторизация!", 401)
+				return redirect('/login')
+				# return Mapper.router_error("Недействительная сессия!", 401)
+		return redirect('/login')
+		# return Mapper.router_error("Требуется авторизация!", 401)
 	return wrapper
 
 def require_employee_session(func):

@@ -184,11 +184,20 @@ class CartsService(BaseService):
 	def get_items_by_cart_id(
 		cls,
 		cur: psycopg.Cursor,
-		cart_id: int
+		cart_id: int,
+		limit: int | None = 50,
+		offset: int = 0
 	) -> ServiceResult:
 		"""
 			Errors:
 			- UnhandledError
 		"""
 		
-		return ServiceResult(result=CartItemsRepository.get_many_by_cart_id(cur, cart_id))
+		return ServiceResult(
+			result=CartItemsRepository.get_many_by_cart_id(
+				cur=cur,
+				cart_id=cart_id,
+				limit=limit,
+				offset=offset
+			)
+		)

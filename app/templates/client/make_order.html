@@ -1,0 +1,17 @@
+{% extends "base-client.html" %}
+
+{% block title %}Оформление заказа{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/client/make_order.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<h1>Оформление заказа</h1>
+	<p id="products">Товаров: 0</p>
+	<p id="amount">Итого: 0 ₽</p>
+	<hr/>
+	<p>Укажите адрес доставки:</p>
+	<input id="dst" name="dst" type="text" placeholder="г.Москва, ул. Пушкина, д. Колотушкина ...">
+	<hr/>
+	<button id="make_order" class="green-bg">Оформить заказ</button>
+{% endblock %}

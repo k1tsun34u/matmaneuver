@@ -1,0 +1,31 @@
+{% extends "base-employee.html" %}
+
+{% block title %}Панель управления{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/client/index.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<div class="ccont">
+		<div class="vcont">
+			<h1>Панель управления</h1>
+			<a class="btn" href="/employee/products">Товары</a>
+			<a class="btn" href="/employee/categories">Категории товаров</a>
+			<hr/>
+			<a class="btn" href="/employee/orders">Заказы</a>
+			<hr/>
+			<a class="btn" href="/employee/warehouses">Склады</a>
+			<hr/>
+			<a class="btn" href="/employee/write_offs">Списания</a>
+			<hr/>
+			<a class="btn" href="/employee/supplies">Поставки</a>
+			<a class="btn" href="/employee/suppliers">Поставщики</a>
+			<hr/>
+			<a class="btn" href="/employee/employees">Сотрудники</a>
+			<a class="btn" href="/employee/roles">Роли</a>
+			<a class="btn" href="/employee/permissions">Разрешения</a>
+			<hr/>
+			<a class="btn" href="/employee/users">Пользователи</a>
+		</div>
+	</div>
+{% endblock %}

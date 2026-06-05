@@ -60,5 +60,5 @@ def by_product(_, __, ___, product_id: int):
 	
 	return jsonify({
 		"success": True,
-		"categories": [asdict(ResponseCategory(category)) for category in tmp.result]
+		"categories": [asdict(category) for category in tmp.result]
 	}), 200

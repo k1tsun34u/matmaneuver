@@ -137,10 +137,10 @@ def set_password(_, token):
 		"session": res.result
 	}), 200
 
-@client_auth_bp.post("/me")
+@client_auth_bp.get("/me")
 @require_session
 def me(user, _):
 	return jsonify({
 		"success": True,
-		"user": asdict(ResponseUser(user))
+		"user": asdict(user)
 	}), 200

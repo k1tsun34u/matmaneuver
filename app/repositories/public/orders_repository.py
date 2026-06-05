@@ -40,7 +40,7 @@ class OrdersRepository(
 			cur=cur,
 			table=cls.TABLE,
 			fields={
-				Order.COLUMN_CURRENT_STATUS: OrderStatus.CREATED,
+				Order.COLUMN_CURRENT_STATUS: OrderStatus.CREATED.value,
 				Order.COLUMN_TRACK_NUMBER: track_number,
 				Order.COLUMN_DELIVERY_ADDRESS: delivery_address,
 				Order.COLUMN_CREATED_BY: created_by
@@ -59,7 +59,7 @@ class OrdersRepository(
 			cur=cur,
 			identity_where={Order.COLUMN_ID: order_id},
 			condition_where={},
-			fields={Order.COLUMN_CURRENT_STATUS: status}
+			fields={Order.COLUMN_CURRENT_STATUS: status.value}
 		)
 	
 	@classmethod
@@ -115,6 +115,7 @@ class OrdersRepository(
 		cls,
 		cur: psycopg.Cursor,
 		search: str | None = None,
+		user_id: int | None = None,
 		status: OrderStatus | None = None,
 		created_from: date | None = None,
 		created_to: date | None = None,
@@ -128,9 +129,12 @@ class OrdersRepository(
 			conditions.append(f"({Order.COLUMN_TRACK_NUMBER} ILIKE %s OR {Order.COLUMN_DELIVERY_ADDRESS} ILIKE %s)")
 			params.append(f"%{search}%")
 			params.append(f"%{search}%")
+		if user_id is not None:
+			conditions.append(f"{Order.COLUMN_CREATED_BY} = %s")
+			params.append(user_id)
 		if status is not None:
 			conditions.append(f"{Order.COLUMN_CURRENT_STATUS} = %s")
-			params.append(status)
+			params.append(status.value)
 		if created_from is not None:
 			conditions.append(f"{Order.COLUMN_CREATED_AT} >= %s")
 			params.append(datetime.combine(created_from, time.min))

@@ -74,7 +74,7 @@ def get(_, __, ___, user_id: int):
 	
 	return jsonify({
 		"success": True,
-		"user": asdict(ResponseUser(tmp.result))
+		"user": asdict(tmp.result)
 	}), 200
 
 @employee_users_bp.get('/by-phone/<string:phone>')
@@ -86,7 +86,7 @@ def by_phone(_, __, ___, phone: str):
 	
 	return jsonify({
 		"success": True,
-		"user": asdict(ResponseUser(tmp.result))
+		"user": asdict(tmp.result)
 	}), 200
 
 @employee_users_bp.get('/by-email/<string:email>')
@@ -98,7 +98,7 @@ def by_email(_, __, ___, email: str):
 	
 	return jsonify({
 		"success": True,
-		"user": asdict(ResponseUser(tmp.result))
+		"user": asdict(tmp.result)
 	}), 200
 
 @employee_users_bp.get('/search')
@@ -132,5 +132,5 @@ def search(_, __, ___):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, 'users', total_users),
-		"users": [asdict(ResponseUser(user)) for user in users]
+		"users": [asdict(user) for user in users]
 	}), 200

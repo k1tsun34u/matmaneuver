@@ -92,7 +92,7 @@ def get(_, __, ___, permission_id: int):
 
 	return jsonify({
 		"success": True,
-		"permission": asdict(ResponsePermission(tmp.result))
+		"permission": asdict(tmp.result)
 	}), 200
 
 @employee_permissions_bp.get('/by-code/<string:code>')
@@ -104,7 +104,7 @@ def by_code(_, __, ___, code: str):
 
 	return jsonify({
 		"success": True,
-		"permission": asdict(ResponsePermission(tmp.result))
+		"permission": asdict(tmp.result)
 	}), 200
 
 @employee_permissions_bp.get('/search')
@@ -134,5 +134,5 @@ def search(_, __, ___):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, 'permissions', total_permissions),
-		"permissions": [asdict(ResponsePermission(permission)) for permission in permissions]
+		"permissions": [asdict(permission) for permission in permissions]
 	}), 200

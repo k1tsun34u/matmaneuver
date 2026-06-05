@@ -125,7 +125,7 @@ def get(_, __, ___, tgt_emp_id: int):
 	
 	return jsonify({
 		"success": True,
-		"employee": asdict(ResponseEmployee(tmp.result))
+		"employee": asdict(tmp.result)
 	}), 200
 
 @employee_employees_bp.get('/by-user/<int:user_id>')
@@ -137,7 +137,7 @@ def by_user(_, __, ___, user_id: int):
 	
 	return jsonify({
 		"success": True,
-		"employee": asdict(ResponseEmployee(tmp.result))
+		"employee": asdict(tmp.result)
 	}), 200
 
 @employee_employees_bp.get('/search')
@@ -179,7 +179,7 @@ def get_roles(_, __, ___, tgt_emp_id: int):
 	
 	return jsonify({
 		"success": True,
-		"roles": [asdict(ResponseRole(role)) for role in tmp.result]
+		"roles": [asdict(role) for role in tmp.result]
 	}), 200
 
 @employee_employees_bp.get('/permissions/<int:tgt_emp_id>')
@@ -191,7 +191,7 @@ def get_permissions(_, __, ___, tgt_emp_id: int):
 	
 	return jsonify({
 		"success": True,
-		"permissions": [asdict(ResponsePermission(permission)) for permission in tmp.result]
+		"permissions": [asdict(permission) for permission in tmp.result]
 	}), 200
 
 @employee_employees_bp.get('/me')

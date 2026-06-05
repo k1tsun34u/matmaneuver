@@ -27,7 +27,10 @@ def by_product(product_id: int):
 	
 	image_links = []
 	for pi in tmp.result:
-		image_links.append(f"/api/client/product_images/{pi.id}")
+		image_links.append({
+			"id": pi.id,
+			"storage_key": pi.storage_key
+		})
 	
 	return jsonify({
 		"success": True,

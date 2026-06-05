@@ -2,8 +2,8 @@ from enum import StrEnum
 
 
 class CartType(StrEnum):
-	ACTIVE = "active"
+	ACTIVE = "ACTIVE"
 	"""Активная корзина (для создания заказа)"""
 	
-	WISHLIST = "wishlist"
+	WISHLIST = "WISHLIST"
 	"""Желаемое (для желаемых продуктов)"""

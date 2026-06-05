@@ -18,4 +18,8 @@ export default class OrderPayments {
 			{page}, Cookies.Get('session')
 		);
 	}
+
+	static My(page=0) {
+		return Fetch.GetJson(`${OrderPayments.URL_PREFIX}/my`, {page}, Cookies.Get('session'));
+	}
 }

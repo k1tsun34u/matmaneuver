@@ -1,12 +1,4 @@
-from datetime import datetime
-from dataclasses import dataclass
+from app.models.public.product_category import ProductCategory
 
-@dataclass
-class ResponseProductCategory:
-	product_id: int
-	category_id: int
 
-	assigned_by: int | None
-	"""employees(id)"""
-
-	assigned_at: datetime
+ResponseProductCategory = ProductCategory

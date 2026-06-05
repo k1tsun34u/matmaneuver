@@ -121,12 +121,24 @@ class CartItemsRepository(
 	def get_many_by_cart_id(
 		cls,
 		cur: psycopg.Cursor,
-		cart_id: int
-	) -> list[CartItem]:
-		return cls.select_many(
+		cart_id: int,
+		limit: int | None = 50,
+		offset: int = 0
+	) -> tuple[list[CartItem], int]:
+		items = cls.select_many(
 			cur=cur,
-			equals={CartItem.COLUMN_CART_ID: cart_id}
+			equals={CartItem.COLUMN_CART_ID: cart_id},
+			limit=limit,
+			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			FROM {cls.TABLE}
+			WHERE {CartItem.COLUMN_CART_ID} = %s
+		"""
+		cur.execute(query, (cart_id,))
+		return (items, cur.fetchone()['total'],)
 
 	@classmethod
 	def get_total_price(

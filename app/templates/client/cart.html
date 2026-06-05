@@ -1,0 +1,18 @@
+{% extends "base-client.html" %}
+
+{% block title %}Ваша корзина{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/client/cart.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<h1>Ваша корзина</h1>
+	<hr/>
+
+	<div id="tgt">
+		<p>Пусто...</p>
+	</div>
+
+	<hr/>
+	<button id="make_order" class="green-bg">Оформить заказ</button>
+{% endblock %}

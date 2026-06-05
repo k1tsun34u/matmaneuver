@@ -1,0 +1,15 @@
+{% extends "base-client.html" %}
+
+{% block title %}Ваши отзывы{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/client/product_reviews.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<h1>Ваши отзывы</h1>
+	<hr/>
+
+	<div id="tgt">
+		<p>Пусто...</p>
+	</div>
+{% endblock %}

@@ -90,7 +90,7 @@ def get(_, __, ___, warehouse_id: int):
 	
 	return jsonify({
 		"success": True,
-		"warehouse": asdict(ResponseWarehouse(tmp.result))
+		"warehouse": asdict(tmp.result)
 	}), 200
 
 @employee_warehouses_bp.get('/by-address/<string:address>')
@@ -102,7 +102,7 @@ def by_address(_, __, ___, address: str):
 	
 	return jsonify({
 		"success": True,
-		"warehouse": asdict(ResponseWarehouse(tmp.result))
+		"warehouse": asdict(tmp.result)
 	}), 200
 
 @employee_warehouses_bp.get('/search')
@@ -132,7 +132,7 @@ def search(_, __, ___):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "warehouses", total_warehouses),
-		"warehouses": [asdict(ResponseWarehouse(warehouse)) for warehouse in warehouses]
+		"warehouses": [asdict(warehouse) for warehouse in warehouses]
 	}), 200
 
 @employee_warehouses_bp.post('/add-product/<int:warehouse_id>/<int:product_id>')
@@ -299,7 +299,7 @@ def get_products_by_warehouse(_, __, ___, warehouse_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "products", total_products),
-		"products": [asdict(ResponseWarehouseProduct(product)) for product in warehouse_products]
+		"products": [asdict(product) for product in warehouse_products]
 	}), 200
 
 @employee_warehouses_bp.get('/products/complete/<int:product_id>')
@@ -328,5 +328,5 @@ def get_complete_products(_, __, ___, product_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, "products", total_products),
-		"products": [asdict(ResponseCompleteWarehouseProduct(product)) for product in complete_products]
+		"products": [asdict(product) for product in complete_products]
 	}), 200

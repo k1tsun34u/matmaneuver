@@ -31,19 +31,22 @@ class Db:
 			min_size=5,
 			max_size=20,
 			open=True,
-			kwargs={"row_factory": dict_row},
+			configure=cls.configure_connection
 		)
 
-		with cls.connection():
-			cls.register_enums()
+	@classmethod
+	def configure_connection(cls, conn):
+		print(f"🔧 Configuring connection: {id(conn)}")
+		conn.row_factory = dict_row
+		cls.register_enums(conn)
 	
 	@classmethod
-	def register_enums(cls):
-		Db.register_enum("supply_status", SupplyStatus)
-		Db.register_enum("order_status", OrderStatus)
-		Db.register_enum("write_off_reason", WriteOffReason)
-		Db.register_enum("payment_method", PaymentMethod)
-		Db.register_enum("cart_type", CartType)
+	def register_enums(cls, conn):
+		cls.register_enum(conn, "supply_status", SupplyStatus)
+		cls.register_enum(conn, "order_status", OrderStatus)
+		cls.register_enum(conn, "write_off_reason", WriteOffReason)
+		cls.register_enum(conn, "payment_method", PaymentMethod)
+		cls.register_enum(conn, "cart_type", CartType)
 
 	@classmethod
 	def close(cls):
@@ -63,9 +66,15 @@ class Db:
 	@classmethod
 	def register_enum(
 		cls,
+		conn,
 		name: str,
 		enum: Any
 	):
-		with cls.connection() as conn:
+		try:
+			mapping = {member.name: member.value for member in enum}
+
 			info = psycopg_enum.EnumInfo.fetch(conn, name)
-			psycopg_enum.register_enum(info, conn, enum)
+			psycopg_enum.register_enum(info, conn, enum=enum, mapping=mapping)
+			print(f"✅ Registered {name} -> {enum.__name__}")
+		except Exception as e:
+			print(f"❌ Failed to register {name}: {e}")

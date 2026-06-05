@@ -39,7 +39,7 @@ class OrderStatusHistoryRepository(
 			table=cls.TABLE,
 			fields={
 				OrderStatusHistory.COLUMN_ORDER_ID: order_id,
-				OrderStatusHistory.COLUMN_STATUS: status,
+				OrderStatusHistory.COLUMN_STATUS: status.value,
 				OrderStatusHistory.COLUMN_CHANGED_BY: changed_by
 			},
 			returning=OrderStatusHistory.COLUMN_ID

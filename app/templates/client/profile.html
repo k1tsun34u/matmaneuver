@@ -1,0 +1,40 @@
+{% extends "base-client.html" %}
+
+{% block title %}Ваш профиль{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/client/profile.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<div class="ccont">
+		<div class="vcont" style="min-width: 40%;">
+			<h1>Ваш профиль</h1>
+			<div class="hcont">
+				<label for="full_name">Ваше ФИО:</label>
+				<input id="full_name" name="full_name" type="text" placeholder="Власов Алексей Дмитриевич" required>
+			</div>
+			<div class="hcont">
+				<label for="phone">Телефон:</label>
+				<input id="phone" name="phone" type="text" placeholder="+71234567890" required>
+			</div>
+			<div class="hcont">
+				<label for="email">Почта:</label>
+				<input id="email" name="email" type="text" placeholder="your-email@mail.ru">
+			</div>
+			<button id="update" class="green-bg">Обновить информацию</button>
+			<hr/>
+			<div class="hcont">
+				<label for="password">Новый пароль:</label>
+				<input id="password" name="password" type="password" placeholder="..." required>
+			</div>
+			<button id="set_password">Изменить пароль</button>
+			<hr/>
+			<a href="/client/wishlist" class="btn">Желаемое</a>
+			<a href="/client/orders" class="btn">Мои заказы</a>
+			<a href="/client/order_payments" class="btn">Мои платежи</a>
+			<a href="/client/product_reviews" class="btn">Мои отзывы</a>
+			<hr/>
+			<button id="logout" class="red-bg">Выйти</button>
+		</div>
+	</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base-employee.html" %}
+
+{% block title %}Товары{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/employee/products.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<h1>Товары</h1>
+	<div class="hcont align-text-center">
+		<p>Поиск:</p>
+		<input id="search" type="text" placeholder="Введите название или описание..." style="min-width: 65%;"/>
+		<button id="search_btn">Найти</button>
+		<a class="btn" href="/employee/create-product">+</a>
+	</div>
+	<p>Фильтры:</p>
+	<div class="hcont">
+		<p>Минимальная цена:</p>
+		<input id="min_price" name="min_price" type="number" style="min-width: 75%;"/>
+	</div>
+	<div class="hcont">
+		<p>Максимальная цена:</p>
+		<input id="max_price" name="max_price" type="number" style="min-width: 75%;"/>
+	</div>
+	<div class="hcont">
+		<label for="exclude_deleted" class="cb-lbl">Исключить удалённые
+			<input id="exclude_deleted" name="exclude_deleted" type="checkbox" checked/>
+			<span class="cb-mark"></span>
+		</label>
+	</div>
+	<hr/>
+
+	<div id="tgt" class="products-grid">
+		<p>Пусто...</p>
+	</div>
+
+	<hr/>
+	<div class="hcont">
+		<button id="prev_pg">&lt;</button>
+		<p id="page" style="min-width: 80%;">Страница: 1</p>
+		<button id="next_pg">&gt;</button>
+	</div>
+{% endblock %}

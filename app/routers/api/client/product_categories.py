@@ -21,7 +21,7 @@ def by_product(product_id: int):
 	
 	return jsonify({
 		"success": True,
-		"categories": [asdict(ResponseCategory(c)) for c in tmp.result]
+		"categories": [asdict(c) for c in tmp.result]
 	}), 200
 
 @client_product_categories_bp.get('/by-category/<int:category_id>')
@@ -45,5 +45,5 @@ def by_category(category_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, 'products', total_products),
-		"products": [asdict(ResponseProduct(p)) for p in products]
+		"products": [asdict(p) for p in products]
 	}), 200

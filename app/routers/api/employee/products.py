@@ -109,7 +109,7 @@ def get(_, __, ___, product_id: int):
 
 	return jsonify({
 		"success": True,
-		"product": asdict(ResponseProduct(tmp.result))
+		"product": asdict(tmp.result)
 	}), 200
 
 @employee_products_bp.get('/by-employee/<int:employee_id>')
@@ -138,7 +138,7 @@ def by_employee(_, __, ___, employee_id: int):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, 'products', total_products),
-		"products": [asdict(ResponseProduct(product)) for product in products]
+		"products": [asdict(product) for product in products]
 	}), 200
 
 @employee_products_bp.get('/search')
@@ -172,5 +172,5 @@ def search(_, __, ___):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, 'products', total_products),
-		"products": [asdict(ResponseProduct(product)) for product in products]
+		"products": [asdict(product) for product in products]
 	}), 200

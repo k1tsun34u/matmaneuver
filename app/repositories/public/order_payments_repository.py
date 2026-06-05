@@ -6,6 +6,7 @@ from app.types.payment_method import PaymentMethod
 from app.models.public.order_payment import OrderPayment
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
+from app.utils import Utils
 
 
 class OrderPaymentsRepository(
@@ -38,7 +39,7 @@ class OrderPaymentsRepository(
 			fields={
 				OrderPayment.COLUMN_ORDER_ID: order_id,
 				OrderPayment.COLUMN_AMOUNT: amount,
-				OrderPayment.COLUMN_PAYMENT_METHOD: payment_method
+				OrderPayment.COLUMN_PAYMENT_METHOD: payment_method.value
 			},
 			returning=OrderPayment.COLUMN_ID
 		)[OrderPayment.COLUMN_ID]
@@ -68,6 +69,37 @@ class OrderPaymentsRepository(
 			WHERE {OrderPayment.COLUMN_ORDER_ID} = %s
 		"""
 		cur.execute(query, (order_id,))
+		return (payments, cur.fetchone()['total'],)
+
+	@classmethod
+	def get_many_by_user_id(
+		cls,
+		cur: psycopg.Cursor,
+		user_id: int,
+		limit: int = 50,
+		offset: int = 0
+	) -> tuple[list[OrderPayment], int]:
+		query_part = f"""
+			FROM {cls.TABLE} op
+			JOIN {Order.TABLE} o ON o.{Order.COLUMN_ID} = op.{OrderPayment.COLUMN_ORDER_ID}
+			WHERE o.{Order.COLUMN_CREATED_BY} = %s
+		"""
+
+		query = f"""
+			SELECT op.*
+			{query_part}
+			{Utils.build_order_by(cls.ORDER_BY)}
+			LIMIT %s
+			OFFSET %s
+		"""
+		cur.execute(query, (user_id, limit, offset,))
+		payments = [OrderPayment(**row) for row in cur.fetchall()]
+
+		query = f"""
+			SELECT COUNT(*) AS total
+			{query_part}
+		"""
+		cur.execute(query, (user_id,))
 		return (payments, cur.fetchone()['total'],)
 	
 	@classmethod

@@ -39,7 +39,7 @@ class SupplyStatusHistoryRepository(
 			table=cls.TABLE,
 			fields={
 				SupplyStatusHistory.COLUMN_SUPPLY_ID: supply_id,
-				SupplyStatusHistory.COLUMN_STATUS: status,
+				SupplyStatusHistory.COLUMN_STATUS: status.value,
 				SupplyStatusHistory.COLUMN_CHANGED_BY: set_by
 			},
 			returning=SupplyStatusHistory.COLUMN_ID

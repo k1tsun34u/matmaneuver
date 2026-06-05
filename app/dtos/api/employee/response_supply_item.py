@@ -1,10 +1,4 @@
-from decimal import Decimal
-from dataclasses import dataclass
+from app.models.public.supply_item import SupplyItem
 
-@dataclass
-class ResponseSupplyItem:
-	id: int
-	supply_id: int
-	product_id: int
-	quantity: int
-	price: Decimal
+
+ResponseSupplyItem = SupplyItem

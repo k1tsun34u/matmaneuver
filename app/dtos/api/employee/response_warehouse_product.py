@@ -1,11 +1,4 @@
-from datetime import datetime
-from dataclasses import dataclass
+from app.models.public.warehouse_product import WarehouseProduct
 
-@dataclass
-class ResponseWarehouseProduct:
-	product_id: int
-	warehouse_id: int
-	quantity: int
-	reserved_quantity: int
-	created_by: int | None
-	created_at: datetime
+
+ResponseWarehouseProduct = WarehouseProduct

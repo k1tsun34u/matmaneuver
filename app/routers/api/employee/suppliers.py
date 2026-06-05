@@ -98,7 +98,7 @@ def get(_, __, ___, supplier_id: int):
 	
 	return jsonify({
 		"success": True,
-		"supplier": asdict(ResponseSupplier(tmp.result))
+		"supplier": asdict(tmp.result)
 	}), 200
 
 @employee_suppliers_bp.get('/by-phone/<string:phone>')
@@ -110,7 +110,7 @@ def by_phone(_, __, ___, phone: str):
 	
 	return jsonify({
 		"success": True,
-		"supplier": asdict(ResponseSupplier(tmp.result))
+		"supplier": asdict(tmp.result)
 	}), 200
 
 @employee_suppliers_bp.get('/by-email/<string:email>')
@@ -122,7 +122,7 @@ def by_email(_, __, ___, email: str):
 	
 	return jsonify({
 		"success": True,
-		"supplier": asdict(ResponseSupplier(tmp.result))
+		"supplier": asdict(tmp.result)
 	}), 200
 
 @employee_suppliers_bp.get('/search')
@@ -148,5 +148,5 @@ def search(_, __, ___):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, 'suppliers', total_suppliers),
-		"suppliers": [asdict(ResponseSupplier(supplier)) for supplier in suppliers]
+		"suppliers": [asdict(supplier) for supplier in suppliers]
 	}), 200

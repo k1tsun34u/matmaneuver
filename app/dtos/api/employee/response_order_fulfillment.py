@@ -1,9 +1,4 @@
-from datetime import datetime
-from dataclasses import dataclass
+from app.models.public.order_fulfillment import OrderFulfillment
 
-@dataclass
-class ResponseOrderFulfillment:
-	id: int
-	order_id: int
-	warehouse_id: int
-	created_at: datetime
+
+ResponseOrderFulfillment = OrderFulfillment

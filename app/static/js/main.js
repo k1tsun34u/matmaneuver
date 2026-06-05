@@ -188,24 +188,7 @@ class Product {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-	const tbCart = document.getElementById("tb-cart");
-	const tbProfile = document.getElementById("tb-profile");
-	const cartDrawer = document.getElementById("cart-drawer");
-	const profileDrawer = document.getElementById("profile-drawer");
-	const closeDrawers = document.querySelectorAll(".drawer-close");
-
 	const mainGrid = document.getElementById("main-grid");
-
-	// drawers
-	
-	Drawers.init();
-	tbCart.addEventListener("click", () => Drawers.toggle(cartDrawer));
-	tbProfile.addEventListener("click", () => Drawers.toggle(profileDrawer));
-	closeDrawers.forEach(el => el.addEventListener("click", Drawers.close));
-	document.addEventListener("keydown", (event) => { if (event.key === "Escape") Drawers.close(); });
-
-	// ...
-
 
 	var pc1 = Product.createCard("static/img/question.svg", "Название", "Краткое описание", "Цена (₽)", 1, 15);
 	console.log(pc1);

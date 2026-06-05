@@ -111,7 +111,7 @@ def get(_, __, ___, role_id: int):
 
 	return jsonify({
 		"success": True,
-		"role": asdict(ResponseRole(tmp.result))
+		"role": asdict(tmp.result)
 	}), 200
 
 @employee_roles_bp.get('/by-code/<string:code>')
@@ -123,7 +123,7 @@ def by_code(_, __, ___, code: str):
 
 	return jsonify({
 		"success": True,
-		"role": asdict(ResponseRole(tmp.result))
+		"role": asdict(tmp.result)
 	}), 200
 
 @employee_roles_bp.get('/search')
@@ -153,5 +153,5 @@ def search(_, __, ___):
 	return jsonify({
 		"success": True,
 		'pagination': Utils.build_pagination_dict(offset, limit, page, 'roles', total_roles),
-		"roles": [asdict(ResponseRole(role)) for role in roles]
+		"roles": [asdict(role) for role in roles]
 	}), 200

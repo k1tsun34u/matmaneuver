@@ -58,10 +58,14 @@ class SelectableMixin(Generic[T]):
 		is_null: tuple[str, ...] | None = None,
 		is_not_null: tuple[str, ...] | None = None,
 		ilike: tuple[tuple[str, ...], str] | None = None,
-		limit: int = 50,
+		limit: int | None = 50,
 		offset: int = 0
 	) -> list[T]:
-		limit, offset = Utils.normalize_pagination(limit, offset)
+		if limit is not None:
+			limit, offset = Utils.normalize_pagination(limit, offset)
+		else:
+			offset = 0
+		
 		conditions, params = Utils.build_conditions_params(
 			equals=equals,
 			is_null=is_null,
@@ -77,6 +81,12 @@ class SelectableMixin(Generic[T]):
 			many=True
 		)
 
-		cur.execute(query, (*params, limit, offset,))
+		if limit is None:
+			limPos = query.rfind('LIMIT %s')
+			query = query[:limPos]
+			cur.execute(query, params)
+		else:
+			cur.execute(query, (*params, limit, offset,))
+
 		rows = cur.fetchall()
 		return [cls.MODEL(**row) for row in rows]
