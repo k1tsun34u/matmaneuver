@@ -39,10 +39,7 @@ export default class ClientProductCard {
 				me.appendChild(title);
 				me.appendChild(price);
 				let btnAddToCart = ClientProductCard._BuildButtonAddToCart(me, product);
-				// ClientProductCard._RequestBuildQuantitySelector(me, product, (product, me) => {
-				// 	btnAddToCart.remove();
-				// 	console.log(product);
-				// });
+				ClientProductCard._RequestBuildQuantitySelector(me, product, (product, me) => {btnAddToCart.remove();});
 
 				callback(product, me);
 			}).catch(error => Status.ShowError(error));
@@ -78,11 +75,11 @@ export default class ClientProductCard {
 					btnRemoveFromCart.remove();
 					pqs.remove();
 					ClientProductCard._BuildButtonAddToCart(me, product);
-					if (callback) callback(product, me);
 				});
 			});
 
 			me.appendChild(btnRemoveFromCart);
+			if (callback) callback(product, me);
 		});
 	}
 }

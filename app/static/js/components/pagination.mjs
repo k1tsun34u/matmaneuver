@@ -6,35 +6,40 @@ export default class Pagination {
 		this.fnCallback = fnCallback;
 
 		this.page = 0;
-		this.total_pages = null;
+		this.totalPages = null;
 		this._loadPage(0);
+	}
+
+	update(currentPage, totalPages) {
+		this.currentPage = currentPage;
+		this.totalPages = totalPages;
 	}
 
 	_loadPage(page) {
 		const fn = this.fnGetter();
 		fn(page).then(response => {
 			let pagination = response['pagination'];
-			this.total_pages = pagination['total_pages'];
+			this.totalPages = pagination['total_pages'];
 			this.page = page;
 			this.fnCallback(page, response);
 		}).catch(error => Status.ShowError(error));
 	}
 
 	select(page) {
-		if (this.total_pages == null) return false;
-		else if (page < 0 || page > this.total_pages) return false;
+		if (this.totalPages == null) return false;
+		else if (page < 0 || page > this.totalPages) return false;
 		this._loadPage(page);
 	}
 
 	prev() {
-		if (this.total_pages == null) return false;
+		if (this.totalPages == null) return false;
 		else if (this.page == 0) return false;
 		this.select(this.page - 1);
 	}
 
 	next() {
-		if (this.total_pages == null) return false;
-		else if (this.page >= this.total_pages - 1) return false;
+		if (this.totalPages == null) return false;
+		else if (this.page >= this.totalPages - 1) return false;
 		this.select(this.page + 1);
 	}
 };

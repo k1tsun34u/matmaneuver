@@ -1,47 +1,43 @@
-import Orders from '../api/client/orders.mjs';
-import OrderStatus from '../order_status.mjs';
-import Status from '../status.mjs';
+import OrderStatus from "../order_status.mjs";
+import BaseBar from "./base_bar.mjs";
 
 
-export default class OrderBar {
-	static Build(order, callback) {
-		Orders.GetTotalPrice(order['id']).then(result => {
-			const orderAmount = result['total_price'];
-			const lastStatus = OrderStatus.ValueToStr(order['current_status']);
-			const fnRedirect = (e) => {window.location.href = `/client/order/${order['id']}`};
+export default class OrderBar extends BaseBar {
+	constructor(id, trackNumber, totalPrice, status) {
+		super(`/client/order/${id}`);
 
-			let res = document.createElement('div');
-			res.classList.add('hcont');
+		this._elId = document.createElement('p');
+		this._elId.innerHTML = `#${id}`;
+		this._elId.style.maxWidth = '7%';
+		this._elId.style.cursor = 'pointer';
+		this._elId.addEventListener('click', () => {this._redirectFunction();});
 
-			let trackNum = document.createElement('p');
-			// let dest = document.createElement('p');
-			let amount = document.createElement('p')
-			let status = document.createElement('p');
+		this._elTrackNumber = document.createElement('p');
+		this._elTrackNumber.classList.add('bar-track-num');
+		this._elTrackNumber.innerHTML = `${trackNumber}`;
+		this._elTrackNumber.style.cursor = 'pointer';
+		this._elTrackNumber.addEventListener('click', () => {this._redirectFunction();});
 
-			res.style.cursor = 'pointer';
-			trackNum.style.cursor = 'pointer';
-			// dest.style.cursor = 'pointer';
-			amount.style.cursor = 'pointer';
-			status.style.cursor = 'pointer';
-			status.style.color = OrderStatus.StrToColor(lastStatus);
+		this._elTotalPrice = document.createElement('p');
+		this._elTotalPrice.innerHTML = `${totalPrice}₽`;
+		this._elTotalPrice.style.cursor = 'pointer';
+		this._elTotalPrice.style.color = '#21c800';
+		this._elTotalPrice.addEventListener('click', () => {this._redirectFunction();});
 
-			trackNum.innerHTML = order['track_number'];
-			// dest.innerHTML = order['delivery_address']
-			amount.innerHTML = `${orderAmount} ₽`;
-			status.innerHTML = lastStatus;
+		this._elStatus = document.createElement('p');
+		this._elStatus.innerHTML = OrderStatus.ValueToStr(status);
+		this._elStatus.style.cursor = 'pointer';
+		this._elStatus.style.color = OrderStatus.StrToColor(this._elStatus.innerHTML);
+		this._elStatus.addEventListener('click', () => {this._redirectFunction();});
 
-			res.addEventListener('click', e => fnRedirect(e));
-			trackNum.addEventListener('click', e => fnRedirect(e));
-			// dest.addEventListener('click', e => fnRedirect(e));
-			amount.addEventListener('click', e => fnRedirect(e));
-			status.addEventListener('click', e => fnRedirect(e));
-
-			res.appendChild(trackNum);
-			// res.appendChild(dest);
-			res.appendChild(amount);
-			res.appendChild(status);
-
-			if (callback) callback(order, res);
-		}).catch(error => Status.ShowError(error));
+		this.appendChild(this._elId);
+		this.appendChild(this._elTrackNumber);
+		this.appendChild(this._elTotalPrice);
+		this.appendChild(this._elStatus);
 	}
+
+	get elId() {return this._elId;}
+	get elTrackNumber() {return this._elTrackNumber;}
+	get elTotalPrice() {return this._elTotalPrice;}
+	get elStatus() {return this._elStatus;}
 };

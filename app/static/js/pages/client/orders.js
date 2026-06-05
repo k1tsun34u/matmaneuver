@@ -1,6 +1,6 @@
 import Status from '../../status.mjs';
 import Orders from '../../api/client/orders.mjs';
-import OrderBar from '../../components/order_bar.mjs';
+import OrderBar from '../../components/bar/order_bar.mjs';
 import Pagination from '../../components/pagination.mjs';
 
 
@@ -22,14 +22,24 @@ let pagination = new Pagination(
 		elCreatedFrom.value, 
 		elCreatedTo.value
 	),
-	(page, response) => {
+	(page, r) => {
 		elPageNumber.innerHTML = `Страница: ${page + 1}`;
-
-		let orders = response['orders'];
-		if (orders.length <= 0) elTgt.innerHTML = '<p>Пусто...</p>';
+		if (r['orders'].length <= 0) elTgt.innerHTML = '<p>Пусто...</p>';
 		else {
 			elTgt.innerHTML = '';
-			orders.forEach(order => {OrderBar.Build(order, (order, me) => {elTgt.appendChild(me)});});
+			r['orders'].forEach(order => {
+				let orderBar = new OrderBar(
+					`/client/order/${order['id']}`,
+					order['track_number'],
+					0,
+					order['current_status']
+				);
+
+				Orders.GetTotalPrice(order['id']).then(r => {
+					orderBar.totalPrice = r['total_price'];
+				}).catch(e => Status.ShowError(e));
+				elTgt.appendChild(orderBar.base);
+			});
 		}
 	}
 );

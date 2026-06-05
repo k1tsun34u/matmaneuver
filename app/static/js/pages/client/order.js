@@ -1,7 +1,9 @@
 import Status from "../../status.mjs";
 import Orders from "../../api/client/orders.mjs";
 import OrderStatus from '../../order_status.mjs';
-import OrderItemBar from "../../components/order_item_bar.mjs";
+import Products from '../../api/client/products.mjs';
+import ProductImages from '../../api/client/product_images.mjs';
+import OrderItemBar from "../../components/bar/order_item_bar.mjs";
 
 
 
@@ -30,7 +32,25 @@ if (sepPos != -1) {
 		if (items.length <= 0) elTgt.innerHTML = '<p>Пусто...</p>';
 		else {
 			elTgt.innerHTML = '';
-			items.forEach(item => OrderItemBar.RequestBuild(item, (item, product, me) => elTgt.appendChild(me)));
+			items.forEach(item => {
+				let orderItemBar = new OrderItemBar(
+					`/client/product/${item['product_id']}`,
+					null,
+					'?',
+					item['price'],
+					item['quantity']
+				);
+
+				Products.Get(item['product_id']).then(r => {
+					orderItemBar.name = r['product']['name'];
+				}).catch(e => Status.ShowError(e));
+
+				ProductImages.ByProduct(item['product_id']).then(r => {
+					const images = r['images'];
+					if (images.length > 0) orderItemBar.storageKey = images[0]['storage_key'];
+				}).catch(e => Status.ShowError(e));
+				elTgt.appendChild(orderItemBar.base);
+			});
 		}
 
 		Orders.GetTotalPrice(orderId).then(result => {
