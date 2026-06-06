@@ -369,6 +369,52 @@ option:not(option:last-of-type) { border-bottom: none; }
 
 /* ----------------------------------- */
 
+.review-top-container {
+	display: flex;
+	justify-content: space-between;
+}
+
+.review-rating {
+	display: flex;
+}
+
+.review-rating * {
+	display: flex;
+	width: 40px;
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+	cursor: pointer;
+	border: none !important;
+	outline: none !important;
+	box-shadow: none !important;
+}
+
+.review-rating-unchecked-star {
+	background-image: url('/static/img/unchecked-star.png');
+}
+
+.review-rating-checked-star {
+	background-image: url('/static/img/checked-star.png');
+	filter: invert(78%) sepia(63%) saturate(638%) hue-rotate(351deg) brightness(101%) contrast(105%);
+}
+
+.review-comment, .new-review-comment {
+	width: 100%;
+}
+
+.new-review-comment {
+	field-sizing: content;
+	min-height: 3lh;
+	max-height: 10lh;
+	resize: none;
+}
+
+.review-post, .review-remove {
+	width: 100%;
+}
+
+/* ----------------------------------- */
+
 #product_img {
 	max-width: 30%;
 }

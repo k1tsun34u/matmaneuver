@@ -47,7 +47,7 @@ let pagination = new Pagination(
 			});
 		}
 	}
-)
+);
 
 elSearchBtn.addEventListener('click', e => pagination.select(0));
 elPrevPg.addEventListener('click', e => pagination.prev());

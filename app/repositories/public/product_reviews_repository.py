@@ -1,10 +1,14 @@
 import psycopg
 from decimal import Decimal
 from typing import ClassVar
+from app.models.db.db_user import DbUser
+from app.models.public.product import Product
+from app.models.public.user_product_review import UserProductReview
 from app.types.delete_result import DeleteResult
 from app.models.public.product_review import ProductReview
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
+from app.utils import Utils
 
 
 class ProductReviewsRepository(
@@ -111,13 +115,19 @@ class ProductReviewsRepository(
 		product_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> tuple[list[ProductReview], int]:
-		reviews = cls.select_many(
-			cur=cur,
-			equals={ProductReview.COLUMN_PRODUCT_ID: product_id},
-			limit=limit,
-			offset=offset
-		)
+	) -> tuple[list[UserProductReview], int]:
+		query = f"""
+			SELECT pr.*, u.{DbUser.COLUMN_FULL_NAME}, p.{Product.COLUMN_NAME}
+			FROM {cls.TABLE} pr
+			JOIN {DbUser.TABLE} u ON pr.{ProductReview.COLUMN_USER_ID} = u.{DbUser.COLUMN_ID}
+			JOIN {Product.TABLE} p ON pr.{ProductReview.COLUMN_PRODUCT_ID} = p.{Product.COLUMN_ID}
+			WHERE pr.{ProductReview.COLUMN_PRODUCT_ID} = %s
+			{Utils.build_order_by(cls.ORDER_BY)}
+			LIMIT %s
+			OFFSET %s
+		"""
+		cur.execute(query, (product_id, limit, offset,))
+		reviews = [UserProductReview(**row) for row in cur.fetchall()]
 
 		query = f"""
 			SELECT COUNT(*) AS total
@@ -135,12 +145,18 @@ class ProductReviewsRepository(
 		limit: int = 50,
 		offset: int = 0
 	) -> tuple[list[ProductReview], int]:
-		reviews = cls.select_many(
-			cur=cur,
-			equals={ProductReview.COLUMN_USER_ID: user_id},
-			limit=limit,
-			offset=offset
-		)
+		query = f"""
+			SELECT pr.*, u.{DbUser.COLUMN_FULL_NAME}, p.{Product.COLUMN_NAME}
+			FROM {cls.TABLE} pr
+			JOIN {DbUser.TABLE} u ON pr.{ProductReview.COLUMN_USER_ID} = u.{DbUser.COLUMN_ID}
+			JOIN {Product.TABLE} p ON pr.{ProductReview.COLUMN_PRODUCT_ID} = p.{Product.COLUMN_ID}
+			WHERE pr.{ProductReview.COLUMN_USER_ID} = %s
+			{Utils.build_order_by(cls.ORDER_BY)}
+			LIMIT %s
+			OFFSET %s
+		"""
+		cur.execute(query, (user_id, limit, offset,))
+		reviews = [UserProductReview(**row) for row in cur.fetchall()]
 
 		query = f"""
 			SELECT COUNT(*) AS total
