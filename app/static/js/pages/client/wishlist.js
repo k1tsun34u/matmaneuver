@@ -2,8 +2,8 @@ import Status from '../../status.mjs';
 import Carts from '../../api/client/carts.mjs';
 import Pagination from '../../components/pagination.mjs';
 import Products from '../../api/client/products.mjs';
-import CartItemBar from '../../components/cart_item_bar.mjs';
 import ProductImages from '../../api/client/product_images.mjs'
+import WishlistCard from '../../components/card/wishlist_card.mjs';
 
 
 let elTgt = document.getElementById('tgt');
@@ -22,20 +22,19 @@ let pagination = new Pagination(
 			elTgt.innerHTML = '';
 			items.forEach(item => {
 				Products.Get(item['product_id']).then(r => {
-					let cartItemCard = new CartItemBar(
-						item['product_id'],
+					let wishlistCard = new WishlistCard(
+						`/client/product/${item['product_id']}`,
 						null,
 						r['product']['name'],
 						r['product']['price'],
-						null,
-						'WISHLIST'
+						item['product_id']
 					);
 	
 					ProductImages.ByProduct(item['product_id']).then(r => {
 						const images = r['images'];
-						if (images.length > 0) cartItemCard.setImg(images[0]['storage_key']);
+						if (images.length > 0) wishlistCard.storageKey = images[0]['storage_key'];
 					}).catch(e => Status.ShowError(e));
-					elTgt.appendChild(cartItemCard.base);
+					elTgt.appendChild(wishlistCard.base);
 				}).catch(e => Status.ShowError(e));
 			});
 		}

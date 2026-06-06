@@ -28,7 +28,7 @@ Carts.GetItems('ACTIVE').then(response => {
 			);
 
 			amount += price * item['quantity'];
-			elAmount.innerHTML = amount;
+			elAmount.innerHTML = `Итого: ${amount} ₽`;
 		}).catch(error => Status.ShowError(error));
 	});
 

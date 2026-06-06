@@ -1,8 +1,8 @@
 import Status from '../../status.mjs';
 import Carts from '../../api/client/carts.mjs';
 import Products from '../../api/client/products.mjs';
-import CartItemBar from '../../components/cart_item_bar.mjs';
 import ProductImages from '../../api/client/product_images.mjs';
+import CartCard from '../../components/card/cart_card.mjs';
 
 
 let elTgt = document.getElementById('tgt');
@@ -19,20 +19,20 @@ Carts.GetItems('ACTIVE').then(result => {
 		elTgt.innerHTML = '';
 		items.forEach(item => {
 			Products.Get(item['product_id']).then(r => {
-				let cartItemBar = new CartItemBar(
-					item['product_id'],
+				let cartCard = new CartCard(
+					`/client/product/${item['product_id']}`,
 					null,
 					r['product']['name'],
 					r['product']['price'],
 					item['quantity'],
-					'ACTIVE'
+					item['product_id']
 				);
 
-				// ProductImages.ByProduct(item['product_id']).then(r => {
-				// 	const images = r['images'];
-				// 	if (images.length > 0) cartItemCard.setImg(images[0]['storage_key']);
-				// }).catch(e => Status.ShowError(e));
-				elTgt.appendChild(cartItemBar.base);
+				ProductImages.ByProduct(item['product_id']).then(r => {
+					const images = r['images'];
+					if (images.length > 0) cartCard.storageKey = images[0]['storage_key'];
+				}).catch(e => Status.ShowError(e));
+				elTgt.appendChild(cartCard.base);
 			}).catch(error => Status.ShowError(error));
 		});
 

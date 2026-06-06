@@ -3,8 +3,7 @@ import Products from '../../api/client/products.mjs';
 import ProductImages from '../../api/client/product_images.mjs';
 import ProductCategories from '../../api/client/product_categories.mjs';
 import Carts from '../../api/client/carts.mjs';
-import ProductQuantitySelector from '../../components/product_quantity_selector.mjs';
-import ClientProductCard from '../../components/client_product_card.mjs';
+import ProductCard from '../../components/card/product_card.mjs';
 import Pagination from '../../components/pagination.mjs';
 
 
@@ -24,14 +23,28 @@ let pagination = new Pagination(
 		elMinPrice.value,
 		elMaxPrice.value
 	),
-	(page, response) => {
+	(page, r) => {
 		elPageNumber.innerHTML = `Страница: ${page + 1}`;
 
-		let products = response['products'];
+		let products = r['products'];
 		if (products.length <= 0) elTgt.innerHTML = '<p>Пусто...</p>';
 		else {
 			elTgt.innerHTML = '';
-			products.forEach(p => ClientProductCard.RequestBuild(p, (product, me) => elTgt.appendChild(me)));
+			products.forEach(p => {
+				let productCard = new ProductCard(
+					`/client/product/${p['id']}`,
+					null,
+					p['name'],
+					p['price'],
+					p['id']
+				);
+
+				ProductImages.ByProduct(p['id']).then(r => {
+					const images = r['images'];
+					if (images.length > 0) productCard.storageKey = images[0]['storage_key'];
+				}).catch(e => Status.ShowError(e));
+				elTgt.appendChild(productCard.base);
+			});
 		}
 	}
 )

@@ -6,14 +6,14 @@ export default class OrderItemBar {
 		this._base = document.createElement('div');
 		this._base.classList.add('hcont');
 
-		this._elImage = document.createElement('img');
-		this._elImage.classList.add('order-item-bar-img');
+		this._elImg = document.createElement('img');
+		this._elImg.classList.add('order-item-bar-img');
 		this.storageKey = storageKey;
-		this._elImage.style.cursor = 'pointer';
-		this._elImage.addEventListener('click', () => {this._redirectFunction();});
+		this._elImg.style.cursor = 'pointer';
+		this._elImg.addEventListener('click', () => {this._redirectFunction();});
 
 		this._elName = document.createElement('p');
-		this._elName.classList.add('order-item-bar-track-number');
+		this._elName.classList.add('order-item-bar-track-name');
 		this._elName.innerHTML = name;
 		this._elName.style.fontWeight = 'bold';
 		this._elName.style.cursor = 'pointer';
@@ -33,14 +33,14 @@ export default class OrderItemBar {
 		this._elQuantity.style.cursor = 'pointer';
 		this._elQuantity.addEventListener('click', () => {this._redirectFunction();});
 
-		this.appendChild(this._elImage);
+		this.appendChild(this._elImg);
 		this.appendChild(this._elName);
 		this.appendChild(this._elPrice);
 		this.appendChild(this._elQuantity);
 	}
 
 	get base() {return this._base;}
-	get elImage() {return this._elImage;}
+	get elImg() {return this._elImg;}
 	get elName() {return this._elName;}
 	get elPrice() {return this._elPrice;}
 	get elQuantity() {return this._elQuantity;}
@@ -53,7 +53,7 @@ export default class OrderItemBar {
 
 	set storageKey(storageKey) {
 		const fileName = storageKey && storageKey != '?' ? storageKey : 'question.svg';
-		this._elImage.src = `/image/${fileName}`;
+		this._elImg.src = `/image/${fileName}`;
 	}
 	
 	childNodes() {return this._base.childNodes;}
