@@ -60,7 +60,7 @@ app.register_blueprint(employee_products_bp)
 app.register_blueprint(employee_suppliers_bp)
 app.register_blueprint(employee_supplies_bp)
 
-@app.route("/client")
+@app.route("/client/")
 def client():
 	return render_template("client/index.html")
 
@@ -68,43 +68,43 @@ def client():
 def default():
 	return redirect('/client')
 
-@app.route("/client/index")
+@app.route("/client/index/")
 def client_index():
 	return redirect('/client')
 
-@app.route("/login")
+@app.route("/login/")
 def login():
 	return render_template("login.html")
 
-@app.route("/client/register")
+@app.route("/client/register/")
 def client_register():
 	return render_template("client/register.html")
 
-@app.route("/client/profile")
+@app.route("/client/profile/")
 def client_profile():
 	return render_template("client/profile.html")
 
-@app.route("/client/cart")
+@app.route("/client/cart/")
 def client_cart():
 	return render_template("client/cart.html")
 
-@app.route("/client/wishlist")
+@app.route("/client/wishlist/")
 def client_wishlist():
 	return render_template("client/wishlist.html")
 
-@app.route("/client/orders")
+@app.route("/client/orders/")
 def client_orders():
 	return render_template("client/orders.html")
 
-@app.route("/client/order_payments")
+@app.route("/client/order_payments/")
 def client_order_payments():
 	return render_template("client/order_payments.html")
 
-@app.route("/client/product_reviews")
+@app.route("/client/product_reviews/")
 def client_product_reviews():
 	return render_template("client/product_reviews.html")
 
-@app.route('/client/make-order')
+@app.route('/client/make-order/')
 def client_make_order():
 	return render_template("client/make_order.html")
 
@@ -116,19 +116,19 @@ def client_order(order_id: int):
 def client_product(product_id: int):
 	return render_template("client/product.html", product_id=product_id)
 
-@app.route("/employee")
+@app.route("/employee/")
 def employee():
 	return render_template("employee/index.html")
 
-@app.route("/employee/products")
+@app.route("/employee/products/")
 def employee_products():
 	return render_template("employee/products.html")
 
-@app.route("/employee/create-product")
+@app.route("/employee/create-product/")
 def employee_create_product():
 	return render_template("employee/create_product.html")
 
-@app.route("/employee/users")
+@app.route("/employee/users/")
 def employee_users():
 	return render_template("employee/users.html")
 
@@ -136,11 +136,11 @@ def employee_users():
 def employee_user(user_id: int):
 	return render_template("employee/user.html", user_id=user_id)
 
-@app.route("/employee/permissions")
+@app.route("/employee/permissions/")
 def employee_permissions():
 	return render_template("employee/permissions.html")
 
-@app.route("/employee/create-permission")
+@app.route("/employee/create-permission/")
 def employee_create_permission():
 	return render_template("employee/create_permission.html")
 
@@ -148,11 +148,11 @@ def employee_create_permission():
 def employee_permission(permission_id: int):
 	return render_template("employee/permission.html", permission_id=permission_id)
 
-@app.route("/employee/roles")
+@app.route("/employee/roles/")
 def employee_roles():
 	return render_template("employee/roles.html")
 
-@app.route("/employee/create-role")
+@app.route("/employee/create-role/")
 def employee_create_role():
 	return render_template("employee/create_role.html")
 
@@ -160,6 +160,6 @@ def employee_create_role():
 def employee_role(role_id: int):
 	return render_template("employee/role.html", role_id=role_id)
 
-@app.route('/image/<path:filename>')
+@app.route('/image/<path:filename>/')
 def get_image(filename):
 	return send_from_directory(Config.PATH_IMAGES, filename)
