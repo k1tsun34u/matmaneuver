@@ -1,0 +1,16 @@
+{% extends "base-employee.html" %}
+
+{% block title %}Разрешение{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/employee/permission.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<h1>Разрешение</h1>
+	<p id="code" style="font-weight: bold;">Код: </p>
+	<p id="description">Описание: </p>
+	<p id="system">Системное: </p>
+	<p id="created_at">Создано: </p>
+	<p id="status">Статус: </p>
+	<button id="action"></button>
+{% endblock %}

@@ -136,6 +136,18 @@ def employee_users():
 def employee_user(user_id: int):
 	return render_template("employee/user.html", user_id=user_id)
 
+@app.route("/employee/permissions")
+def employee_permissions():
+	return render_template("employee/permissions.html")
+
+@app.route("/employee/create-permission")
+def employee_create_permission():
+	return render_template("employee/create_permission.html")
+
+@app.route("/employee/permission/<int:permission_id>")
+def employee_permission(permission_id: int):
+	return render_template("employee/permission.html", permission_id=permission_id)
+
 @app.route('/image/<path:filename>')
 def get_image(filename):
 	return send_from_directory(Config.PATH_IMAGES, filename)

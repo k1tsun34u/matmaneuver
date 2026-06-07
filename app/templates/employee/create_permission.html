@@ -1,0 +1,20 @@
+{% extends "base-employee.html" %}
+
+{% block title %}Разрешение{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/employee/create_permission.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<h1>Создать разрешение</h1>
+	<div class="hcont">
+		<p>Код:</p>
+		<input id="code" type="text" placeholder="PERMISSION_CODE" style="min-width: 85%; text-align: start;" required/>
+	</div>
+	<div class="hcont">
+		<p>Описание:</p>
+		<textarea id="description" style="min-width: 85%; min-height: 140px; text-align: start;">Разрешение для ...</textarea>
+	</div>
+	<hr/>
+	<button id="create" class="green-bg">Создать разрешение</button>
+{% endblock %}

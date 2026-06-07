@@ -134,7 +134,7 @@ class Utils:
 	
 	@staticmethod
 	def normalize_code(code: str) -> str:
-		return code.strip().lower()
+		return code.strip().upper()
 	
 	@staticmethod
 	def normalize_name(name: str) -> str:
@@ -186,7 +186,7 @@ class Utils:
 	
 	@staticmethod
 	def is_valid_code(normalized_code: str) -> bool:
-		pattern = r"^[a-z]+(?:_[a-z]+)*$"
+		pattern = r"^[A-Z]+(?:_[A-Z]+)*$"
 		return (
 			normalized_code
 			and bool(re.fullmatch(pattern, normalized_code))
