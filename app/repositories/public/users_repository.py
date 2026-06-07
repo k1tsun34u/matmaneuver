@@ -1,5 +1,7 @@
 
 import psycopg
+from app.models.public.employee import Employee
+from app.models.public.user_employee import UserEmployee
 from app.utils import Utils
 from typing import ClassVar
 from app.unset import Unset, UNSET
@@ -121,8 +123,22 @@ class UsersRepository(
 		return cls.clear_state(cur, "blocked", {DbUser.COLUMN_ID: user_id})
 	
 	@classmethod
-	def get_by_id(cls, cur: psycopg.Cursor, user_id: int) -> DbUser | None:
-		return cls.select(cur=cur, equals={DbUser.COLUMN_ID: user_id})
+	def get_by_id(cls, cur: psycopg.Cursor, user_id: int) -> UserEmployee | None:
+		query = f"""
+			SELECT 
+				u.*,
+				u_blocker.{DbUser.COLUMN_FULL_NAME} AS blocked_by_{DbUser.COLUMN_FULL_NAME},
+				u_deleter.{DbUser.COLUMN_FULL_NAME} AS deleted_by_{DbUser.COLUMN_FULL_NAME}
+			FROM {DbUser.TABLE} AS u
+			LEFT JOIN {Employee.TABLE} AS e_blocker ON e_blocker.{Employee.COLUMN_ID} = u.{DbUser.COLUMN_BLOCKED_BY}
+			LEFT JOIN {Employee.TABLE} AS e_deleter ON e_deleter.{Employee.COLUMN_ID} = u.{DbUser.COLUMN_DELETED_BY}
+			LEFT JOIN {DbUser.TABLE} AS u_blocker ON u_blocker.{DbUser.COLUMN_ID} = e_blocker.{Employee.COLUMN_USER_ID}
+			LEFT JOIN {DbUser.TABLE} AS u_deleter ON u_deleter.{DbUser.COLUMN_ID} = e_deleter.{Employee.COLUMN_USER_ID}
+			WHERE u.{DbUser.COLUMN_ID} = %s
+		"""
+		cur.execute(query, (user_id,))
+		row = cur.fetchone()
+		return UserEmployee(**row) if row else None
 	
 	@classmethod
 	def get_by_phone(cls, cur: psycopg.Cursor, phone: str) -> DbUser | None:
@@ -141,20 +157,17 @@ class UsersRepository(
 		exclude_blocked: bool = True,
 		limit: int = 50,
 		offset: int = 0
-	) -> tuple[list[DbUser], int]:
+	) -> tuple[list[UserEmployee], int]:
 		is_null = tuple()
 		if exclude_deleted:
-			is_null = is_null + (DbUser.COLUMN_DELETED_AT,)
+			is_null = is_null + (f'u.{DbUser.COLUMN_DELETED_AT}',)
 		if exclude_blocked:
-			is_null = is_null + (DbUser.COLUMN_BLOCKED_AT,)
-		ilike = ((DbUser.COLUMN_PHONE, DbUser.COLUMN_EMAIL, DbUser.COLUMN_FULL_NAME,), f"%{search}%",) if search else None
-		users = cls.select_many(
-			cur=cur,
-			is_null=is_null,
-			ilike=ilike,
-			limit=limit,
-			offset=offset
-		)
+			is_null = is_null + (f'u.{DbUser.COLUMN_BLOCKED_AT}',)
+		ilike = ((
+			f'u.{DbUser.COLUMN_PHONE}',
+			f'u.{DbUser.COLUMN_EMAIL}',
+			f'u.{DbUser.COLUMN_FULL_NAME}',
+		), f"%{search}%",) if search else None
 
 		conditions, params = Utils.build_conditions_params(
 			is_null=is_null,
@@ -162,8 +175,26 @@ class UsersRepository(
 		)
 
 		query = f"""
+			SELECT 
+				u.*,
+				u_blocker.{DbUser.COLUMN_FULL_NAME} AS blocked_by_{DbUser.COLUMN_FULL_NAME},
+				u_deleter.{DbUser.COLUMN_FULL_NAME} AS deleted_by_{DbUser.COLUMN_FULL_NAME}
+			FROM {DbUser.TABLE} AS u
+			LEFT JOIN {Employee.TABLE} AS e_blocker ON e_blocker.{Employee.COLUMN_ID} = u.{DbUser.COLUMN_BLOCKED_BY}
+			LEFT JOIN {Employee.TABLE} AS e_deleter ON e_deleter.{Employee.COLUMN_ID} = u.{DbUser.COLUMN_DELETED_BY}
+			LEFT JOIN {DbUser.TABLE} AS u_blocker ON u_blocker.{DbUser.COLUMN_ID} = e_blocker.{Employee.COLUMN_USER_ID}
+			LEFT JOIN {DbUser.TABLE} AS u_deleter ON u_deleter.{DbUser.COLUMN_ID} = e_deleter.{Employee.COLUMN_USER_ID}
+			{Utils.build_where(conditions)}
+			{Utils.build_order_by(tuple([tuple([f'u.{o[0]}', o[1]]) for o in cls.ORDER_BY]))}
+			LIMIT %s
+			OFFSET %s
+		"""
+		cur.execute(query, (*params, limit, offset,))
+		users = [UserEmployee(**row) for row in cur.fetchall()]
+
+		query = f"""
 			SELECT COUNT(*) AS total
-			FROM {cls.TABLE}
+			FROM {cls.TABLE} AS u
 			{Utils.build_where(conditions)}
 		"""
 		cur.execute(query, params)

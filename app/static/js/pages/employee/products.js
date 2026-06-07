@@ -49,3 +49,7 @@ let pagination = new Pagination(
 		}
 	}
 );
+
+elSearchBtn.addEventListener('click', () => pagination.select(0));
+elPrevPg.addEventListener('click', e => pagination.prev());
+elNextPg.addEventListener('click', e => pagination.next());

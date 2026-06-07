@@ -12,7 +12,7 @@ let elMakeOrder = document.getElementById('make_order');
 let amount = 0.0;
 let quantity = 0;
 let products = [];
-Carts.GetItems('ACTIVE').then(response => {
+Carts.GetItems('ACTIVE', null, true).then(response => {
 	let items = response['items'];
 
 	items.forEach(item => {

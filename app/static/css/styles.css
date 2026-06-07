@@ -455,5 +455,5 @@ option:not(option:last-of-type) { border-bottom: none; }
 /* ----------------------------------- */
 
 .green-bg { background: rgb(29, 194, 14); }
-.orange-bg { background: rgb(217, 170, 15); }
+.orange-bg { background: rgb(255, 96, 10); }
 .red-bg { background: rgb(255, 45, 13); }

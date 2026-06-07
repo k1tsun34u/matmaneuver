@@ -104,6 +104,18 @@ def client_order_payments():
 def client_product_reviews():
 	return render_template("client/product_reviews.html")
 
+@app.route('/client/make-order')
+def client_make_order():
+	return render_template("client/make_order.html")
+
+@app.route('/client/order/<int:order_id>')
+def client_order(order_id: int):
+	return render_template("client/order.html", order_id=order_id)
+
+@app.route('/client/product/<int:product_id>')
+def client_product(product_id: int):
+	return render_template("client/product.html", product_id=product_id)
+
 @app.route("/employee")
 def employee():
 	return render_template("employee/index.html")
@@ -116,17 +128,13 @@ def employee_products():
 def employee_create_product():
 	return render_template("employee/create_product.html")
 
-@app.route('/client/make-order')
-def client_make_order():
-	return render_template("client/make_order.html")
+@app.route("/employee/users")
+def employee_users():
+	return render_template("employee/users.html")
 
-@app.route('/client/order/<int:order_id>')
-def client_order(order_id: int):
-	return render_template("client/order.html", order_id=order_id)
-
-@app.route('/client/product/<int:product_id>')
-def client_product(product_id: int):
-	return render_template("client/product.html", product_id=product_id)
+@app.route("/employee/user/<int:user_id>")
+def employee_user(user_id: int):
+	return render_template("employee/user.html", user_id=user_id)
 
 @app.route('/image/<path:filename>')
 def get_image(filename):
