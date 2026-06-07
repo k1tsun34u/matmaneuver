@@ -1,0 +1,19 @@
+{% extends "base-employee.html" %}
+
+{% block title %}Склад{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/employee/create_warehouse.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<h1>Создать склад</h1>
+	<div class="hcont">
+		<p>Адрес:</p>
+		<input id="address" type="text" placeholder="г.Москва, ул.Пушкина, д.Колотушкина 1" style="text-align: left; min-width: 85%;" required>
+	</div>
+	<div class="hcont">
+		<p>Описание:</p>
+		<textarea id="description" style="min-width: 85%; text-align: start;" rows="4">Самый лучший склад!</textarea>
+	</div>
+	<button id="create" class="green-bg">Создать склад</button>
+{% endblock %}

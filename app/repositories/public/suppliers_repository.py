@@ -1,5 +1,8 @@
 import psycopg
 from typing import ClassVar
+from app.models.db.db_user import DbUser
+from app.models.public.employee import Employee
+from app.models.public.supplier_employee import SupplierEmployee
 from app.utils import Utils
 from app.unset import Unset, UNSET
 from app.models.public.supplier import Supplier
@@ -86,8 +89,19 @@ class SuppliersRepository(
 		return cls.clear_state(cur, "deactivated", {Supplier.COLUMN_ID: supplier_id})
 	
 	@classmethod
-	def get_by_id(cls, cur: psycopg.Cursor, supplier_id: int) -> Supplier | None:
-		return cls.select(cur, {Supplier.COLUMN_ID: supplier_id})
+	def get_by_id(cls, cur: psycopg.Cursor, supplier_id: int) -> SupplierEmployee | None:
+		query = f"""
+			SELECT 
+				s.*,
+				u_deactivator.{DbUser.COLUMN_FULL_NAME} AS deactivated_by_{DbUser.COLUMN_FULL_NAME}
+			FROM {Supplier.TABLE} AS s
+			LEFT JOIN {Employee.TABLE} AS e_deactivator ON e_deactivator.{Employee.COLUMN_ID} = s.{Supplier.COLUMN_DEACTIVATED_BY}
+			LEFT JOIN {DbUser.TABLE} AS u_deactivator ON u_deactivator.{DbUser.COLUMN_ID} = e_deactivator.{Employee.COLUMN_USER_ID}
+			WHERE s.{Supplier.COLUMN_ID} = %s
+		"""
+		cur.execute(query, (supplier_id,))
+		row = cur.fetchone()
+		return SupplierEmployee(**row) if row else None
 	
 	@classmethod
 	def get_by_phone(cls, cur: psycopg.Cursor, phone: str) -> Supplier | None:
@@ -122,7 +136,7 @@ class SuppliersRepository(
 			offset=offset
 		)
 
-		conditions, _ = Utils.build_conditions_params(
+		conditions, params = Utils.build_conditions_params(
 			ilike=ilike
 		)
 
@@ -131,5 +145,5 @@ class SuppliersRepository(
 			FROM {cls.TABLE}
 			{Utils.build_where(conditions)}
 		"""
-		cur.execute(query)
+		cur.execute(query, params)
 		return (suppliers, cur.fetchone()['total'],)

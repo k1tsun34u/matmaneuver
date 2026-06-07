@@ -1,0 +1,34 @@
+{% extends "base-employee.html" %}
+
+{% block title %}Пользователь{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/employee/supplier.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<h1>Пользователь</h1>
+	<div class="vcont">
+		<div class="hcont">
+			<p style="font-weight: bold;">Полное имя:</p>
+			<input id="full_name" type="text" placeholder="ФИО" style="text-align: left; min-width: 80%;" required>
+		</div>
+		<div class="hcont">
+			<p>Номер телефона:</p>
+			<input id="phone" type="text" style="text-align: left; min-width: 80%;" required>
+		</div>
+		<div class="hcont">
+			<p>Почта:</p>
+			<input id="email" type="text" style="text-align: left; min-width: 80%;">
+		</div>
+		<div class="hcont">
+			<p>Адрес:</p>
+			<input id="address" type="text" placeholder="г.Москва, ул.Пушкина, д.Колотушкина 1" style="text-align: left; min-width: 80%;">
+		</div>
+		<button id="update">Обновить информацию</button>
+
+		<p id="created_at">Создан: </p>
+		<p id="deactivated_at">Когда деактивирован: </p>
+		<p id="deactivated_by">Кем деактивирован: </p>
+		<button id="action"></button>
+	</div>
+{% endblock %}

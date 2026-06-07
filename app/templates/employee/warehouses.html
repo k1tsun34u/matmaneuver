@@ -1,0 +1,40 @@
+{% extends "base-employee.html" %}
+
+{% block title %}Склады{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/employee/warehouses.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<h1>Склады</h1>
+	<div class="hcont">
+		<p>Поиск:</p>
+		<input id="search" type="text" placeholder="Введите адрес или описание..." style="min-width: 70%;"/>
+		<button id="search_btn">Найти</button>
+		<button id="create" class="green-bg">+</button>
+	</div>
+	<p>Фильтры:</p>
+	<div class="hcont">
+		<label for="exclude_deleted" class="cb-lbl">Исключить удалённые
+			<input id="exclude_deleted" name="exclude_deleted" type="checkbox" checked/>
+			<span class="cb-mark"></span>
+		</label>
+	</div>
+	<hr/>
+	<div class="hcont">
+		<p style="font-weight: bold;">Адрес</p>
+		<p style="font-weight: bold;">Состояние</p>
+	</div>
+	<hr/>
+
+	<div id="tgt">
+		<p>Пусто...</p>
+	</div>
+
+	<hr/>
+	<div class="hcont">
+		<button id="prev_pg">&lt;</button>
+		<p id="page_number" style="min-width: 80%;">Страница: 1</p>
+		<button id="next_pg">&gt;</button>
+	</div>
+{% endblock %}

@@ -97,6 +97,8 @@ if (sepPos != -1) {
 	let pagination = new Pagination(
 		() => (page) => ProductReviews.ByUser(userId),
 		(page, r) => {
+			elPageNumber.innerHTML = `Страница: ${page + 1}`;
+			
 			if (r['reviews'].length < 1) elTgt.innerHTML = '<p>Пусто...</p>';
 			else {
 				elTgt.innerHTML = '';

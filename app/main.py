@@ -172,6 +172,30 @@ def employee_employee(employee_id: int):
 def employee_create_employee():
 	return render_template("employee/create_employee.html")
 
+@app.route("/employee/warehouses/")
+def employee_warehouses():
+	return render_template("employee/warehouses.html")
+
+@app.route("/employee/create-warehouse/")
+def employee_create_warehouse():
+	return render_template("employee/create_warehouse.html")
+
+@app.route("/employee/warehouse/<int:warehouse_id>")
+def employee_warehouse(warehouse_id: int):
+	return render_template("employee/warehouse.html", warehouse_id=warehouse_id)
+
+@app.route("/employee/suppliers/")
+def employee_suppliers():
+	return render_template("employee/suppliers.html")
+
+@app.route("/employee/create-supplier/")
+def employee_create_supplier():
+	return render_template("employee/create_supplier.html")
+
+@app.route("/employee/supplier/<int:supplier_id>")
+def employee_supplier(supplier_id: int):
+	return render_template("employee/supplier.html", supplier_id=supplier_id)
+
 @app.route('/image/<path:filename>/')
 def get_image(filename):
 	return send_from_directory(Config.PATH_IMAGES, filename)
