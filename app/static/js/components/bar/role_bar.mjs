@@ -1,6 +1,6 @@
-export default class PermissionBar {
-	constructor(code, deactivated, permissionId) {
-		this._redirectUrl = `/employee/permission/${permissionId}`;
+export default class RoleBar {
+	constructor(code, deactivated, roleId) {
+		this._redirectUrl = `/employee/role/${roleId}`;
 		this._redirectFunction = () => window.location.href = this._redirectUrl;
 
 		this._base = document.createElement('div');
@@ -28,14 +28,14 @@ export default class PermissionBar {
 	get base() {return this._base;}
 	set redirectUrl(redirectUrl) {this._redirectUrl = redirectUrl;}
 
-	get deactivated() {return this._elStatus.childNodes[0].innerHTML == 'Деактивировано';}
+	get deactivated() {return this._elStatus.childNodes[0].innerHTML == 'Деактивирована';}
 	set deactivated(isDeactivated) {
 		if (isDeactivated) {
-			this._elStatus.innerHTML = 'Деактивировано';
+			this._elStatus.innerHTML = 'Деактивирована';
 			this._elStatus.style.color = "red";
 		}
 		else {
-			this._elStatus.innerHTML = 'Активно';
+			this._elStatus.innerHTML = 'Активна';
 			this._elStatus.style.color = "lime";
 		}
 	}

@@ -1,5 +1,7 @@
 import psycopg
 from typing import ClassVar
+from app.models.public.role import Role
+from app.models.public.role_permission import RolePermission
 from app.types.update_result import UpdateResult
 from app.models.public.permission import Permission
 from app.types.deactivate_result import DeactivateResult
@@ -101,6 +103,31 @@ class PermissionsRepository(
 	@classmethod
 	def get_by_code(cls, cur: psycopg.Cursor, code: str) -> Permission | None:
 		return cls.select(cur=cur, equals={Permission.COLUMN_CODE: code})
+	
+	@classmethod
+	def get_all_by_role_id(
+		cls,
+		cur: psycopg.Cursor,
+		role_id: int
+	) -> list[Permission]:
+		equals = {f'rp.{RolePermission.COLUMN_ROLE_ID}': role_id}
+		is_null=(f'p.{Permission.COLUMN_DEACTIVATED_AT}',)
+
+		conditions, params = Utils.build_conditions_params(
+			equals=equals,
+			is_null=is_null
+		)
+
+		query = f"""
+			SELECT p.*
+			FROM {cls.TABLE} p
+			JOIN {RolePermission.TABLE} rp ON rp.{RolePermission.COLUMN_PERMISSION_ID} = p.{Permission.COLUMN_ID}
+			JOIN {Role.TABLE} r ON r.{Role.COLUMN_ID} = rp.{RolePermission.COLUMN_ROLE_ID}
+			{Utils.build_where(conditions)}
+			{Utils.build_order_by(cls.ORDER_BY)}
+		"""
+		cur.execute(query, params)
+		return [Permission(**row) for row in cur.fetchall()]
 	
 	@classmethod
 	def search(

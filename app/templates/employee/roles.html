@@ -1,0 +1,34 @@
+{% extends "base-employee.html" %}
+
+{% block title %}Роли{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/employee/roles.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<h1>Роли</h1>
+	<div class="hcont">
+		<p>Поиск:</p>
+		<input id="search" type="text" placeholder="Введите код..." style="min-width: 70%;"/>
+		<button id="search_btn">Найти</button>
+		<button id="create" class="green-bg">+</button>
+	</div>
+	<br/>
+	<hr/>
+	<div class="hcont">
+		<h2>Код</h2>
+		<h2>Состояние</h2>
+	</div>
+	<hr/>
+
+	<div id="tgt">
+		<p>Пусто...</p>
+	</div>
+
+	<hr/>
+	<div class="hcont">
+		<button id="prev_pg">&lt;</button>
+		<p id="page_number" style="min-width: 80%;">Страница: 1</p>
+		<button id="next_pg">&gt;</button>
+	</div>
+{% endblock %}

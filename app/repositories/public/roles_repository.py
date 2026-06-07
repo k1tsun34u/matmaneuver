@@ -93,7 +93,7 @@ class RolesRepository(
 		limit: int = 50,
 		offset: int = 0
 	) -> tuple[list[Role], int]:
-		norm_search = Utils.normalize_code(search)
+		norm_search = Utils.normalize_code(search) if search else None
 		is_null = (Role.COLUMN_DEACTIVATED_AT,) if exclude_deactivated else None
 		ilike = ((Role.COLUMN_CODE,), f"%{norm_search}%",) if norm_search else None
 		roles =  cls.select_many(

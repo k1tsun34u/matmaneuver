@@ -4,6 +4,7 @@ import Status from '../../status.mjs';
 
 let elCode = document.getElementById('code');
 let elDescription = document.getElementById('description');
+let elSetDescription = document.getElementById('set_description');
 let elSystem = document.getElementById('system');
 let elStatus = document.getElementById('status');
 let elCreatedAt = document.getElementById('created_at');
@@ -13,10 +14,13 @@ const pathName = window.location.pathname;
 const sepPos = pathName.lastIndexOf('/');
 if (sepPos != -1) {
 	const permissionId = parseInt(pathName.substring(sepPos + 1));
-	console.log(permissionId);
 	Permissions.Get(permissionId).then(r => {
 		elCode.innerHTML = `Код: ${r['permission']['code']}`;
-		elDescription.innerHTML = `Описание: ${r['permission']['code']}`;
+		elDescription.value = r['permission']['description'];
+		elSetDescription.addEventListener('click', () => {
+			Permissions.SetDescription(permissionId, elDescription.value).catch(e => Status.ShowError(e));
+		});
+
 		elSystem.innerHTML = 'Системное: ' + (r['permission']['is_system'] ? 'Да' : 'Нет');
 
 		if (r['permission']['deactivated_at']) {

@@ -67,7 +67,6 @@ def create(_, token):
 	order_id, _ = tmp.result
 	added_order_item_ids = []
 	for cart_item in cart_items:
-		print(f"CI: {cart_item}/{cart_items}")
 		tmp = OrdersService.create_item(
 			order_id=order_id,
 			product_id=cart_item.product_id,

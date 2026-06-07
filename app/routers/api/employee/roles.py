@@ -1,3 +1,4 @@
+from app.services.permissions_service import PermissionsService
 from app.utils import Utils
 from dataclasses import asdict
 from app.errors.mapper import Mapper
@@ -109,9 +110,16 @@ def get(_, __, ___, role_id: int):
 	if tmp.error:
 		return Mapper.error(tmp.error)
 
+	role = asdict(tmp.result)
+	tmp = PermissionsService.get_all_by_role_id(role_id=role_id)
+	if tmp.error:
+		return Mapper.error(tmp.error)
+	
+	permissions = tmp.result
+	role['permissions'] = [asdict(permission) for permission in permissions]
 	return jsonify({
 		"success": True,
-		"role": asdict(tmp.result)
+		"role": role
 	}), 200
 
 @employee_roles_bp.get('/by-code/<string:code>')
@@ -130,6 +138,7 @@ def by_code(_, __, ___, code: str):
 @require_employee_session
 def search(_, __, ___):
 	data = request.args.to_dict()
+	
 	search_str = Utils.parse_str_from_dict(data, 'search')
 	exclude_deactivated = Utils.parse_bool_from_dict(data, 'exclude_deactivated')
 	page = Utils.parse_int_from_dict(data, 'page')

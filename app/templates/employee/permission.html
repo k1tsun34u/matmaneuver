@@ -8,9 +8,13 @@
 {% block content %}
 	<h1>Разрешение</h1>
 	<p id="code" style="font-weight: bold;">Код: </p>
-	<p id="description">Описание: </p>
+	<div class="hcont">
+		<p style="text-align: left;">Описание:</p>
+		<textarea id="description" style="min-width: 80%; min-height: 140px; text-align: start;"></textarea>
+	</div>
+	<button id="set_description">Изменить описание</button>
 	<p id="system">Системное: </p>
 	<p id="created_at">Создано: </p>
-	<p id="status">Статус: </p>
+	<p id="status">Состояние: </p>
 	<button id="action"></button>
 {% endblock %}

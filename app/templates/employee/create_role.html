@@ -1,17 +1,24 @@
 {% extends "base-employee.html" %}
 
-{% block title %}Разрешения{% endblock %}
+{% block title %}Роль{% endblock %}
 {% block head %}
-	<script type="module" src="{{ url_for('static', filename='js/pages/employee/permissions.js') }}" defer></script>
+	<script type="module" src="{{ url_for('static', filename='js/pages/employee/create_role.js') }}" defer></script>
 {% endblock %}
 
 {% block content %}
-	<h1>Разрешения</h1>
+	<h1>Создать роль</h1>
+	<div class="hcont">
+		<p>Код:</p>
+		<input id="code" type="text" placeholder="ROLE_CODE" style="min-width: 85%; text-align: start;" required/>
+	</div>
+	<br/>
+	<hr/>
+	<h2>Разрешения:</h2>
+	<hr/>
 	<div class="hcont">
 		<p>Поиск:</p>
-		<input id="search" type="text" placeholder="Введите код или описание..." style="min-width: 70%;"/>
+		<input id="search" type="text" placeholder="Введите код или описание..." style="min-width: 80%;"/>
 		<button id="search_btn">Найти</button>
-		<button id="create" class="green-bg">+</button>
 	</div>
 	<p>Фильтры:</p>
 	<div class="hcont">
@@ -20,22 +27,16 @@
 			<span class="cb-mark"></span>
 		</label>
 	</div>
-	<br/>
 	<hr/>
-	<div class="hcont">
-		<h2>Код</h2>
-		<h2>Состояние</h2>
-	</div>
-	<hr/>
-
 	<div id="tgt">
 		<p>Пусто...</p>
 	</div>
-
+	
 	<hr/>
 	<div class="hcont">
 		<button id="prev_pg">&lt;</button>
 		<p id="page_number" style="min-width: 80%;">Страница: 1</p>
 		<button id="next_pg">&gt;</button>
 	</div>
+	<button id="create" class="green-bg">Создать роль</button>
 {% endblock %}

@@ -171,6 +171,26 @@ class PermissionsService(BaseService):
 	
 	@classmethod
 	@BaseService.transaction
+	def get_all_by_role_id(
+		cls,
+		cur: psycopg.Cursor,
+		role_id: int
+	) -> ServiceResult:
+		"""
+			Errors:
+			- NotFoundError
+			- UnhandledError
+		"""
+
+		return ServiceResult(
+			result=PermissionsRepository.get_all_by_role_id(
+				cur=cur,
+				role_id=role_id
+			)
+		)
+	
+	@classmethod
+	@BaseService.transaction
 	def search(
 		cls,
 		cur: psycopg.Cursor,
