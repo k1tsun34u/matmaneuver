@@ -8,7 +8,7 @@ from app.types.update_result import UpdateResult
 from app.repositories.base.base_repository import BaseRepository
 from app.repositories.base.mixins.selectable_mixin import SelectableMixin
 from app.repositories.base.mixins.audit_state_mixin import AuditStateMixin
-from app.dtos.api.employee.response_employee_user import ResponseEmployeeUser
+from app.models.public.employee_user import EmployeeUser
 
 
 class EmployeesRepository(
@@ -66,8 +66,26 @@ class EmployeesRepository(
 		return tmp
 		
 	@classmethod
-	def get_by_id(cls, cur: psycopg.Cursor, employee_id: int) -> Employee | None:
-		return cls.select(cur=cur, equals={Employee.COLUMN_ID: employee_id})
+	def get_by_id(cls, cur: psycopg.Cursor, employee_id: int) -> EmployeeUser | None:
+		query = f"""
+			SELECT
+				e.*,
+				u.{DbUser.COLUMN_PHONE},
+				u.{DbUser.COLUMN_EMAIL},
+				u.{DbUser.COLUMN_FULL_NAME},
+				u_firer.{DbUser.COLUMN_FULL_NAME} AS fired_by_{DbUser.COLUMN_FULL_NAME},
+				u_hirer.{DbUser.COLUMN_FULL_NAME} AS hired_by_{DbUser.COLUMN_FULL_NAME}
+			FROM {Employee.TABLE} AS e
+			LEFT JOIN {DbUser.TABLE} AS u ON u.{DbUser.COLUMN_ID} = e.{Employee.COLUMN_USER_ID}
+			LEFT JOIN {Employee.TABLE} AS e_firer ON e_firer.{Employee.COLUMN_ID} = e.{Employee.COLUMN_FIRED_BY}
+			LEFT JOIN {DbUser.TABLE} AS u_firer ON u_firer.{DbUser.COLUMN_ID} = e_firer.{Employee.COLUMN_USER_ID}
+			LEFT JOIN {Employee.TABLE} AS e_hirer ON e_hirer.{Employee.COLUMN_ID} = e.{Employee.COLUMN_HIRED_BY}
+			LEFT JOIN {DbUser.TABLE} AS u_hirer ON u_hirer.{DbUser.COLUMN_ID} = e_hirer.{Employee.COLUMN_USER_ID}
+			WHERE e.{Employee.COLUMN_ID} = %s
+		"""
+		cur.execute(query, (employee_id,))
+		row = cur.fetchone()
+		return EmployeeUser(**row) if row else None
 	
 	@classmethod
 	def get_by_user_id(cls, cur: psycopg.Cursor, user_id: int) -> Employee | None:
@@ -81,7 +99,7 @@ class EmployeesRepository(
 		exclude_fired: bool = True,
 		limit: int = 50,
 		offset: int = 0,
-	) -> tuple[list[ResponseEmployeeUser], int]:
+	) -> tuple[list[EmployeeUser], int]:
 		conditions, params = Utils.build_conditions_params(
 			is_null=(f"e.{Employee.COLUMN_FIRED_AT}",) if exclude_fired else None,
 			ilike=(
@@ -95,7 +113,11 @@ class EmployeesRepository(
 
 		query_part = f"""
 			FROM {Employee.TABLE} e
-			JOIN {DbUser.TABLE} u ON u.{DbUser.COLUMN_ID} = e.{Employee.COLUMN_USER_ID}
+			LEFT JOIN {DbUser.TABLE} AS u ON u.{DbUser.COLUMN_ID} = e.{Employee.COLUMN_USER_ID}
+			LEFT JOIN {Employee.TABLE} AS e_firer ON e_firer.{Employee.COLUMN_ID} = e.{Employee.COLUMN_FIRED_BY}
+			LEFT JOIN {DbUser.TABLE} AS u_firer ON u_firer.{DbUser.COLUMN_ID} = e_firer.{Employee.COLUMN_USER_ID}
+			LEFT JOIN {Employee.TABLE} AS e_hirer ON e_hirer.{Employee.COLUMN_ID} = e.{Employee.COLUMN_HIRED_BY}
+			LEFT JOIN {DbUser.TABLE} AS u_hirer ON u_hirer.{DbUser.COLUMN_ID} = e_hirer.{Employee.COLUMN_USER_ID}
 			{Utils.build_where(conditions)}
 		"""
 
@@ -104,14 +126,16 @@ class EmployeesRepository(
 				e.*,
 				u.{DbUser.COLUMN_PHONE},
 				u.{DbUser.COLUMN_EMAIL},
-				u.{DbUser.COLUMN_FULL_NAME}
+				u.{DbUser.COLUMN_FULL_NAME},
+				u_firer.{DbUser.COLUMN_FULL_NAME} AS fired_by_{DbUser.COLUMN_FULL_NAME},
+				u_hirer.{DbUser.COLUMN_FULL_NAME} AS hired_by_{DbUser.COLUMN_FULL_NAME}
 			{query_part}
 			{Utils.build_order_by(cls.ORDER_BY)}
 			LIMIT %s
 			OFFSET %s
 		"""
 		cur.execute(query, params + (limit, offset,))
-		employee_users = [ResponseEmployeeUser(**row) for row in cur.fetchall()]
+		employee_users = [EmployeeUser(**row) for row in cur.fetchall()]
 
 		query = f"""
 			SELECT COUNT(*) AS total

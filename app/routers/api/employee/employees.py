@@ -1,3 +1,4 @@
+from app.services.roles_service import RolesService
 from app.utils import Utils
 from dataclasses import asdict
 from app.errors.mapper import Mapper
@@ -8,7 +9,7 @@ from app.services.employees_service import EmployeesService
 from app.dtos.api.employee.response_role import ResponseRole
 from app.dtos.api.employee.response_employee import ResponseEmployee
 from app.dtos.api.employee.response_permission import ResponsePermission
-from app.dtos.api.employee.response_employee_user import ResponseEmployeeUser
+from app.models.public.employee_user import EmployeeUser
 
 
 employee_employees_bp = Blueprint(
@@ -23,7 +24,7 @@ def register(_, __, cur_emp_id: int):
 	data = request.get_json()
 	user_id = Utils.parse_int_from_dict(data, 'user_id')
 	# hired_by = Utils.parse_int_from_dict(data, 'hired_by')
-	hired_at = Utils.parse_date_from_dict(data, 'hired_at')
+	hired_at = Utils.parse_datetime_from_dict(data, 'hired_at')
 	# if user_id is None or hired_by is None or hired_at is None:
 	if user_id is None or hired_at is None:
 		return Mapper.router_error('Неверный запрос!', 400)
@@ -32,7 +33,7 @@ def register(_, __, cur_emp_id: int):
 	if tmp.error:
 		return Mapper.error(tmp.error)
 	
-	user = tmp.result
+	hired_at = hired_at.date()
 	tmp = EmployeesService.register(
 		user_id=user_id,
 		hired_by=cur_emp_id,
@@ -48,7 +49,10 @@ def register(_, __, cur_emp_id: int):
 	# 	"session": SessionManager.compose_token(user.id, user.token_ver)
 	# }), 201
 
-	return jsonify({"success": True}), 201
+	return jsonify({
+		"success": True,
+		"employee_id": tmp.result
+	}), 201
 
 # login as client: api/client/auth.py
 
@@ -123,9 +127,16 @@ def get(_, __, ___, tgt_emp_id: int):
 	if tmp.error:
 		return Mapper.error(tmp.error)
 	
+	employee_user = asdict(tmp.result)
+	tmp = RolesService.get_all_by_employee_id(employee_id=tgt_emp_id)
+	if tmp.error:
+		return Mapper.error(tmp.error)
+
+	roles = tmp.result
+	employee_user['roles'] = [asdict(role) for role in roles]
 	return jsonify({
 		"success": True,
-		"employee": asdict(tmp.result)
+		"employee_user": employee_user
 	}), 200
 
 @employee_employees_bp.get('/by-user/<int:user_id>')
@@ -196,27 +207,12 @@ def get_permissions(_, __, ___, tgt_emp_id: int):
 
 @employee_employees_bp.get('/me')
 @require_employee_session
-def me(user, _, cur_emp_id: int):
+def me(_, __, cur_emp_id: int):
 	tmp = EmployeesService.get_by_id(employee_id=cur_emp_id)
 	if tmp.error:
 		return Mapper.error(tmp.error)
 	
-	emp = tmp.result
-	emp_user = ResponseEmployeeUser(
-		id=cur_emp_id,
-		user_id=user.id,
-		hired_by=emp.hired_by,
-		hired_at=emp.hired_at,
-		fired_by=emp.fired_by,
-		fired_at=emp.fired_at,
-		created_by=emp.created_by,
-		created_at=emp.created_at,
-		phone=user.phone,
-		email=user.email,
-		full_name=user.full_name
-	)
-
 	return jsonify({
 		"success": True,
-		"employee_user": asdict(emp_user)
+		"employee_user": asdict(tmp.result)
 	}), 200

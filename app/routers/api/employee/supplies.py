@@ -188,10 +188,10 @@ def by_warehouse(_, __, ___, warehouse_id: int):
 def search(_, __, ___):
 	data = request.args.to_dict()
 	status = Utils.parse_str_enum_from_dict(data, 'status', SupplyStatus)
-	created_from = Utils.parse_date_from_dict(data, 'created_from')
-	created_to = Utils.parse_date_from_dict(data, 'created_to')
-	planned_delivery_from = Utils.parse_date_from_dict(data, 'planned_delivery_from')
-	planned_delivery_to = Utils.parse_date_from_dict(data, 'planned_delivery_to')
+	created_from = Utils.parse_datetime_from_dict(data, 'created_from')
+	created_to = Utils.parse_datetime_from_dict(data, 'created_to')
+	planned_delivery_from = Utils.parse_datetime_from_dict(data, 'planned_delivery_from')
+	planned_delivery_to = Utils.parse_datetime_from_dict(data, 'planned_delivery_to')
 	page = Utils.parse_int_from_dict(data, 'page')
 	if page is None or page < 0:
 		page = 0

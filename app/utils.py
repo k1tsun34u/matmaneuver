@@ -336,7 +336,7 @@ class Utils:
 		return value
 	
 	@staticmethod
-	def parse_date_from_dict(data: dict[str, Any], key: str) -> date | None:
+	def parse_datetime_from_dict(data: dict[str, Any], key: str) -> date | None:
 		s = Utils.parse_str_from_dict(data, key)
 		if s is not None:
 			res = Utils.str_to_date(s)

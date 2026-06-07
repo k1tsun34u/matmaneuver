@@ -28,7 +28,7 @@ export default class PermissionBar {
 	get base() {return this._base;}
 	set redirectUrl(redirectUrl) {this._redirectUrl = redirectUrl;}
 
-	get deactivated() {return this._elStatus.childNodes[0].innerHTML == 'Деактивировано';}
+	get deactivated() {return this._elStatus.innerHTML == 'Деактивировано';}
 	set deactivated(isDeactivated) {
 		if (isDeactivated) {
 			this._elStatus.innerHTML = 'Деактивировано';

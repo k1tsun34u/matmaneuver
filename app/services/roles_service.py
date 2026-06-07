@@ -193,6 +193,26 @@ class RolesService(BaseService):
 	
 	@classmethod
 	@BaseService.transaction
+	def get_all_by_employee_id(
+		cls,
+		cur: psycopg.Cursor,
+		employee_id: int
+	) -> ServiceResult:
+		"""
+			Errors:
+			- NotFoundError
+			- UnhandledError
+		"""
+
+		return ServiceResult(
+			result=RolesRepository.get_all_by_employee_id(
+				cur=cur,
+				employee_id=employee_id
+			)
+		)
+	
+	@classmethod
+	@BaseService.transaction
 	def search(
 		cls,
 		cur: psycopg.Cursor,

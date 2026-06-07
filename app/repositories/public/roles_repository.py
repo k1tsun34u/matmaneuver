@@ -1,5 +1,7 @@
 
 import psycopg
+from app.models.public.employee import Employee
+from app.models.public.employee_role import EmployeeRole
 from app.utils import Utils
 from typing import ClassVar
 from app.models.public.role import Role
@@ -83,6 +85,26 @@ class RolesRepository(
 	@classmethod
 	def get_by_code(cls, cur: psycopg.Cursor, code: str) -> Role | None:
 		return cls.select(cur=cur, equals={Role.COLUMN_CODE: code})
+	
+	@classmethod
+	def get_all_by_employee_id(cls, cur: psycopg.Cursor, employee_id: int) -> list[Role]:
+		equals = {f'er.{EmployeeRole.COLUMN_EMPLOYEE_ID}': employee_id}
+		is_null = (f'r.{Role.COLUMN_DEACTIVATED_AT}',)
+
+		conditions, params = Utils.build_conditions_params(
+			equals=equals,
+			is_null=is_null
+		)
+
+		query = f"""
+			SELECT r.*
+			FROM {cls.TABLE} r
+			JOIN {EmployeeRole.TABLE} er ON er.{EmployeeRole.COLUMN_ROLE_ID} = r.{Role.COLUMN_ID}
+			{Utils.build_where(conditions)}
+			{Utils.build_order_by(cls.ORDER_BY)}
+		"""
+		cur.execute(query, params)
+		return [Role(**row) for row in cur.fetchall()]
 	
 	@classmethod
 	def search(

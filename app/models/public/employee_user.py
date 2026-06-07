@@ -2,7 +2,7 @@ from datetime import datetime
 from dataclasses import dataclass
 
 @dataclass
-class ResponseEmployeeUser:
+class EmployeeUser:
 	id: int
 	user_id: int
 	hired_by: int | None
@@ -15,3 +15,6 @@ class ResponseEmployeeUser:
 	phone: str
 	email: str | None
 	full_name: str
+
+	fired_by_full_name: str | None
+	hired_by_full_name: str | None

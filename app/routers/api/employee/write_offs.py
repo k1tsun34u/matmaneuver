@@ -124,8 +124,8 @@ def search(_, __, ___):
 	search_str = Utils.parse_str_from_dict(data, 'search')
 	warehouse_id = Utils.parse_int_from_dict(data, 'warehouse_id')
 	reason = Utils.parse_str_enum_from_dict(data, 'reason', WriteOffReason)
-	created_from = Utils.parse_date_from_dict(data, 'created_from')
-	created_to = Utils.parse_date_from_dict(data, 'created_to')
+	created_from = Utils.parse_datetime_from_dict(data, 'created_from')
+	created_to = Utils.parse_datetime_from_dict(data, 'created_to')
 	page = Utils.parse_int_from_dict(data, 'page')
 	if page is None or page < 0:
 		page = 0

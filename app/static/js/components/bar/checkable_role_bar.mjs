@@ -1,17 +1,17 @@
-export default class CheckablePermissionBar {
-	constructor(code, deactivated, permissionId, onClickCallback) {
+export default class CheckableRoleBar {
+	constructor(code, deactivated, roleId, onClickCallback) {
 		this._base = document.createElement('div');
 		this._base.classList.add('hcont');
 
 		this._code = code;
-		this._id = permissionId;
+		this._id = roleId;
 
 		this._elCodeLbl = document.createElement('label');
 		this._elCodeLbl.classList.add('cb-lbl');
 		this._elCodeLbl.innerHTML = code;
 		
 		this._elCodeCheckBox = document.createElement('input');
-		this._elCodeCheckBox.id = `cb_${permissionId}`;
+		this._elCodeCheckBox.id = `cb_${roleId}`;
 		this._elCodeCheckBox.type = 'checkbox';
 		this._elCodeCheckBox.addEventListener('click', () => onClickCallback(this.id, this.checked));
 
@@ -22,7 +22,7 @@ export default class CheckablePermissionBar {
 		this._elCodeLbl.appendChild(this._elCodeMark);
 
 		this._elStatus = document.createElement('p');
-		this._elStatus.classList.add('permission-bar-status');
+		this._elStatus.classList.add('role-bar-status');
 		this.deactivated = deactivated;
 
 		this._base.appendChild(this._elCodeLbl);
@@ -31,14 +31,14 @@ export default class CheckablePermissionBar {
 
 	get base() {return this._base;}
 
-	get deactivated() {return this._elStatus.innerHTML == 'Деактивировано';}
+	get deactivated() {return this._elStatus.innerHTML == 'Деактивирована';}
 	set deactivated(deactivated) {
 		if (deactivated) {
-			this._elStatus.innerHTML = 'Деактивировано';
+			this._elStatus.innerHTML = 'Деактивирована';
 			this._elStatus.style.color = "red";
 		}
 		else {
-			this._elStatus.innerHTML = 'Активно';
+			this._elStatus.innerHTML = 'Активна';
 			this._elStatus.style.color = "lime";
 		}
 	}

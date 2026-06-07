@@ -160,6 +160,18 @@ def employee_create_role():
 def employee_role(role_id: int):
 	return render_template("employee/role.html", role_id=role_id)
 
+@app.route("/employee/employees/")
+def employee_employees():
+	return render_template("employee/employees.html")
+
+@app.route("/employee/employee/<int:employee_id>")
+def employee_employee(employee_id: int):
+	return render_template("employee/employee.html", employee_id=employee_id)
+
+@app.route("/employee/create-employee/")
+def employee_create_employee():
+	return render_template("employee/create_employee.html")
+
 @app.route('/image/<path:filename>/')
 def get_image(filename):
 	return send_from_directory(Config.PATH_IMAGES, filename)
