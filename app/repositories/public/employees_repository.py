@@ -62,7 +62,7 @@ class EmployeesRepository(
 		if tmp != UpdateResult.SUCCESS:
 			return tmp
 		if hired_by:
-			return cls.set_state(cur, "hired", {Employee.COLUMN_ID: employee_id})
+			return cls.set_state(cur, "hired", {Employee.COLUMN_ID: employee_id}, actor_id=hired_by)
 		return tmp
 		
 	@classmethod
