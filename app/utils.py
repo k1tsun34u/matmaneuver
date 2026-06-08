@@ -4,7 +4,7 @@ import string
 import psycopg
 import marshmallow
 from math import ceil
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from app.unset import UNSET, Unset
 from os.path import normpath
@@ -319,11 +319,18 @@ class Utils:
 			return None
 	
 	@staticmethod
-	def str_to_date(s: str) -> date | None:
+	def str_to_datetime(s: str) -> datetime | None:
 		try:
 			tmp = {'event_date': s}
 			tmp = marshmallow_event_schema.load(tmp)
 			return tmp['event_date']
+		except Exception as e:
+			return None
+	
+	@staticmethod
+	def str_to_date(s: str) -> date | None:
+		try:
+			return Utils.str_to_datetime(s).date()
 		except Exception as e:
 			return None
 	
@@ -339,7 +346,7 @@ class Utils:
 	def parse_datetime_from_dict(data: dict[str, Any], key: str) -> date | None:
 		s = Utils.parse_str_from_dict(data, key)
 		if s is not None:
-			res = Utils.str_to_date(s)
+			res = Utils.str_to_datetime(s)
 			return res
 		return None
 	

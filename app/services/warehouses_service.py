@@ -181,12 +181,13 @@ class WarehousesService(BaseService):
 
 	@classmethod
 	@BaseService.transaction
-	def add_product(
+	def add_product_or_increment(
 		cls,
 		cur: psycopg.Cursor,
 		warehouse_id: int,
 		product_id: int,
-		added_by: int | None
+		added_by: int | None,
+		quantity: int = 0
 	) -> ServiceResult:
 		"""
 			Errors:
@@ -199,7 +200,7 @@ class WarehousesService(BaseService):
 		if added_by is not None and not EPR.has_permission(cur, added_by, PermissionCode.ADD_WAREHOUSE_PRODUCT):
 			return ServiceResult(error=NotAllowedError(PermissionCode.ADD_WAREHOUSE_PRODUCT, WarehouseProduct.COLUMN_CREATED_BY))
 		
-		WPR.create(cur, product_id, warehouse_id, added_by)
+		WPR.add_or_increment(cur, product_id, warehouse_id, added_by, quantity)
 		return ServiceResult()
 
 	@classmethod

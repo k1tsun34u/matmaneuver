@@ -1,7 +1,6 @@
 import psycopg
 from typing import ClassVar
 from decimal import Decimal
-from app.models.public.product import Product
 from app.types.delete_result import DeleteResult
 from app.models.public.supply_item import SupplyItem
 from app.repositories.base.base_repository import BaseRepository
@@ -87,6 +86,20 @@ class SupplyItemsRepository(
 		"""
 		cur.execute(query, (supply_id,))
 		return (items, cur.fetchone()['total'],)
+	
+	@classmethod
+	def get_all_by_supply_id(
+		cls,
+		cur: psycopg.Cursor,
+		supply_id: int
+	) -> list[SupplyItem]:
+		query = f"""
+			SELECT *
+			FROM {cls.TABLE}
+			WHERE {SupplyItem.COLUMN_SUPPLY_ID} = %s
+		"""
+		cur.execute(query, (supply_id,))
+		return [SupplyItem(**row) for row in cur.fetchall()]
 	
 	@classmethod
 	def get_many_by_product_id(

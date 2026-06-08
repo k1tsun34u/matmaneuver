@@ -49,7 +49,6 @@ export default class ProductCard {
 	set price(price) {this._elPrice.innerHTML = `Цена: ${price} ₽/шт`;}
 
 	get qty() {return this._elQty && parseFloat(this._elQty.innerHTML.split(' ')[0]);}
-
 	set qty(quantity) {this._elQty && (this._elQty.innerHTML = `${quantity} шт`);}
 
 	refresh() {

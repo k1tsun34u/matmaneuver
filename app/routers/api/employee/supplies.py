@@ -1,3 +1,4 @@
+from app.services.warehouses_service import WarehousesService
 from app.utils import Utils
 from dataclasses import asdict
 from app.errors.mapper import Mapper
@@ -37,7 +38,7 @@ def create(_, __, cur_emp_id: int, supplier_id: int):
 			len(item) < 3 or
 			not isinstance(item[0], int) or
 			not isinstance(item[1], str) or
-			Utils.str_to_date(item[1]) is None
+			Utils.str_to_datetime(item[1]) is None
 		):
 			return Mapper.router_error('Неверный запрос!', 400)
 		elif not item[2:]:
@@ -77,7 +78,7 @@ def create(_, __, cur_emp_id: int, supplier_id: int):
 			return Mapper.error(tmp.error)
 
 		supply_items = []
-		supply_id = tmp.result
+		supply_id = tmp.result[0]
 		for wh_item in item[2:]:
 			product_id = wh_item[0]
 			quantity = wh_item[1]
@@ -118,6 +119,30 @@ def set_status(_, __, cur_emp_id: int, supply_id: int):
 
 	if tmp.error:
 		return Mapper.error(tmp.error)
+	
+	if status == SupplyStatus.DELIVERED:
+		tmp = SuppliesService.get_by_id(supply_id=supply_id)
+		if tmp.error:
+			return Mapper.error(tmp.error)
+
+		warehouse_id = tmp.result.warehouse_id
+		tmp = SuppliesService.get_all_items_by_supply_id(supply_id=supply_id)
+		if tmp.error:
+			return Mapper.error(tmp.error)
+		
+		supply_items = tmp.result
+		print(f"#!#!# ITEMS: ${supply_items}")
+		for item in supply_items:
+			# warning: TODO: no rollback!
+			tmp = WarehousesService.add_product_or_increment(
+				warehouse_id=warehouse_id,
+				product_id=item.product_id,
+				added_by=cur_emp_id,
+				quantity=item.quantity
+			)
+
+			if tmp.error:
+				return Mapper.error(tmp.error)
 	
 	return jsonify({"success": True}), 200
 
@@ -238,7 +263,7 @@ def get_items_by_supply_id(_, __, ___, supply_id: int):
 		page = 0
 	
 	limit, offset = Utils.page_to_limit_offset(page)
-	tmp = SuppliesService.get_items_by_supply_id(
+	tmp = SuppliesService.get_many_items_by_supply_id(
 		supply_id=supply_id,
 		limit=limit,
 		offset=offset

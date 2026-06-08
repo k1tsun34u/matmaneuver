@@ -1,5 +1,8 @@
+import WarehouseProductCard from '../../components/card/warehouse_product_card.mjs';
+import ProductImages from '../../api/employee/product_images.mjs';
 import Warehouses from '../../api/employee/warehouses.mjs';
 import Pagination from '../../components/pagination.mjs';
+import Products from '../../api/employee/products.mjs';
 import Status from '../../status.mjs';
 
 
@@ -39,12 +42,31 @@ if (sepPos != -1) {
 		(page, r) => {
 			elPageNumber.innerHTML = `Страница: ${page + 1}`;
 
-			console.log(r);
 			if (r['products'].length < 1) elTgt.innerHTML = '<p>Пусто...</p>';
 			else {
 				elTgt.innerHTML = '';
 				r['products'].forEach(product => {
 					console.log(product);
+					let warehouseProductCard = new WarehouseProductCard(
+						`/employee/product/${product['product_id']}`,
+						null,
+						'?',
+						'?',
+						product['quantity'],
+						product['product_id']
+					);
+
+					Products.Get(product['product_id']).then(r2 => {
+						product = r2['product'];
+						warehouseProductCard.name = product['name'];
+						warehouseProductCard.price = product['price'];
+					}).catch(e => Status.ShowError(e));
+
+					ProductImages.ByProduct(product['product_id']).then(r2 => {
+						const images = r2['images'];
+						if (images.length > 0) warehouseProductCard.storageKey = images[0]['storage_key'];
+					}).catch(e => Status.ShowError(e));
+					elTgt.appendChild(warehouseProductCard.base);
 				});
 			}
 		}

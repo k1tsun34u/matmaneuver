@@ -315,7 +315,7 @@ class SuppliesService(BaseService):
 	
 	@classmethod
 	@BaseService.transaction
-	def get_items_by_supply_id(
+	def get_many_items_by_supply_id(
 		cls,
 		cur: psycopg.Cursor,
 		supply_id: int,
@@ -333,6 +333,25 @@ class SuppliesService(BaseService):
 				supply_id=supply_id,
 				limit=limit,
 				offset=offset
+			)
+		)
+	
+	@classmethod
+	@BaseService.transaction
+	def get_all_items_by_supply_id(
+		cls,
+		cur: psycopg.Cursor,
+		supply_id: int
+	) -> ServiceResult:
+		"""
+			Errors:
+			- UnhandledError
+		"""
+
+		return ServiceResult(
+			result=SupplyItemsRepository.get_all_by_supply_id(
+				cur=cur,
+				supply_id=supply_id
 			)
 		)
 	

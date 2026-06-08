@@ -19,22 +19,23 @@ export default class QtyProductBar {
 		this._elName.style.cursor = 'pointer';
 		this._elName.addEventListener('click', () => {this._redirectFunction();});
 
-		this._elQuantity = document.createElement('p');
-		this._elQuantity.classList.add('qty-product-bar-qty');
+		this._elQty = document.createElement('p');
+		this._elQty.classList.add('qty-product-bar-qty');
 		this.qty = qty;
-		this._elQuantity.style.color = '#0046c7';
-		this._elQuantity.style.cursor = 'pointer';
-		this._elQuantity.addEventListener('click', () => {this._redirectFunction();});
+		this._elQty.style.color = '#0046c7';
+		this._elQty.style.cursor = 'pointer';
+		this._elQty.addEventListener('click', () => {this._redirectFunction();});
 		
 		this.appendChild(this._elImg);
 		this.appendChild(this._elName);
-		this.appendChild(this._elQuantity);
+		this.appendChild(this._elQty);
 	}
 	
 	get base() {return this._base;}
 
 	set name(name) {this._elName.innerHTML = name;}
-	set quantity(quantity) {this._elQuantity.innerHTML = `${quantity} шт`;}
+
+	set qty(qty) {this._elQty.innerHTML = `${qty} шт`;}
 
 	set storageKey(storageKey) {
 		const fileName = storageKey && storageKey != '?' ? storageKey : 'question.svg';

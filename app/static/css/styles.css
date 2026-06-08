@@ -415,6 +415,24 @@ option:not(option:last-of-type) { border-bottom: none; }
 
 /* ----------------------------------- */
 
+.sel-qty-product-bar button {
+	width: 60px;
+	max-width: 60px;
+	height: 60px;
+	max-height: 60px;
+}
+
+/* ----------------------------------- */
+
+.qty-product-bar-img {
+	width: 60px;
+	max-width: 60px;
+	height: 60px;
+	max-height: 60px;
+}
+
+/* ----------------------------------- */
+
 #product_img {
 	max-width: 30%;
 }

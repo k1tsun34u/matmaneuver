@@ -1,11 +1,11 @@
-export default class SelectableUserBar {
-	constructor(fullName, phone, email, userId, onSelectCallback) {
+export default class SelSupplierBar {
+	constructor(fullName, phone, email, supplierId, onSelectCallback) {
 		const fnSelect = () => {
 			this._base.style.background = '#66a6ff';
 			onSelectCallback(this.id);
 		};
 
-		this._id = userId;
+		this._id = supplierId;
 
 		this._base = document.createElement('div');
 		this._base.classList.add('hcont');
@@ -32,9 +32,9 @@ export default class SelectableUserBar {
 		this.appendChild(this._elEmail);
 	}
 
-	get base() {return this._base;}
-
 	get id() {return this._id;}
+
+	get base() {return this._base;}
 
 	get email() {return this._elEmail.innerHTML;}
 	set email(email) {this._elEmail.innerHTML = email ?? 'Почта не привязана';}

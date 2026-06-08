@@ -12,27 +12,27 @@
 		<input id="search" type="text" placeholder="Введите номер заказа или адрес доставки..." style="min-width: 80%;"/>
 		<button id="search_btn">Найти</button>
 	</div>
-	<div class="vcont">
-		<p>Фильтры:</p>
-		<div class="hcont">
-			<label for="sel_status">Статус: </label>
-			<select id="sel_status" name="sel_status">
-				<button>
-					<selectedcontent></selectedcontent>
-				</button>
+	
+	<p>Фильтры:</p>
+	<div class="hcont">
+		<label for="sel_status">Статус: </label>
+		<select id="sel_status" name="sel_status">
+			<button>
+				<selectedcontent></selectedcontent>
+			</button>
 
-				<option value="__ALL__">Все</option>
-				<option value="CREATED">Создан</option>
-				<option value="CONFIRMED">Подтверждён</option>
-				<option value="IN_TRANSIT">В пути</option>
-				<option value="DELIVERED">Завершён</option>
-				<option value="CANCELLED">Отменён</option>
-			</select>
-			<p>Создан после:</p>
-			<input id="created_from" name="created_from" type="date">
-			<p>Создан до:</p>
-			<input id="created_to" name="created_to" type="date">
-		</div>
+			<option value="__ALL__">Все</option>
+			<option value="CREATED">Создан</option>
+			<option value="CONFIRMED">Подтверждён</option>
+			<option value="IN_TRANSIT">В пути</option>
+			<option value="DELIVERED">Завершён</option>
+			<option value="CANCELLED">Отменён</option>
+		</select>
+		<p>Создан после:</p>
+		<input id="created_from" name="created_from" type="date">
+		<p>Создан до:</p>
+		<input id="created_to" name="created_to" type="date">
+	</div>
 	<hr/>
 
 	<div id="tgt">

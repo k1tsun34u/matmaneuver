@@ -1,6 +1,9 @@
 import psycopg
 from typing import ClassVar
+from app.models.public.supplier import Supplier
 from app.models.public.supply import Supply
+from app.models.public.supply_supplier_warehouse import SupplySupplierWarehouse
+from app.models.public.warehouse import Warehouse
 from app.types.supply_status import SupplyStatus
 from app.types.update_result import UpdateResult
 from datetime import date, datetime, time, timedelta
@@ -70,8 +73,20 @@ class SuppliesRepository(
 		cls,
 		cur: psycopg.Cursor,
 		supply_id: int
-	) -> Supply | None:
-		return cls.select(cur, {Supply.COLUMN_ID: supply_id})
+	) -> SupplySupplierWarehouse | None:
+		query = f"""
+			SELECT
+				s.*,
+				sr.{Supplier.COLUMN_FULL_NAME} as supplier_full_name,
+				w.{Warehouse.COLUMN_ADDRESS} as warehouse_address
+			FROM {cls.TABLE} AS s
+			JOIN {Supplier.TABLE} sr ON sr.{Supplier.COLUMN_ID} = s.{Supply.COLUMN_SUPPLIER_ID}
+			JOIN {Warehouse.TABLE} w ON w.{Warehouse.COLUMN_ID} = s.{Supply.COLUMN_WAREHOUSE_ID}
+			WHERE s.{Supply.COLUMN_ID} = %s
+		"""
+		cur.execute(query, (supply_id,))
+		row = cur.fetchone()
+		return SupplySupplierWarehouse(**row) if row else None
 	
 	@classmethod
 	def get_by_id_for_update(

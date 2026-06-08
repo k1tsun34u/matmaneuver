@@ -1,0 +1,67 @@
+{% extends "base-employee.html" %}
+
+{% block title %}Поставка{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/employee/create_supply.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<h1 id="title">Создание поставки для склада </h1>
+	<div class="hcont">
+		<p>Планируемая дата доставки:</p>
+		<input type="date" name="planned_delivery_date" id="planned_delivery_date">
+	</div>
+	<hr/>
+	<h2>Выберите поставщика:</h2>
+	<div class="hcont">
+		<p>Поиск:</p>
+		<input id="search_suppliers" type="text" placeholder="Введите ФИО, телефон или почту..." style="min-width: 80%;"/>
+		<button id="search_suppliers_btn">Найти</button>
+	</div>
+	<hr/>
+	<div class="hcont">
+		<p style="font-weight: bold;">Полное имя</p>
+		<p style="font-weight: bold;">Телефон</p>
+		<p style="font-weight: bold;">Почта</p>
+	</div>
+	<hr/>
+
+	<div id="tgt_suppliers">
+		<p>Пусто...</p>
+	</div>
+
+	<hr/>
+	<div class="hcont">
+		<button id="prev_pg_suppliers">&lt;</button>
+		<p id="page_number_suppliers" style="min-width: 80%;">Страница: 1</p>
+		<button id="next_pg_suppliers">&gt;</button>
+	</div>
+	<hr/>
+
+	<h2>Выберите товары:</h2>
+	<div class="hcont">
+		<p>Поиск:</p>
+		<input id="search_products" type="text" placeholder="Введите название или описание..." style="min-width: 80%;"/>
+		<button id="search_products_btn">Найти</button>
+	</div>
+	<hr/>
+	<div class="hcont">
+		<p style="font-weight: bold;">Название</p>
+		<p style="font-weight: bold;">Цена</p>
+		<p style="font-weight: bold;">Количество</p>
+	</div>
+	<hr/>
+
+	<div id="tgt_products">
+		<p>Пусто...</p>
+	</div>
+
+	<hr/>
+	<div class="hcont">
+		<button id="prev_pg_products">&lt;</button>
+		<p id="page_number_products" style="min-width: 80%;">Страница: 1</p>
+		<button id="next_pg_products">&gt;</button>
+	</div>
+	<hr/>
+	<button id="create" class="green-bg">Создать поставку</button>
+{% endblock %}

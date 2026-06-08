@@ -138,7 +138,7 @@ def search(_, __, ___):
 @employee_warehouses_bp.post('/add-product/<int:warehouse_id>/<int:product_id>')
 @require_employee_session
 def add_product(_, __, cur_emp_id: int, warehouse_id: int, product_id: int):
-	tmp = WarehousesService.add_product(
+	tmp = WarehousesService.add_product_or_increment(
 		warehouse_id=warehouse_id,
 		product_id=product_id,
 		added_by=cur_emp_id

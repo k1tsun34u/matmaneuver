@@ -33,23 +33,30 @@ class WarehouseProductsRepository(
 	ORDER_BY = ((WarehouseProduct.COLUMN_CREATED_AT, "DESC",),)
 
 	@classmethod
-	def create(
+	def add_or_increment(
 		cls,
 		cur: psycopg.Cursor,
 		product_id: int,
 		warehouse_id: int,
-		created_by: int | None
+		created_by: int | None,
+		quantity: int = 0
 	) -> None:
-		cls.execute_create(
-			cur=cur,
-			table=WarehouseProduct.TABLE,
-			fields={
-				WarehouseProduct.COLUMN_PRODUCT_ID: product_id,
-				WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id,
-				WarehouseProduct.COLUMN_CREATED_BY: created_by
-			},
-			returning=None
-		)
+		query = f"""
+			INSERT INTO {cls.TABLE} (
+				{WarehouseProduct.COLUMN_PRODUCT_ID},
+				{WarehouseProduct.COLUMN_WAREHOUSE_ID},
+				{WarehouseProduct.COLUMN_CREATED_BY},
+				{WarehouseProduct.COLUMN_QUANTITY}
+			)
+			VALUES (%s, %s, %s, %s)
+			ON CONFLICT (
+				{WarehouseProduct.COLUMN_PRODUCT_ID},
+				{WarehouseProduct.COLUMN_WAREHOUSE_ID}
+			)
+			DO UPDATE SET 
+				{WarehouseProduct.COLUMN_QUANTITY} = {WarehouseProduct.TABLE}.{WarehouseProduct.COLUMN_QUANTITY} + EXCLUDED.{WarehouseProduct.COLUMN_QUANTITY}
+		"""
+		cur.execute(query, (product_id, warehouse_id, created_by, quantity))
 	
 	@classmethod
 	def delete(cls, cur: psycopg.Cursor, product_id: int, warehouse_id: int) -> DeleteResult:
