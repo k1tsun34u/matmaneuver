@@ -1,3 +1,4 @@
+from app.services.warehouses_service import WarehousesService
 from app.utils import Utils
 from dataclasses import asdict
 from app.errors.mapper import Mapper
@@ -73,7 +74,21 @@ def create(_, __, cur_emp_id: int, warehouse_id: int):
 		if tmp.error:
 			return Mapper.error(tmp.error)
 		
-		write_off_items.append(tmp.result)
+		write_off_item = tmp.result
+
+		# warning: TODO:
+		# no rollback
+		tmp = WarehousesService.decrease_product_quantity(
+			warehouse_id=warehouse_id,
+			product_id=product_id,
+			quantity=quantity,
+			decreased_by=cur_emp_id
+		)
+
+		if tmp.error:
+			return Mapper.error(tmp.error)
+		
+		write_off_items.append(write_off_item)
 	
 	return jsonify({
 		"success": True,

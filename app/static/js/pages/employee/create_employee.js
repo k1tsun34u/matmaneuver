@@ -3,6 +3,7 @@ import Users from '../../api/employee/users.mjs';
 import Status from "../../status.mjs";
 import Employees from "../../api/employee/employees.mjs";
 import SelectableUserBar from "../../components/bar/selectable_user_bar.mjs";
+import DateConv from "../../date_conv.mjs";
 
 
 let elHiredAt = document.getElementById('hired_at');
@@ -55,11 +56,9 @@ elCreate.addEventListener('click', () => {
 		return;
 	}
 
-	console.log(`ID: ${elSelectedUserBar.id}, HIRED_AT: ${new Date(elHiredAt.value).toISOString()}`);
-
 	Employees.Register(
 		elSelectedUserBar.id,
-		new Date(elHiredAt.value).toISOString()
+		DateConv.DateTimeToStr(elHiredAt.value)
 	).then(r => {
 		window.location.href = `/employee/employee/${r['employee_id']}`
 	}).catch(e => Status.ShowError(e));

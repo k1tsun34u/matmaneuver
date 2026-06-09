@@ -1,5 +1,7 @@
 import psycopg
 from typing import ClassVar
+from app.models.public.warehouse import Warehouse
+from app.models.public.write_off_warehouse import WriteOffWarehouse
 from app.utils import Utils
 from app.models.public.write_off import WriteOff
 from datetime import date, datetime, time, timedelta
@@ -50,8 +52,18 @@ class WriteOffsRepository(
 		)[WriteOff.COLUMN_ID]
 	
 	@classmethod
-	def get_by_id(cls, cur: psycopg.Cursor, write_off_id: int) -> WriteOff | None:
-		return cls.select(cur, {WriteOff.COLUMN_ID: write_off_id})
+	def get_by_id(cls, cur: psycopg.Cursor, write_off_id: int) -> WriteOffWarehouse | None:
+		query = f"""
+			SELECT
+				wo.*,
+				wh.{Warehouse.COLUMN_ADDRESS} as warehouse_address
+			FROM {cls.TABLE} AS wo
+			JOIN {Warehouse.TABLE} wh ON wh.{Warehouse.COLUMN_ID} = wo.{WriteOff.COLUMN_WAREHOUSE_ID}
+			WHERE wo.{WriteOff.COLUMN_ID} = %s
+		"""
+		cur.execute(query, (write_off_id,))
+		row = cur.fetchone()
+		return WriteOffWarehouse(**row) if row else None
 	
 	@classmethod
 	def get_many_by_warehouse_id(
@@ -117,7 +129,6 @@ class WriteOffsRepository(
 
 		cur.execute(query, (*params, limit, offset,))
 		write_offs = [WriteOff(**row) for row in cur.fetchall()]
-		
 		
 		query = f"""
 			SELECT COUNT(*) as total

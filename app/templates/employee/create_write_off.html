@@ -1,0 +1,57 @@
+{% extends "base-employee.html" %}
+
+{% block title %}Списание{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/employee/create_write_off.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<h1 id="title">Списать товар со склада </h1>
+	<div class="hcont">
+		<label for="sel_reason">Причина: </label>
+		<select id="sel_reason" name="sel_reason" style="min-width: 80%; max-width: 90%;">
+			<button>
+				<selectedcontent></selectedcontent>
+			</button>
+
+			<option value="EXPIRED">Истёк срок годности товара</option>
+			<option value="DAMAGED">Товар повреждён</option>
+			<option value="LOST">Товар утерян</option>
+			<option value="STOLEN">Товар украден</option>
+			<option value="INVENTORY_MISMATCH">Товар перепутан</option>
+			<option value="OTHER">Другая</option>
+		</select>
+	</div>
+	<div class="hcont">
+		<label for="comment">Комментарий:</label>
+		<textarea id="comment" name="comment" style="min-width: 80%; text-align: left;"></textarea>
+	</div>
+	<hr/>
+
+	<h2>Выберите товары:</h2>
+	<div class="hcont">
+		<p>Поиск:</p>
+		<input id="search_products" type="text" placeholder="Введите название или описание..." style="min-width: 80%;"/>
+		<button id="search_products_btn">Найти</button>
+	</div>
+	<hr/>
+	<div class="hcont">
+		<p style="font-weight: bold;">Название</p>
+		<p style="font-weight: bold;">Цена</p>
+		<p style="font-weight: bold;">Количество</p>
+	</div>
+	<hr/>
+
+	<div id="tgt_products">
+		<p>Пусто...</p>
+	</div>
+
+	<hr/>
+	<div class="hcont">
+		<button id="prev_pg_products">&lt;</button>
+		<p id="page_number_products" style="min-width: 80%;">Страница: 1</p>
+		<button id="next_pg_products">&gt;</button>
+	</div>
+	<hr/>
+	<button id="create" class="green-bg">Списать товары</button>
+{% endblock %}

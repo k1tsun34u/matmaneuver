@@ -1,0 +1,57 @@
+{% extends "base-employee.html" %}
+
+{% block title %}Списания{% endblock %}
+{% block head %}
+	<script type="module" src="{{ url_for('static', filename='js/pages/employee/write_offs.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+	<h1 id="title">Списания со склада </h1>
+	<div class="hcont">
+		<p>Поиск:</p>
+		<input id="search" name="search" type="text" placeholder="Введите комментарий..." style="min-width: 70%;" required/>
+		<button id="search_btn">Найти</button>
+		<button id="create" class="green-bg">+</button>
+	</div>
+	<div class="hcont">
+		<label for="sel_reason">Причина: </label>
+		<select id="sel_reason" name="sel_reason" style="min-width: 80%; max-width: 90%;">
+			<button>
+				<selectedcontent></selectedcontent>
+			</button>
+
+			<option value="__ALL__">Все</option>
+			<option value="EXPIRED">Истёк срок годности товара</option>
+			<option value="DAMAGED">Товар повреждён</option>
+			<option value="LOST">Товар утерян</option>
+			<option value="STOLEN">Товар украден</option>
+			<option value="INVENTORY_MISMATCH">Товар перепутан</option>
+			<option value="OTHER">Другая</option>
+		</select>
+	</div>
+	<div class="hcont">
+		<p>Создано после:</p>
+		<input id="created_from" name="created_from" type="date">
+		<p>Создано до:</p>
+		<input id="created_to" name="created_to" type="date">
+	</div>
+	<hr/>
+
+	<div class="hcont">
+		<p style="font-weight: bold;">Планируемая дата поставки</p>
+		<p style="font-weight: bold;">Общая стоимость</p>
+		<p style="font-weight: bold;">Состояние</p>
+	</div>
+	<hr/>
+
+	<div id="tgt">
+		<p>Пусто...</p>
+	</div>
+
+	<hr/>
+	<div class="hcont">
+		<button id="prev_pg">&lt;</button>
+		<p id="page_number" style="min-width: 80%;">Страница: 1</p>
+		<button id="next_pg">&gt;</button>
+	</div>
+{% endblock %}

@@ -1,5 +1,6 @@
 import Permissions from '../../api/employee/permissions.mjs';
 import Status from '../../status.mjs';
+import DateConv from '../../date_conv.mjs';
 
 
 let elCode = document.getElementById('code');
@@ -48,6 +49,6 @@ if (sepPos != -1) {
 			});
 		}
 
-		elCreatedAt.innerHTML = `Создано: ${new Date(r['permission']['created_at']).toISOString().slice(0, 19).replace('T', ' ')}`;
+		elCreatedAt.innerHTML = `Создано: ${DateConv.DateTimeToStr(r['permission']['created_at'])}`;
 	}).catch(e => Status.ShowError(e));
 }

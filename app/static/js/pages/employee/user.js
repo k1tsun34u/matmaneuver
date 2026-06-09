@@ -3,6 +3,7 @@ import Pagination from "../../components/pagination.mjs";
 import Status from "../../status.mjs";
 import ProductReviews from '../../api/employee/product_reviews.mjs';
 import Review from "../../components/review/review.mjs";
+import DateConv from "../../date_conv.mjs";
 
 
 let elFullName = document.getElementById('full_name');
@@ -23,7 +24,7 @@ const pathName = window.location.pathname;
 const sepPos = pathName.lastIndexOf('/');
 if (sepPos != -1) {
 	let fnDateToStr = (date) => {
-		if (date) return new Date(date).toISOString().slice(0, 19).replace('T', ' ');
+		if (date) return DateConv.DateTimeToStr(date);
 		return 'никогда';
 	}
 

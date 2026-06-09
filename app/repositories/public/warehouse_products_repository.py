@@ -152,27 +152,46 @@ class WarehouseProductsRepository(
 		if quantity <= 0:
 			return UpdateResult.FAIL_CONDITION
 
-		query = f"""
-			UPDATE {WarehouseProduct.TABLE}
-			SET {WarehouseProduct.COLUMN_QUANTITY} = {WarehouseProduct.COLUMN_QUANTITY} - %s
-			WHERE
-				{WarehouseProduct.COLUMN_PRODUCT_ID} = %s
-				AND {WarehouseProduct.COLUMN_WAREHOUSE_ID} = %s
-				AND {WarehouseProduct.COLUMN_QUANTITY} >= %s
-				AND ({WarehouseProduct.COLUMN_QUANTITY} - %s) >= {WarehouseProduct.COLUMN_RESERVED_QUANTITY}
-		"""
-		cur.execute(query, (quantity, product_id, warehouse_id, quantity, quantity,))
-
-		return Utils.determine_result(
-			cur=cur,
-			table=cls.TABLE,
-			where={
-				WarehouseProduct.COLUMN_PRODUCT_ID: product_id,
-				WarehouseProduct.COLUMN_WAREHOUSE_ID: warehouse_id
-			},
-			rowcount=cur.rowcount,
-			result_type=UpdateResult
+		cur.execute(
+			f"""
+				SELECT {WarehouseProduct.COLUMN_QUANTITY}
+				FROM {WarehouseProduct.TABLE}
+				WHERE
+					{WarehouseProduct.COLUMN_PRODUCT_ID} = %s
+					AND {WarehouseProduct.COLUMN_WAREHOUSE_ID} = %s
+			""",
+			(product_id, warehouse_id,)
 		)
+
+		row = cur.fetchone()
+		if not row:
+			return UpdateResult.FAIL_NOT_FOUND
+
+		current_quantity = row[WarehouseProduct.COLUMN_QUANTITY]
+		new_quantity = current_quantity - quantity
+		if new_quantity < 0:
+			return UpdateResult.FAIL_CONDITION
+
+		if new_quantity == 0:
+			query_delete = f"""
+				DELETE FROM {WarehouseProduct.TABLE}
+				WHERE
+					{WarehouseProduct.COLUMN_PRODUCT_ID} = %s
+					AND {WarehouseProduct.COLUMN_WAREHOUSE_ID} = %s
+			"""
+			cur.execute(query_delete, (product_id, warehouse_id,))
+			return UpdateResult.SUCCESS
+		else:
+			query_update = f"""
+				UPDATE {WarehouseProduct.TABLE}
+				SET {WarehouseProduct.COLUMN_QUANTITY} = %s
+				WHERE
+					{WarehouseProduct.COLUMN_PRODUCT_ID} = %s
+					AND {WarehouseProduct.COLUMN_WAREHOUSE_ID} = %s
+					AND {WarehouseProduct.COLUMN_QUANTITY} >= %s
+			"""
+			cur.execute(query_update, (new_quantity, product_id, warehouse_id, quantity,))
+			return UpdateResult.SUCCESS
 	
 	@classmethod
 	def reserve(

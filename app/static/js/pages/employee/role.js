@@ -3,6 +3,7 @@ import Roles from "../../api/employee/roles.mjs";
 import Pagination from '../../components/pagination.mjs';
 import Permissions from '../../api/employee/permissions.mjs';
 import CheckablePermissionBar from "../../components/bar/checkable_permission_bar.mjs";
+import DateConv from "../../date_conv.mjs";
 
 
 let elCode = document.getElementById('code');
@@ -51,7 +52,7 @@ if (sepPos != -1) {
 			});
 		}
 
-		elCreatedAt.innerHTML = `Создана: ${new Date(r['role']['created_at']).toISOString().slice(0, 19).replace('T', ' ')}`;
+		elCreatedAt.innerHTML = `Создана: ${DateConv.DateTimeToStr(r['role']['created_at'])}`;
 
 		let toAssign = [], toUnassign = [];
 		for (let i = 0; i < r['role']['permissions'].length; i++) {

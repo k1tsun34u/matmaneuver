@@ -208,6 +208,18 @@ def employee_create_supply(warehouse_id: int):
 def employee_supply(supply_id: int):
 	return render_template("employee/supply.html", supply_id=supply_id)
 
+@app.route("/employee/warehouse/<int:warehouse_id>/write-offs")
+def employee_write_offs(warehouse_id: int):
+	return render_template("employee/write_offs.html", warehouse_id=warehouse_id)
+
+@app.route("/employee/warehouse/<int:warehouse_id>/create-write-off")
+def employee_create_write_off(warehouse_id: int):
+	return render_template("employee/create_write_off.html", warehouse_id=warehouse_id)
+
+@app.route("/employee/write-off/<int:write_off_id>")
+def employee_write_off(write_off_id: int):
+	return render_template("employee/write_off.html", write_off_id=write_off_id)
+
 @app.route('/image/<path:filename>/')
 def get_image(filename):
 	return send_from_directory(Config.PATH_IMAGES, filename)

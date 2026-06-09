@@ -1,4 +1,5 @@
 import Suppliers from "../../api/employee/suppliers.mjs";
+import DateConv from "../../date_conv.mjs";
 import Status from "../../status.mjs";
 
 
@@ -18,7 +19,7 @@ if (sepPos != -1) {
 	const supplierId = parseInt(pathName.substring(sepPos + 1));
 	Suppliers.Get(supplierId).then(r => {
 		let fnDateToStr = (date) => {
-			if (date) return new Date(date).toISOString().slice(0, 19).replace('T', ' ');
+			if (date) return DateConv.DateTimeToStr(date);
 			return 'никогда';
 		}
 

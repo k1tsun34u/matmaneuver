@@ -6,6 +6,7 @@ import Status from '../../status.mjs';
 import Supplies from '../../api/employee/supplies.mjs';
 import Suppliers from '../../api/employee/suppliers.mjs';
 import SelSupplierBar from '../../components/bar/sel_supplier_bar.mjs';
+import DateConv from '../../date_conv.mjs';
 
 
 let elTitle = document.getElementById('title');
@@ -117,9 +118,8 @@ if (lastSepPos != -1 && prevLastSepPos != -1) {
 			}
 
 			let warehouseSupplyData = [
-				parseInt(warehouseId), new Date(
-					elPlannedDeliveryDate.value
-				).toISOString().slice(0, 19).replace('T', ' ')
+				parseInt(warehouseId),
+				DateConv.DateTimeToStr(elPlannedDeliveryDate.value)
 			];
 
 			Object.keys(selProducts).forEach(key => warehouseSupplyData.push([

@@ -1,19 +1,18 @@
-import SupplyBar from '../../components/bar/supply_bar.mjs';
+import WriteOffBar from '../../components/bar/write_off_bar.mjs';
 import Warehouses from '../../api/employee/warehouses.mjs';
 import Pagination from '../../components/pagination.mjs';
-import Supplies from '../../api/employee/supplies.mjs';
-import Status from '../../status.mjs';
+import WriteOffs from '../../api/employee/write_offs.mjs';
 import DateConv from '../../date_conv.mjs';
+import Status from '../../status.mjs';
 
 
 let elTitle = document.getElementById('title');
+let elSearch = document.getElementById('search');
 let elSearchBtn = document.getElementById('search_btn');
 let elCreate = document.getElementById('create');
-let elSelStatus = document.getElementById('sel_status');
+let elSelReason = document.getElementById('sel_reason');
 let elCreatedFrom = document.getElementById('created_from');
 let elCreatedTo = document.getElementById('created_to');
-let elPlannedDeliveryDateFrom = document.getElementById('planned_delivery_date_from');
-let elPlannedDeliveryDateTo = document.getElementById('planned_delivery_date_to');
 let elTgt = document.getElementById('tgt');
 let elPrevPg = document.getElementById('prev_pg');
 let elPageNumber = document.getElementById('page_number');
@@ -25,40 +24,38 @@ const prevLastSepPos = pathname.lastIndexOf('/', lastSepPos - 1);
 if (lastSepPos != -1 && prevLastSepPos != -1) {
 	const warehouseId = pathname.substring(prevLastSepPos + 1, lastSepPos);
 	Warehouses.Get(warehouseId).then(r => {
-		elTitle.innerHTML = `Поставки на склад ${r['warehouse']['address']}`;
+		elTitle.innerHTML = `Списания со склада ${r['warehouse']['address']}`;
 
 		let pagination = new Pagination(
-			() => (page) => Supplies.Search(
-				elSelStatus.value,
+			() => (page) => WriteOffs.Search(
+				elSearch.value,
 				page,
-				elCreatedFrom.value, elCreatedTo.value,
-				elPlannedDeliveryDateFrom.value, elPlannedDeliveryDateTo.value
+				warehouseId,
+				elSelReason.value,
+				elCreatedFrom.value,
+				elCreatedTo.value
 			),
 			(page, r) => {
 				elPageNumber.innerHTML = `Страница: ${page + 1}`;
 				
-				if (r['supplies'].length < 1) elTgt.innerHTML = '<p>Пусто...</p>';
+				if (r['write_offs'].length < 1) elTgt.innerHTML = '<p>Пусто...</p>';
 				else {
 					elTgt.innerHTML = '';
-					r['supplies'].forEach(supply => {
-						let supplyBar = new SupplyBar(
-							`/employee/supply/${supply['id']}`,
-							DateConv.DateTimeToStr(supply['planned_delivery_date']).split(' ')[0],
-							'?',
-							supply['current_status']
+					r['write_offs'].forEach(writeOff => {
+						let writeOffBar = new WriteOffBar(
+							writeOff['reason'],
+							writeOff['created_at'],
+							writeOff['id']
 						);
 
-						Supplies.GetTotalPrice(supply['id']).then(r2 => {
-							supplyBar.totalPrice = r2['total_price'];
-						}).catch(e => Status.ShowError(e));
-						elTgt.appendChild(supplyBar.base);
+						elTgt.appendChild(writeOffBar.base);
 					});
 				}
 			}
 		);
 
 		elCreate.addEventListener('click', () => {
-			window.location.href = `/employee/warehouse/${warehouseId}/create-supply`;
+			window.location.href = `/employee/warehouse/${warehouseId}/create-write-off`;
 		});
 		
 		elSearchBtn.addEventListener('click', () => pagination.select(0));

@@ -3,6 +3,7 @@ import Status from '../../status.mjs';
 import Pagination from '../../components/pagination.mjs';
 import Roles from '../../api/employee/roles.mjs';
 import CheckableRoleBar from '../../components/bar/checkable_role_bar.mjs';
+import DateConv from '../../date_conv.mjs';
 
 
 let elFullName = document.getElementById('full_name');
@@ -28,7 +29,7 @@ if (sepPos != -1) {
 	const employeeId = parseInt(pathName.substring(sepPos + 1));
 	Employees.Get(employeeId).then(r => {
 		let fnDateToStr = (date) => {
-			if (date) return new Date(date).toISOString().slice(0, 19).replace('T', ' ');
+			if (date) return DateConv.DateTimeToStr(date);
 			return 'никогда';
 		}
 

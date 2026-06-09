@@ -55,13 +55,21 @@ class WriteOffItemsRepository(
 		write_off_id: int,
 		limit: int = 50,
 		offset: int = 0
-	) -> list[WriteOffItem]:
-		return cls.select_many(
+	) -> tuple[list[WriteOffItem], int]:
+		items = cls.select_many(
 			cur=cur,
 			equals={WriteOffItem.COLUMN_WRITE_OFF_ID: write_off_id},
 			limit=limit,
 			offset=offset
 		)
+
+		query = f"""
+			SELECT COUNT(*) as total
+			FROM {cls.TABLE}
+			WHERE {WriteOffItem.COLUMN_WRITE_OFF_ID} = %s
+		"""
+		cur.execute(query, (write_off_id,))
+		return (items, cur.fetchone()['total'],)
 	
 	@classmethod
 	def get_many_by_product_id(

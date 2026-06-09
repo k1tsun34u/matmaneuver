@@ -131,7 +131,6 @@ def set_status(_, __, cur_emp_id: int, supply_id: int):
 			return Mapper.error(tmp.error)
 		
 		supply_items = tmp.result
-		print(f"#!#!# ITEMS: ${supply_items}")
 		for item in supply_items:
 			# warning: TODO: no rollback!
 			tmp = WarehousesService.add_product_or_increment(

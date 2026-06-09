@@ -1,7 +1,7 @@
 import SupplyStatus from '../../supply_status.mjs';
 
 
-export default class OrderBar {
+export default class SupplyBar {
 	constructor(redirectUrl, plannedDeliveryDate, totalPrice, status) {
 		this._redirectUrl = redirectUrl;
 		this._redirectFunction = () => {window.location.href = this._redirectUrl;};

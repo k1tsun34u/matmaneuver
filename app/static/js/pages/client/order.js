@@ -4,6 +4,7 @@ import OrderStatus from '../../order_status.mjs';
 import Products from '../../api/client/products.mjs';
 import ProductImages from '../../api/client/product_images.mjs';
 import OrderItemBar from "../../components/bar/order_item_bar.mjs";
+import DateConv from "../../date_conv.mjs";
 
 
 
@@ -21,7 +22,7 @@ if (sepPos != -1) {
 	Orders.Get(orderId).then(response => {
 		let order = response['order'];
 		let status = OrderStatus.ValueToStr(order['current_status']);
-		let createdAt = new Date(order['created_at']).toISOString().slice(0, 19).replace('T', ' ');
+		let createdAt = DateConv.DateTimeToStr(order['created_at']);
 
 		elOrderName.innerHTML = `Заказ ${order['track_number']}`;
 		elCreatedAt.innerHTML = `Создан: ${createdAt}`;
