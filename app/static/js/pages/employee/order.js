@@ -5,11 +5,13 @@ import Products from '../../api/employee/products.mjs';
 import ProductImages from '../../api/employee/product_images.mjs';
 import OrderItemBar from "../../components/bar/order_item_bar.mjs";
 import DateConv from "../../date_conv.mjs";
+import OrderPayments from '../../api/employee/order_payments.mjs';
 
 
 let elOrderName = document.getElementById('order_name');
 let elCreatedAt = document.getElementById('created_at');
 let elAddress = document.getElementById('address');
+let elFullyPaid = document.getElementById('fully_paid');
 let elAmount = document.getElementById('amount');
 let elSelStatus = document.getElementById('sel_status');
 let elSetStatus = document.getElementById('set_status');
@@ -34,6 +36,17 @@ if (sepPos != -1) {
 			}).catch(e => Status.ShowError(e));
 		});
 		else elSetStatus.remove();
+
+		OrderPayments.IsFullyPaid(orderId).then(r2 => {
+			if (r2['is_fully_paid'] == true) {
+				elFullyPaid.innerHTML = `Оплачен: да`;
+				elFullyPaid.style.color = '#12d400';
+			}
+			else {
+				elFullyPaid.innerHTML = `Оплачен: нет`;
+				elFullyPaid.style.color = '#cc0000';
+			}
+		}).catch(e => Status.ShowError(e));
 
 		let elActions = document.getElementById('actions');
 		if (r['order']['current_status'] == OrderStatus.CONFIRMED) {
