@@ -220,6 +220,14 @@ def employee_create_write_off(warehouse_id: int):
 def employee_write_off(write_off_id: int):
 	return render_template("employee/write_off.html", write_off_id=write_off_id)
 
+@app.route("/employee/orders")
+def employee_orders():
+	return render_template("employee/orders.html")
+
+@app.route("/employee/order/<int:order_id>")
+def employee_order(order_id: int):
+	return render_template("employee/order.html", order_id=order_id)
+
 @app.route('/image/<path:filename>/')
 def get_image(filename):
 	return send_from_directory(Config.PATH_IMAGES, filename)

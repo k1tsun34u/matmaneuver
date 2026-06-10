@@ -40,10 +40,30 @@ def get(_, __, ___, order_id: int):
 	tmp = OrdersService.get_by_id(order_id=order_id)
 	if tmp.error:
 		return Mapper.error(tmp.error)
+
+	order = tmp.result
+	tmp = OrdersService.get_total_price(order_id=order.id)
+	if tmp.error:
+		return Mapper.error(tmp.error)
 	
+	total_price = tmp.result
+
+	tmp = OrdersService.get_items_by_order_id(
+		order_id=order.id,
+		limit=None
+	)
+
+	if tmp.error:
+		return Mapper.error(tmp.error)
+
+	order = asdict(order)
+	
+	items, _ = tmp.result
+	order["items"] = [asdict(order_item) for order_item in items]
+	order["total_price"] = total_price
 	return jsonify({
 		"success": True,
-		"order": asdict(tmp.result)
+		"order": order
 	}), 200
 
 @employee_orders_bp.get('/by-track-number/<string:track_number>')
